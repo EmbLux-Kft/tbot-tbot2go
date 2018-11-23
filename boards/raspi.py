@@ -17,21 +17,21 @@ class Tbot2goBoard(board.Board):
     connect_wait = 1.0
 
     def poweron(self) -> None:
-        if self.name == 'XXX':
-            self.lh.exec0("power.py", "-p", "XXX", "-s", "on")
+        if self.name == 'k30rf':
+            self.lh.exec0("power.py", "-p", "19", "-s", "on")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
     def poweroff(self) -> None:
-        if self.name == 'XXX':
-            self.lh.exec0("power.py", "-p", "XXX", "-s", "off")
+        if self.name == 'k30rf':
+            self.lh.exec0("power.py", "-p", "19", "-s", "off")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
     def connect(self) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
-        if self.name == 'XXX':
-            cfg_file = "/home/pi/kermrc_XXX"
+        if self.name == 'k30rf':
+            cfg_file = "/home/pi/kermrc_k30rf"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = self.lh.new_channel("kermit", cfg_file)
