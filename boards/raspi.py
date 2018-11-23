@@ -26,6 +26,8 @@ class Tbot2goBoard(board.Board):
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
+        elif self.name == 'h03pl086':
+            self.lh.exec0("power.py", "-p", "14", "-s", "on")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
@@ -33,6 +35,8 @@ class Tbot2goBoard(board.Board):
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "off")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
+        elif self.name == 'h03pl086':
+            self.lh.exec0("power.py", "-p", "14", "-s", "off")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
@@ -40,6 +44,8 @@ class Tbot2goBoard(board.Board):
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
             cfg_file = "/home/pi/kermrc_" + self.boardlabname
+        elif self.name == 'h03pl086':
+            cfg_file = "/home/pi/kermrc_h03pl086"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = self.lh.new_channel("kermit", cfg_file)
