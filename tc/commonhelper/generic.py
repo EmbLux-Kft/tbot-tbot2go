@@ -32,6 +32,7 @@ def recv_timeout(ch, name, endstr, tout) -> typing.Tuple[int, bytes]:
     """
     raw = b""
     end = b""
+    retval = 1
     with log_event.command("pickup", name) as ev:
         loop = True
         while loop:
@@ -49,10 +50,11 @@ def recv_timeout(ch, name, endstr, tout) -> typing.Tuple[int, bytes]:
                 end += raw
                 raw = b""
 
-    retval = 0
-    if endstr != "":
-        if endstr not in end:
-            retval = 1
+            if endstr != b"":
+                if endstr in end:
+                    retval = 0
+                    loop = False
+
     return retval, end
 
 # linux testcases
