@@ -118,8 +118,9 @@ class Yocto:
         return True
 
     @tbot.testcase
-    def repo_sync(self, ma) -> bool:
-        if not self.repo_exist(ma):
+    def repo_sync(self, ma, check=True) -> bool:
+        ret = self.repo_exist(ma)
+        if check and ret == False:
             return False
         ma.exec0("repo", "sync")
         return True
