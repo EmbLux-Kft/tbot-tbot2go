@@ -178,7 +178,7 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     boardip = {}
     boardip["sanvito"] = "192.168.3.22"
     boardip["h03pl086"] = "192.168.3.32"
-    boardip["k30rf"] = "192.168.3.37"
+    boardip["k30rf"] = "192.168.7.37"
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
