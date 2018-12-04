@@ -97,7 +97,13 @@ class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
 
 class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
     name = "pollux"
+    username = "hs"
     hostname = "pollux.denx.de"
+    serverip = "192.168.1.1"
+    boardip = {}
+    boardip["sanvito"] = "192.168.TODO"
+    boardip["h03pl086"] = "192.168.TODO"
+    boardip["k30rf"] = "192.168.TODO"
 
     @property
     def workdir(self) -> "linux.path.Path[PolluxLab]":
@@ -168,6 +174,11 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     name = "tbot2go"
     hostname = "192.168.1.110"
     username = "pi"
+    serverip = "192.168.3.1"
+    boardip = {}
+    boardip["sanvito"] = "192.168.3.22"
+    boardip["h03pl086"] = "192.168.3.32"
+    boardip["k30rf"] = "192.168.3.37"
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
