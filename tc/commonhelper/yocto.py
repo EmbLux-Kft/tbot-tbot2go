@@ -92,16 +92,16 @@ class Yocto:
                     if '.' in basename:
                         basename = basename.split('.')[0]
                     p2 = p / basename
-                if p2.exists():
-                    # get newest commit
-                    bh.exec0("cd", p2)
-                    bh.exec0("git", "pull")
-                    bh.exec0("cd", p)
-                else:
-                    if self.cfg["priv_layer_branch"] != None:
-                        bh.exec0("git", "clone", "-b", self.cfg["priv_layer_branch"], self.cfg["priv_layer"])
+                    if p2.exists():
+                        # get newest commit
+                        bh.exec0("cd", p2)
+                        bh.exec0("git", "pull")
+                        bh.exec0("cd", p)
                     else:
-                        bh.exec0("git", "clone", self.cfg["priv_layer"])
+                        if self.cfg["priv_layer_branch"] != None:
+                            bh.exec0("git", "clone", "-b", self.cfg["priv_layer_branch"], self.cfg["priv_layer"])
+                        else:
+                            bh.exec0("git", "clone", self.cfg["priv_layer"])
 
                 if self.repo_config(bh) == False:
                     bd = self.repo_get_builddir_name(bh)
