@@ -12,7 +12,11 @@ class Yocto:
               https://source.android.com/setup/build/downloading#installing-repo
               for getting all the sources for build.
 
-    directory structure on build machein "ma":
+    directory structure on build machine "ma":
+
+    cfg : configuration dictionary
+
+    workdir structure:
 
     ma.workdir / tbot.selectable.Board.name / self.yocto_type   / tbot.selectable.Board.name / "build_" + tbot.selectable.Board.name /
                | ge.get_board_workdir       | get_yocto_workdir | get_repodir                | repo_get_builddir                     |
@@ -22,13 +26,84 @@ class Yocto:
     get deploy directory: repo_get_deploydir()
     repo_get_builddir() / repo_get_deploydir_name ()
                           "tmp/deploy/images/" + tbot.selectable.Board.name
+
+    configuration
+
+    yo_cfg ={}
+    yo_cfg["u"] = "ssh://git@gitlab.denx.de/ssi/cuby-manifest.git"
+    yo_cfg["m"] = "manifest-denx-20180202.xml"
+    yo_cfg["b"] = "denx-pyro"
+    yo_cfg["templateconf"] = "TEMPLATECONF=meta-cuby-denx/conf/samples/"
+    yo_cfg["autosamplepath"] = "meta-cuby-denx/conf/samples"
+    yo_cfg["bitbake_targets"] = ["cuby-image", "qt-cuby -c do_populate_sdk"]
+    
     """
 
-    def __init__(self, yoctype, repodirname):
+    def __init__(self, yoctype, repodirname, cfg):
         self.yocto_type = yoctype
         self.repodirname = repodirname
         self.repo_path = '/home/hs/bin/repo'
         self.tested = False
+        self.cfg = cfg
+
+    @tbot.testcase
+    def yo_repo_install(
+        self,
+        lab: typing.Optional[linux.LabHost] = None,
+        build = None,
+    ) -> str:
+        with lab or tbot.acquire_lab() as lh:
+            with build or lh.build() as bh:
+                self.cd_yocto_workdir(bh)
+                self.repo_init(bh, self.cfg["u"], self.cfg["m"], self.cfg["b"])
+                self.repo_sync(bh, check=False)
+                p = self.cd2repo(bh)
+                return p
+
+    @tbot.testcase
+    def yo_repo_sync(
+        self,
+        lab: typing.Optional[linux.LabHost] = None,
+        build = None,
+    ) -> None:
+        with lab or tbot.acquire_lab() as lh:
+            with build or lh.build() as bh:
+                self.cd_yocto_workdir(bh)
+                self.repo_sync(bh)
+
+    @tbot.testcase
+    def yo_repo_config(
+        self,
+        lab: typing.Optional[linux.LabHost] = None,
+        build = None,
+    ) -> None:
+        with lab or tbot.acquire_lab() as lh:
+            with build or lh.build() as bh:
+                try:
+                    p = self.cd2repo(bh)
+                except:
+                    p = self.yo_repo_install(lh, bh)
+
+                if self.repo_config(bh) == False:
+                    bd = self.repo_get_builddir_name(bh)
+                    bh.exec0(self.cfg["templateconf"], "source", "oe-init-build-env", bd)
+                    if self.cfg["autosamplepath"] != None:
+                        bh.exec0("cp", p / self.cfg["autosamplepath"] / "auto.conf.sample", "conf/auto.conf")
+
+
+    @tbot.testcase
+    def yo_repo_build(
+        self,
+        lab: typing.Optional[linux.LabHost] = None,
+        build = None,
+    ) -> None:
+        with lab or tbot.acquire_lab() as lh:
+            with build or lh.build() as bh:
+                self.yo_repo_sync(lh, bh)
+                self.yo_repo_config(lh, bh)
+                m = 'MACHINE=' + tbot.selectable.Board.name
+                for name in self.cfg["bitbake_targets"]:
+                    bh.exec0(linux.Raw(m + " bitbake " + name))
 
     @tbot.testcase
     def get_yocto_workdir(self, ma) -> str:
