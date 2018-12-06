@@ -1,5 +1,6 @@
 import contextlib
 import typing
+import os
 import tbot
 from tbot.machine import linux
 import generic as ge
@@ -36,6 +37,7 @@ class Yocto:
     yo_cfg["templateconf"] = "TEMPLATECONF=meta-cuby-denx/conf/samples/"
     yo_cfg["autosamplepath"] = "meta-cuby-denx/conf/samples"
     yo_cfg["bitbake_targets"] = ["cuby-image", "qt-cuby -c do_populate_sdk"]
+    yo_cfg["priv_layer"] = "url to private layer"
     
     """
 
@@ -83,6 +85,19 @@ class Yocto:
                     p = self.cd2repo(bh)
                 except:
                     p = self.yo_repo_install(lh, bh)
+
+                if self.cfg["priv_layer"] != None:
+                    basename = os.path.basename(self.cfg["priv_layer"])
+                    if '.' in basename:
+                        basename = basename.split('.')[0]
+                    p2 = p / basename
+                if p2.exists():
+                    # get newest commit
+                    bh.exec0("cd", p2)
+                    bh.exec0("git", "pull")
+                    bh.exec0("cd", p)
+                else:
+                    bh.exec0("git", "clone", self.cfg["priv_layer"])
 
                 if self.repo_config(bh) == False:
                     bd = self.repo_get_builddir_name(bh)
