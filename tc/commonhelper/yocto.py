@@ -38,6 +38,7 @@ class Yocto:
     yo_cfg["autosamplepath"] = "meta-cuby-denx/conf/samples"
     yo_cfg["bitbake_targets"] = ["cuby-image", "qt-cuby -c do_populate_sdk"]
     yo_cfg["priv_layer"] = "url to private layer"
+    yo_cfg["priv_layer_branch"] = "branch which get checked out"
     
     """
 
@@ -97,14 +98,16 @@ class Yocto:
                     bh.exec0("git", "pull")
                     bh.exec0("cd", p)
                 else:
-                    bh.exec0("git", "clone", self.cfg["priv_layer"])
+                    if self.cfg["priv_layer_branch"] != None:
+                        bh.exec0("git", "clone", "-b", self.cfg["priv_layer_branch"], self.cfg["priv_layer"])
+                    else:
+                        bh.exec0("git", "clone", self.cfg["priv_layer"])
 
                 if self.repo_config(bh) == False:
                     bd = self.repo_get_builddir_name(bh)
                     bh.exec0(self.cfg["templateconf"], "source", "oe-init-build-env", bd)
                     if self.cfg["autosamplepath"] != None:
                         bh.exec0("cp", p / self.cfg["autosamplepath"] / "auto.conf.sample", "conf/auto.conf")
-
 
     @tbot.testcase
     def yo_repo_build(
