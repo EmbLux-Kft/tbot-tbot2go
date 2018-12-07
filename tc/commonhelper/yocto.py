@@ -53,7 +53,7 @@ class Yocto:
     def yo_repo_install(
         self,
         lab: typing.Optional[linux.LabHost] = None,
-        build = None,
+        build: typing.Optional[linux.BuildMachine] = None,
     ) -> str:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -67,7 +67,7 @@ class Yocto:
     def yo_repo_sync(
         self,
         lab: typing.Optional[linux.LabHost] = None,
-        build = None,
+        build: typing.Optional[linux.BuildMachine] = None,
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -78,7 +78,7 @@ class Yocto:
     def yo_repo_config(
         self,
         lab: typing.Optional[linux.LabHost] = None,
-        build = None,
+        build: typing.Optional[linux.BuildMachine] = None,
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -113,7 +113,7 @@ class Yocto:
     def yo_repo_build(
         self,
         lab: typing.Optional[linux.LabHost] = None,
-        build = None,
+        build: typing.Optional[linux.BuildMachine] = None,
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -124,7 +124,10 @@ class Yocto:
                     bh.exec0(linux.Raw(m + " bitbake " + name))
 
     @tbot.testcase
-    def get_yocto_workdir(self, ma) -> str:
+    def get_yocto_workdir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p2 = ge.get_board_workdir(ma)
         # may we add here other options without repo
         p2 = p2 / self.yocto_type
@@ -133,13 +136,19 @@ class Yocto:
         return p2
 
     @tbot.testcase
-    def cd_yocto_workdir(self, ma) -> str:
+    def cd_yocto_workdir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p = self.get_yocto_workdir(ma)
         ma.exec0("cd", p)
         return p
 
     @tbot.testcase
-    def repo_exist(self, ma) -> bool:
+    def repo_exist(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> bool:
         if self.yocto_type != 'repo':
             raise RuntimeError("not configured for " + self.yocto_type)
 
@@ -155,7 +164,10 @@ class Yocto:
         return False
 
     @tbot.testcase
-    def get_repodir(self, ma) -> str:
+    def get_repodir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p = self.cd_yocto_workdir(ma)
         # may we need this configurable
         p = p / self.repodirname
@@ -163,7 +175,10 @@ class Yocto:
             return p
 
     @tbot.testcase
-    def cd2repo(self, ma) -> str:
+    def cd2repo(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p = self.get_repodir(ma)
         if p.exists():
             ma.exec0("cd", p)
@@ -171,19 +186,28 @@ class Yocto:
         raise RuntimeError("repo dir missing")
 
     @tbot.testcase
-    def repo_get_builddir_name(self, ma) -> str:
+    def repo_get_builddir_name(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         bd = "build_" + tbot.selectable.Board.name
         return bd
 
     @tbot.testcase
-    def repo_get_builddir(self, ma) -> str:
+    def repo_get_builddir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         bd = self.repo_get_builddir_name(ma)
         p = self.get_repodir(ma)
         p = p / bd
         return p
 
     @tbot.testcase
-    def repo_cd_builddir(self, ma) -> str:
+    def repo_cd_builddir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p = self.repo_get_builddir(ma)
         if p.exists():
             ma.exec0("cd", p)
@@ -191,12 +215,18 @@ class Yocto:
         raise RuntimeError("repo build dir missing")
 
     @tbot.testcase
-    def repo_get_deploydir_name(self, ma) -> str:
+    def repo_get_deploydir_name(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         bd = "tmp/deploy/images/" + tbot.selectable.Board.name
         return bd
 
     @tbot.testcase
-    def repo_get_deploydir(self, ma) -> str:
+    def repo_get_deploydir(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         p = self.repo_get_builddir(ma)
         n = self.repo_get_deploydir_name(ma)
         p = p / n
@@ -204,14 +234,24 @@ class Yocto:
 
     # commands
     @tbot.testcase
-    def repo_init(self, ma, u, m, b) -> bool:
+    def repo_init(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+        u,
+        m,
+        b,
+    ) -> bool:
         if self.repo_exist(ma):
             return True
         ma.exec0("repo", "init", "-u", u, "-m", m, "-b", b)
         return True
 
     @tbot.testcase
-    def repo_sync(self, ma, check=True) -> bool:
+    def repo_sync(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+        check=True
+    ) -> bool:
         ret = self.repo_exist(ma)
         if check and ret == False:
             return False
@@ -219,7 +259,10 @@ class Yocto:
         return True
 
     @tbot.testcase
-    def repo_config(self, ma) -> str:
+    def repo_config(
+        self,
+        ma: typing.Optional[linux.LinuxMachine],
+    ) -> str:
         if not self.repo_exist(ma):
             return False
         p = self.cd2repo(ma)

@@ -5,7 +5,9 @@ from tbot.machine import linux
 from tbot import log_event
 
 @tbot.testcase
-def get_board_workdir(ma) -> str:
+def get_board_workdir(
+    ma: typing.Optional[linux.LinuxMachine],
+) -> str:
     p2 = ma.workdir / tbot.selectable.Board.name
     if not p2.exists():
         ma.exec0("mkdir", "-p", p2)
@@ -13,12 +15,19 @@ def get_board_workdir(ma) -> str:
 
 
 @tbot.testcase
-def cd_board_workdir(ma) -> None:
+def cd_board_workdir(
+    ma: typing.Optional[linux.LinuxMachine],
+) -> None:
     p = get_board_workdir(ma)
     bh.exec0("cd", p)
 
 # misc
-def recv_timeout(ch, name, endstr, tout) -> typing.Tuple[int, bytes]:
+def recv_timeout(
+    ch,
+    name,
+    endstr,
+    tout
+) -> typing.Tuple[int, bytes]:
     """
     receive on channel ch until tout
 
@@ -60,8 +69,8 @@ def recv_timeout(ch, name, endstr, tout) -> typing.Tuple[int, bytes]:
 # linux testcases
 @tbot.testcase
 def lx_cmd_exists(
-        ma,
-        cmd,
+    ma: typing.Optional[linux.LinuxMachine],
+    cmd,
 ) -> bool:
     ret = ma.exec(linux.Raw(("command -v " + cmd + " >/dev/null 2>&1")))
     if ret[0] == 0:
@@ -70,9 +79,9 @@ def lx_cmd_exists(
 
 @tbot.testcase
 def lx_devmem2_get(
-        ma,
-        addr,
-        typ,
+    ma: typing.Optional[linux.LinuxMachine],
+    addr,
+    typ,
 ) -> str:
     strings = ['Value at address', 'Read at address']
     ret = ma.exec0("devmem2", addr, typ).splitlines()
@@ -85,8 +94,8 @@ def lx_devmem2_get(
 
 @tbot.testcase
 def lx_get_uboot_var(
-        ma,
-        varname,
+    ma: typing.Optional[linux.LinuxMachine],
+    varname,
 ) -> str:
     ret = ma.exec0("fw_printenv", varname)
     print ("===== varname ", varname, ret)
@@ -94,8 +103,8 @@ def lx_get_uboot_var(
 
 @tbot.testcase
 def lx_check_revfile(
-        ma,
-        revfile,
+    ma: typing.Optional[linux.LinuxMachine],
+    revfile,
 ) -> bool:
     # check if devmem exist
     ret = lx_cmd_exists(ma, 'devmem2')
@@ -125,7 +134,7 @@ def lx_check_revfile(
 
 @tbot.testcase
 def lx_create_revfile(
-    ma,
+    ma: typing.Optional[linux.LinuxMachine],
     revfile,
     startaddr,
     endaddr,
@@ -173,7 +182,7 @@ def lx_create_revfile(
 
 @tbot.testcase
 def lx_check_dmesg(
-    ma,
+    ma: typing.Optional[linux.LinuxMachine],
     dmesg_strings,
 ) -> bool:
     """
