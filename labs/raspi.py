@@ -95,55 +95,6 @@ class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
-    name = "pollux"
-    username = "hs"
-    hostname = "pollux.denx.de"
-    serverip = "192.168.1.1"
-    boardip = {}
-    boardip["sanvito"] = "192.168.TODO"
-    boardip["h03pl086"] = "192.168.TODO"
-    boardip["k30rf"] = "192.168.TODO"
-
-    @property
-    def workdir(self) -> "linux.path.Path[PolluxLab]":
-        return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
-
-    @property
-    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
-        return {
-            "generic-armv5te": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/yocto-2.4/generic-armv5te/environment-setup-armv5e-poky-linux-gnueabi",
-                )
-            ),
-            "generic-armv6": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/yocto-2.4/generic-armv6/environment-setup-armv6-vfp-poky-linux-gnueabi",
-                )
-            ),
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/yocto-2.4/generic-armv7a/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
-            ),
-            "generic-armv7a-hf": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/yocto-2.4/generic-armv7a-hf/environment-setup-armv7ahf-neon-poky-linux-gnueabi",
-                )
-            ),
-            "generic-powerpc-e500v2": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/yocto-2.4/generic-powerpc-e500v2/environment-setup-ppce500v2-poky-linux-gnuspe",
-                )
-            ),
-        }
-
 class XmglapSSH(linux.SSHMachine, linux.BuildMachine):
     name = "xmglap-build"
     username = "hs"
