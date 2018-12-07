@@ -59,7 +59,10 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
 
     @property
     def tftp_dir(self) -> "linux.path.Path[PolluxLab]":
-        return linux.Path(self, f"/tftpboot/" + self.get_boardname + "/tbot")
+        if tbot.selectable.Board.name == "taurus":
+            return linux.Path(self, f"/tftpboot/at91_taurus/tbot/")
+        else:
+            return linux.Path(self, f"/tftpboot/" + self.get_boardname + "/tbot")
 
     @property
     def workdir(self) -> "linux.path.Path[PolluxLab]":
