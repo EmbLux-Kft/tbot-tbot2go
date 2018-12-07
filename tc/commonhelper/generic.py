@@ -200,3 +200,25 @@ def lx_check_dmesg(
             ret = False
 
     return ret
+
+@tbot.testcase
+def lx_check_cmd(
+    ma: typing.Optional[linux.LinuxMachine],
+    cmd_dict,
+) -> bool:
+    """
+    check commands in list of dictionaries cmd_dict.
+    for each element in list execute command cmd_dict["cmd"] and
+    if cmd_dict["val"] != "undef" check if cmd_dict["val"]
+    is in command output
+
+    :param machine ma: machine on which commands are executed
+    :param dict cmd_dict: list of dictionary with command and return values.
+    """
+    for c in cmd_dict:
+        cmdret = ma.exec0(linux.Raw(c["cmd"]))
+        if c["val"] != "undef":
+            if c["val"] not in cmdret:
+                raise RuntimeError(f["val"] + " not found in " + ret)
+
+    return True
