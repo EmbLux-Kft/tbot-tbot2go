@@ -1,6 +1,8 @@
 import tbot
 from tbot.machine import channel
 from tbot.machine import board
+from tbot.tc import uboot
+
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -65,3 +67,30 @@ class Tbot2goBoard(board.Board):
             raise RuntimeError("Could not get console for ", self.name)
 
         return ch
+
+class DenxBoard(board.Board):
+    connect_wait = 1.0
+
+    def _get_powername(self) -> str:
+        if 'sanvito' in self.name:
+            return "sanvito-b"
+        else:
+            return self.name
+
+    def poweron(self) -> None:
+        self.lh.exec0("remote_power", self._get_powername(), "on")
+
+    def poweroff(self) -> None:
+        self.lh.exec0("remote_power", self._get_powername(), "off")
+
+    def connect(self) -> channel.Channel:
+        return self.lh.new_channel("connect", self._get_powername())
+
+    def console_check(self) -> None:
+        if "off" not in self.lh.exec0("remote_power", self._get_powername(), "-l"):
+            raise RuntimeError("Board is already on, someone might be using it!")
+
+
+class DenxUBootBuildInfo(uboot.BuildInfo):
+    if tbot.selectable.LabHost.name == "pollux":
+        uboot_remote = "/home/git/u-boot.git"
