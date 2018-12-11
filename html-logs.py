@@ -17,7 +17,7 @@ def do_conf(cfg: typing.Tuple[str, str]) -> None:
     logs = list(pathlib.Path("log").glob(f"{cfg[0]}-{cfg[1]}-*.json"))
     logs.sort()
     log = logs[-1]
-    htmldir = pathlib.Path("html")
+    htmldir = pathlib.Path("results/html")
     htmldir.mkdir(exist_ok=True)
     html_name = htmldir / f"{log.stem}.html"
     print(f"{log} -> {html_name}")
