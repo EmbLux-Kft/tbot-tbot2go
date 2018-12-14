@@ -73,7 +73,10 @@ class DenxBoard(board.Board):
 
     def _get_powername(self) -> str:
         if 'sanvito' in self.name:
-            return "sanvito-b"
+            if "revc" in tbot.flags:
+                return self.name
+            else:
+                return "sanvito-b"
         else:
             return self.name
 
