@@ -113,4 +113,9 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
         raise RuntimeError ("build Machine not specified")
 
 LAB = XpertLab
-FLAGS = {"hercules-build":"Use hercules for build", "pollux-build":"Use pollux as buildhost", "hercules-1604-build":"build on hercules in ubuntu 16.04 container"}
+FLAGS = {
+        "hercules-build":"Use hercules for build",
+        "pollux-build":"Use pollux as buildhost",
+        "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
+        "revc" : "Use rev c board in xpert lab"
+}
