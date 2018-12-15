@@ -84,12 +84,16 @@ class DenxBoard(board.Board):
         self.lh.exec0("remote_power", self._get_powername(), "on")
 
     def poweroff(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         self.lh.exec0("remote_power", self._get_powername(), "off")
 
     def connect(self) -> channel.Channel:
         return self.lh.new_channel("connect", self._get_powername())
 
     def console_check(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         if "off" not in self.lh.exec0("remote_power", self._get_powername(), "-l"):
             raise RuntimeError("Board is already on, someone might be using it!")
 
