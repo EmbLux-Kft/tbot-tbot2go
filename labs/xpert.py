@@ -80,9 +80,13 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     hostname = "xpert.denx.de"
     username = "hs"
 
-    serverip = "192.168.3.1"
+    serverip = "192.168.0.4"
+    netmask = "255.255.128.0"
     boardip = {}
-    boardip["sanvito"] = "192.168.3.22"
+    boardip["sanvito"] = "192.168.1.11"
+    boardip["sanvito-b"] = "192.168.1.12"
+    ethaddr = {}
+    ethaddr["sanvito"] = "1e:a7:65:aa:71:59"
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[XpertLab]":
