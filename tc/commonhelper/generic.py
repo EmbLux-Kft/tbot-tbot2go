@@ -2,6 +2,7 @@ import contextlib
 import typing
 import tbot
 from tbot.machine import linux
+from tbot.machine import board
 from tbot import log_event
 
 @tbot.testcase
@@ -222,3 +223,51 @@ def lx_check_cmd(
                 raise RuntimeError(f["val"] + " not found in " + ret)
 
     return True
+
+# U-Boot
+@tbot.testcase
+def ub_check_i2c_dump(
+    lab: typing.Optional[linux.LabHost],
+    board: typing.Optional[board.Board],
+    uboot: typing.Optional[board.UBootMachine],
+    dev,
+    address,
+    i2c_dump,
+) -> bool:
+    """
+    dev      : i2c dev number
+    address  : i2c addr
+    i2c_dump : list
+    sample_i2c_dump = [
+        "0x00: 11 00 00 21 00 01 3f 01 00 7f 00 00 00 00 00 81",
+        "0x10: 00 00 3f 00 00 00 00 00 00 00 00 10 ad de xx xx",
+    ]
+    before ":" start address, after list of values
+               'xx' ignore
+    """
+    retval = True
+    with lab or tbot.acquire_lab() as lh:
+        with board or tbot.acquire_board(lh) as b:
+            with uboot or tbot.acquire_uboot(b) as ub:
+                ub.exec0("i2c", "dev", dev)
+                for l in i2c_dump:
+                    addr = l.split(":")[0]
+                    values = l.split(":")[1]
+                    values = values.split(" ")
+                    ad = int(addr, 0)
+                    for v in values:
+                        if v == '' or v == 'xx':
+                            continue
+                        adh = format(ad, '02x')
+                        ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
+                        rval = ret.split(":")[1]
+                        rval = rval.split(" ")[1]
+                        if rval != str(v):
+                            msg = f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}"
+                            tbot.log.message(msg)
+                            retval = False
+                        ad += 1
+
+    return retval
+
+
