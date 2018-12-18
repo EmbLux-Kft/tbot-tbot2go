@@ -45,7 +45,6 @@ class Yocto:
     def __init__(self, yoctype, repodirname, cfg):
         self.yocto_type = yoctype
         self.repodirname = repodirname
-        self.repo_path = '/home/hs/bin/repo'
         self.tested = False
         self.cfg = cfg
 
@@ -153,8 +152,11 @@ class Yocto:
             raise RuntimeError("not configured for " + self.yocto_type)
 
         if self.tested == False:
-            ma.exec0(linux.Raw("export PATH=$PATH:" + self.repo_path))
-            ma.exec0(linux.Raw("printenv PATH"))
+            try:
+                ma.exec0(linux.Raw("export PATH=$PATH:" + ma.repo_path))
+                ma.exec0(linux.Raw("printenv PATH"))
+            except:
+                pass
             self.tested = True
 
         p = self.cd_yocto_workdir(ma)
