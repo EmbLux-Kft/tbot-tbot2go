@@ -121,6 +121,33 @@ class XmglapSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
+class ThreadripperSSH(linux.SSHMachine, linux.BuildMachine):
+    name = "threadripper-build"
+    username = "hs"
+    hostname = "192.168.1.120"
+
+    @property
+    def workdir(self) -> "linux.Path[XmglapBuild]":
+        return linux.Workdir.static(self, f"/work/{self.username}/tbot2go")
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath("/home") / "pi" / ".ssh" / "id_rsa"
+    )
+
+    @property
+    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
+        return {
+            "generic-armv7a": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                )
+            ),
+        }
+
+
 class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     name = "tbot2go"
     hostname = "192.168.1.110"
@@ -157,8 +184,15 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
             return HerculesSSH(self)
         elif "hercules-1604-build" in tbot.flags:
             return Hercules1604SSH(self)
+        elif "threadripper-build" in tbot.flags:
+            return ThreadripperSSH(self)
         else:
             return XmglapSSH(self)
 
 LAB = Tbot2goLab
-FLAGS = {"local-build": "Use Xmglab as buildhost", "hercules-build":"Use hercules for build", "pollux-build":"Use pollux as buildhost", "hercules-1604-build":"build on hercules in ubuntu 16.04 container"}
+FLAGS = {"local-build": "Use Xmglab as buildhost",
+        "hercules-build":"Use hercules for build",
+        "pollux-build":"Use pollux as buildhost",
+        "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
+        "threadripper-build":"build on threadripper",
+        }
