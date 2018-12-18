@@ -99,6 +99,7 @@ class XmglapSSH(linux.SSHMachine, linux.BuildMachine):
     name = "xmglap-build"
     username = "hs"
     hostname = "192.168.1.106"
+    repo_path = "/home/hs/bin/repo"
 
     @property
     def workdir(self) -> "linux.Path[XmglapBuild]":
