@@ -126,6 +126,8 @@ class ThreadripperSSH(linux.SSHMachine, linux.BuildMachine):
     name = "threadripper-build"
     username = "hs"
     hostname = "192.168.1.120"
+    dl_dir = "/work/downloads"
+    sstate_dir = f"/work/{username}/tbot2go/yocto-sstate"
 
     @property
     def workdir(self) -> "linux.Path[XmglapBuild]":
