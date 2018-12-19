@@ -159,7 +159,7 @@ class Yocto:
                 pass
             self.tested = True
 
-        p = self.cd_yocto_workdir(ma)
+        p = self.get_yocto_workdir(ma)
         p = p / ".repo"
         if p.exists():
             return True
@@ -255,6 +255,7 @@ class Yocto:
         check=True
     ) -> bool:
         ret = self.repo_exist(ma)
+        self.cd_yocto_workdir(ma)
         if check and ret == False:
             return False
         ma.exec0("repo", "sync")
