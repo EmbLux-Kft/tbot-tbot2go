@@ -102,11 +102,29 @@ class Yocto:
                         else:
                             bh.exec0("git", "clone", self.cfg["priv_layer"])
 
-                if self.repo_config(bh) == False:
+                p = self.cd2repo(bh)
+                bd = self.repo_get_builddir_name(bh)
+                p2 = p / bd
+                if p2.exists() == False:
                     bd = self.repo_get_builddir_name(bh)
                     bh.exec0(self.cfg["templateconf"], "source", "oe-init-build-env", bd)
                     if self.cfg["autosamplepath"] != None:
                         bh.exec0("cp", p / self.cfg["autosamplepath"] / "auto.conf.sample", "conf/auto.conf")
+                        # set DL_DIR specific for build host
+                        try:
+                            if bh.dl_dir:
+                                ge.lx_replace_in_file(bh, "conf/auto.conf", "DL_DIR", 'DL_DIR="' + bh.dl_dir + '"')
+                        except:
+                            pass
+                        # set SSTATE_DIR specific for build host
+                        try:
+                            if bh.sstate_dir:
+                                ge.lx_replace_in_file(bh, "conf/auto.conf", "SSTATE_DIR", 'SSTATE_DIR="' + bh.sstate_dir + '/' + tbot.selectable.Board.name + '"')
+                        except:
+                            pass
+                else:
+                    bd = self.repo_get_builddir_name(bh)
+                    bh.exec0("source", "oe-init-build-env", bd)
 
     @tbot.testcase
     def yo_repo_build(
