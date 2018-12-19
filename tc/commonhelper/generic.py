@@ -69,6 +69,31 @@ def recv_timeout(
 
 # linux testcases
 @tbot.testcase
+def lx_replace_in_file(
+    ma: typing.Optional[linux.LinuxMachine],
+    filename,
+    searchstring,
+    newvalue,
+) -> bool:
+    """
+    replace a line in filename which contains searchstring
+    with line in newvalue
+
+    :param machine ma: machine on which commands are executed
+    :param filename str: filename of file on which testcase runs
+    :param searchstring str: line which contain this string gets deleted
+    :param newvalue str: newline which get added to the end of file
+    """
+    cmd = "sed -i '/" + searchstring + "/d' " + filename
+    ma.exec0(linux.Raw(cmd))
+    ma.exec0("cat", filename)
+    cmd = "echo '" + newvalue + "' >> " + filename
+    ma.exec0(linux.Raw(cmd))
+    ma.exec0("cat", filename)
+    return True
+
+
+@tbot.testcase
 def lx_cmd_exists(
     ma: typing.Optional[linux.LinuxMachine],
     cmd,
