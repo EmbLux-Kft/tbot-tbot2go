@@ -129,7 +129,7 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[XpertLab]":
-        return linux.Path(self, f"/srv/tftpboot/" + tbot.selectable.Board.name + "/tbot/yocto_results")
+        return linux.Path(self, f"/tftpboot/" + tbot.selectable.Board.name + "/yocto_results")
 
     @property
     def workdir(self) -> "linux.path.Path[XpertLab]":
