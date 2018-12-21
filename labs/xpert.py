@@ -117,5 +117,6 @@ FLAGS = {
         "hercules-build":"Use hercules for build",
         "pollux-build":"Use pollux as buildhost",
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
-        "revc" : "Use rev c board in xpert lab"
+        "revc" : "Use rev c board in xpert lab",
+        "nopoweroff" : "Do not power off board at the end",
 }
