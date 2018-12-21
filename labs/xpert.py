@@ -75,6 +75,45 @@ class HerculesSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
+class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
+    name = "threadripper-1604-build"
+    username = "hs"
+    hostname = "192.168.1.120"
+    port = 11604
+    dl_dir = "/work/downloads"
+    sstate_dir = f"/work/{username}/tbot2go/yocto-sstate"
+
+    @property
+    def ssh_config(self) -> typing.List[str]:
+        """
+        if ProxyJump does not work, execute this command from hand
+        on the lab PC with BatchMode=no" -> answer allwith "yes"
+        If again password question pops up, copy id_rsa.pub from
+        lab PC to authorized_keys on build PC
+        """
+        return [f"ProxyJump=pi@xeidos.ddns.net,{self.username}@192.168.1.120"]
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath("/home") / "hs" / ".ssh" / "id_rsa"
+    )
+
+    @property
+    def workdir(self) -> "linux.Path[XmglapBuild]":
+        return linux.Workdir.static(self, f"/work/{self.username}/tbot2go")
+
+    @property
+    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
+        return {
+            "generic-armv7a": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                )
+            ),
+        }
+
 class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     name = "xpert"
     hostname = "xpert.denx.de"
@@ -114,6 +153,8 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
             return HerculesSSH(self)
         elif "hercules-1604-build" in tbot.flags:
             return Hercules1604SSH(self)
+        elif "threadripper-1604-build" in tbot.flags:
+            return Threadripper1604SSH(self)
         raise RuntimeError ("build Machine not specified")
 
 LAB = XpertLab
@@ -121,6 +162,7 @@ FLAGS = {
         "hercules-build":"Use hercules for build",
         "pollux-build":"Use pollux as buildhost",
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
+        "threadripper-1604-build":"build on threadripper in ubuntu 16.04 container",
         "revc" : "Use rev c board in xpert lab",
         "nopoweroff" : "Do not power off board at the end",
 }
