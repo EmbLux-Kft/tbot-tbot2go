@@ -227,10 +227,12 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
             return XmglapSSH(self)
 
 LAB = Tbot2goLab
-FLAGS = {"local-build": "Use Xmglab as buildhost",
+FLAGS = {
+        "local-build": "Use Xmglab as buildhost",
         "hercules-build":"Use hercules for build",
         "pollux-build":"Use pollux as buildhost",
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
         "threadripper-build":"build on threadripper",
         "threadripper-1604-build":"build on threadripper in ubuntu 16.04 container",
+        "16mb" : "16 mb version of k30rf board",
         }
