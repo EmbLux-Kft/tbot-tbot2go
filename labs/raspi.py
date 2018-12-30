@@ -235,4 +235,5 @@ FLAGS = {
         "threadripper-build":"build on threadripper",
         "threadripper-1604-build":"build on threadripper in ubuntu 16.04 container",
         "16mb" : "16 mb version of k30rf board",
+        "nopoweroff" : "Do not power off board at the end",
         }
