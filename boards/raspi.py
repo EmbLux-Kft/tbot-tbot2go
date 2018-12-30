@@ -25,22 +25,34 @@ class Tbot2goBoard(board.Board):
         boardlabname = "k30rf-16mb"
 
     def poweron(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
         elif self.name == 'h03pl086':
             self.lh.exec0("power.py", "-p", "14", "-s", "on")
+        elif self.name == 'piinstall':
+            pass
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
     def poweroff(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "off")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
         elif self.name == 'h03pl086':
             self.lh.exec0("power.py", "-p", "14", "-s", "off")
+        elif self.name == 'piinstall':
+            pass
         else:
             raise RuntimeError("Board ", self.name, " not configured")
+
+    def console_check(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
 
     def connect(self) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
