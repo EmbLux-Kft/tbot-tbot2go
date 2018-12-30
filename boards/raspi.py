@@ -54,6 +54,10 @@ class Tbot2goBoard(board.Board):
         if "nopoweroff" in tbot.flags:
             return
 
+    def ssh_connect(self) -> channel.Channel:
+        ch = self.lh.new_channel("ssh", "hs@" + tbot.selectable.LabHost.boardip[self.name])
+        return ch
+
     def kermit_connect(self) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
@@ -81,4 +85,7 @@ class Tbot2goBoard(board.Board):
         return ch
 
     def connect(self) -> channel.Channel:
-        return self.kermit_connect()
+        if self.name == 'piinstall':
+            return self.ssh_connect()
+        else:
+            return self.kermit_connect()
