@@ -54,7 +54,7 @@ class Tbot2goBoard(board.Board):
         if "nopoweroff" in tbot.flags:
             return
 
-    def connect(self) -> channel.Channel:
+    def kermit_connect(self) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
             cfg_file = "/home/pi/kermrc_" + self.boardlabname
@@ -80,36 +80,5 @@ class Tbot2goBoard(board.Board):
 
         return ch
 
-class DenxBoard(board.Board):
-    connect_wait = 1.0
-
-    def _get_powername(self) -> str:
-        if 'sanvito' in self.name:
-            if "revc" in tbot.flags:
-                return self.name
-            else:
-                return "sanvito-b"
-        else:
-            return self.name
-
-    def poweron(self) -> None:
-        self.lh.exec0("remote_power", self._get_powername(), "on")
-
-    def poweroff(self) -> None:
-        if "nopoweroff" in tbot.flags:
-            return
-        self.lh.exec0("remote_power", self._get_powername(), "off")
-
     def connect(self) -> channel.Channel:
-        return self.lh.new_channel("connect", self._get_powername())
-
-    def console_check(self) -> None:
-        if "nopoweroff" in tbot.flags:
-            return
-        if "off" not in self.lh.exec0("remote_power", self._get_powername(), "-l"):
-            raise RuntimeError("Board is already on, someone might be using it!")
-
-
-class DenxUBootBuildInfo(uboot.BuildInfo):
-    if tbot.selectable.LabHost.name == "pollux":
-        uboot_remote = "/home/git/u-boot.git"
+        return self.kermit_connect()
