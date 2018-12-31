@@ -2,6 +2,7 @@
 import typing
 import pathlib
 import subprocess
+import os
 
 CONFS = [
     ("pollux", "bbb"),
@@ -28,7 +29,9 @@ def do_conf(cfg: typing.Tuple[str, str]) -> None:
     with open(html_name, mode="w") as f:
         f.write(html)
 
-
+    # use private script
+    cmd = "sed -i 's/<script src=\"http:\/\/code.jquery.com\/jquery.min.js\"><\/script>/<script src=\"myscript.js\"><\/script>/' " + str(html_name)
+    os.system(cmd)
 def main() -> None:
     for conf in CONFS:
         do_conf(conf)
