@@ -74,6 +74,8 @@ def lx_replace_in_file(
     filename,
     searchstring,
     newvalue,
+    use_sudo = False,
+    dumpfile = True,
 ) -> bool:
     """
     replace a line in filename which contains searchstring
@@ -83,13 +85,23 @@ def lx_replace_in_file(
     :param filename str: filename of file on which testcase runs
     :param searchstring str: line which contain this string gets deleted
     :param newvalue str: newline which get added to the end of file
+    :param use_sudo bool: use sudo default False
+    :param dumpfile bool: dump file with cat before and after replace string default True
     """
-    cmd = "sed -i '/" + searchstring + "/d' " + filename
+    pre = ""
+    if use_sudo:
+        pre = "sudo "
+
+    dump = pre + "cat " + filename
+    if dumpfile:
+        ma.exec0(linux.Raw(dump))
+
+    cmd = pre + "sed -i 's/" + searchstring + "/" + newvalue + "/' " + filename
     ma.exec0(linux.Raw(cmd))
-    ma.exec0("cat", filename)
-    cmd = "echo '" + newvalue + "' >> " + filename
-    ma.exec0(linux.Raw(cmd))
-    ma.exec0("cat", filename)
+
+    if dumpfile:
+        ma.exec0(linux.Raw(dump))
+
     return True
 
 
