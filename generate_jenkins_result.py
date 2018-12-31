@@ -29,7 +29,7 @@ result = str(res.stdout.decode('utf-8'))
 fn = result.split("->")
 fn = fn[1].strip()
 res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", fn.replace("txt", "jpg"), jenkins_workspace_tbot + "/graph.jpg"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", fn.replace(".dot", ".jpg"), jenkins_workspace_tbot + "/graph.jpg"], stdout=subprocess.PIPE)
 
 # generate html logs
 res = subprocess.run(["./html-logs.py"], stdout=subprocess.PIPE)
