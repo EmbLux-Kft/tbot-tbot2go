@@ -16,7 +16,7 @@ def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     dotdir = pathlib.Path("results/dot")
     dotdir.mkdir(exist_ok=True)
     dot_name = dotdir / f"{log.stem}.dot"
-    png_name = dotdir / f"{log.stem}.png"
+    png_name = dotdir / f"{log.stem}.jpg"
     title = f"{log.stem}"
     print(f"{log} -> {dot_name}")
     handle = subprocess.Popen(
@@ -26,7 +26,7 @@ def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     with open(dot_name, mode="w") as f:
         f.write(stats)
 
-    cmd = "dot -Tpng " + str(dot_name) + " > "  + str(png_name)
+    cmd = "dot -Tjpg " + str(dot_name) + " > "  + str(png_name)
     os.system(cmd)
 
 def main() -> None:
