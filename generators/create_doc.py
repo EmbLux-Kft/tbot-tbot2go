@@ -58,23 +58,30 @@ def main() -> None:
     def tbot_write_cmd(ev, cmd_written):
         #print (" === cmd ", ev.data["cmd"])
         #print (" === typ ", ev.type)
+        res = ''
         if cmd_written == 0:
-            print("\n::\n")
+            res += "\n::\n\n"
         else:
             pass
 
-        print("\t$ " + ev.data["cmd"])
+        res += "\t$ " + ev.data["cmd"] + "\n"
         # now stdout output
         # remove ANSI escape sequences
         reasc = re.compile(r'\x1b[^m]*m')
         fix = reasc.sub('', ev.data["stdout"])
         line = "\t" + fix.replace("\n", "\n\t")
-        print(line)
+        res += line[:-1]
 
         cmd_written = cmd_written + 1
-        return cmd_written
+        return cmd_written, res
 
-    def replace_tbot_tags(content):
+    def is_tag_in_list(tags, tagid):
+        for t in tags:
+            if tagid in t["tagid"]:
+                return True
+        return False
+
+    def replace_tbot_tags(content, tags):
         # TODO
         # while TBOT is running create TBOT_ tags
         # for example TBOT_BOARD_NAME
@@ -83,7 +90,8 @@ def main() -> None:
         #
         # also find possibility for making chapters generic
         #
-        content = content.replace('TBOT_BOARD_NAME', 'testboard')
+        for t in tags:
+            content = content.replace(t["tagid"], t["tagval"])
         # fix following underlines length
         # or fix underlines when found
         return content
@@ -91,47 +99,65 @@ def main() -> None:
     def write_file(ev, ending):
         fn = ev.data["docid"] + ending
         #print (" open file ", rstpath / fn)
+        res = ''
         with open(rstpath / fn, mode="r") as f:
-            content = f.read()
-            content = replace_tbot_tags(content)
-            print (content)
+            res = f.read()
+        return res
 
-    def call_analyse(log, level):
+    def call_analyse(log, level, tags):
         #print(" ====== level ===== ", level)
         cmd_written = 0
+        res = ''
         for ev in log:
             #print (" ===== ev ", ev)
             if ev.type == ["doc", "begin"]:
-                write_file(ev, "_begin.rst")
-                call_analyse(log, level + 1)
+                res += write_file(ev, "_begin.rst")
+                tags, ret, retlev = call_analyse(log, level + 1, tags)
+                #print(" ====== tags ", tags)
+                #print(" ==== ret ", ret)
+                res += ret
                 cmd_written = 0
 
             elif ev.type == ["doc", "end"]:
                 # end
                 # load content of rst end file and print
                 #print (" ==== end ", ev.data["docid"])
-                write_file(ev, "_end.rst")
-                return level - 1
+                res += write_file(ev, "_end.rst")
+                return tags, res, level - 1
 
             elif ev.type == ["doc", "cmd"]:
                 # load content of rst end file and print
                 #print (" ==== end ", ev.data["docid"])
-                write_file(ev, "_cmd.rst")
+                res += write_file(ev, "_cmd.rst")
                 cmd_written = 0
+
+            elif ev.type == ["doc", "tag"]:
+                # add tag into tag list
+                tagid = ev.data["tagid"]
+                tagval = ev.data["tagval"]
+                #if not tagid in tags:
+                ret = is_tag_in_list(tags, tagid)
+                if ret == False:
+                    tags.append(ev.data)
 
             elif level > 0:
                 # only add cmd output, if one docid is active
                 #print (" ============================== ", ev.type)
                 if "cmd" in ev.type:
-                    cmd_written = tbot_write_cmd(ev, cmd_written)
+                    cmd_written, ret = tbot_write_cmd(ev, cmd_written)
+                    res += ret
 
-        return
+        return tags, res, level
 
     #print("filename ", filename)
     #print("rstpath ", rstpath)
 
-    call_analyse(log, 0)
+    tags = []
+    tags, content, retlev = call_analyse(log, 0, tags)
+    if len(tags) != 0:
+        content = replace_tbot_tags(content, tags)
 
+    print (content)
     print("\n")
 
 if __name__ == "__main__":
