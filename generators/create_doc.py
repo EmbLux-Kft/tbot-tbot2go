@@ -113,6 +113,12 @@ def main() -> None:
                 write_file(ev, "_end.rst")
                 return level - 1
 
+            elif ev.type == ["doc", "cmd"]:
+                # load content of rst end file and print
+                #print (" ==== end ", ev.data["docid"])
+                write_file(ev, "_cmd.rst")
+                cmd_written = 0
+
             elif level > 0:
                 # only add cmd output, if one docid is active
                 #print (" ============================== ", ev.type)
