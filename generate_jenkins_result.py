@@ -46,3 +46,11 @@ fn = result.split("->")
 fn = fn[1].strip()
 res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
 res = subprocess.run(["cp", fn.replace("txt", "jpg"), jenkins_workspace_tbot + "/statistic.jpg"], stdout=subprocess.PIPE)
+
+# generate html
+res = subprocess.run(["./create_doc-logs.py"], stdout=subprocess.PIPE)
+result = str(res.stdout.decode('utf-8'))
+fn = result.split("->")
+fn = fn[1].strip()
+res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", fn.replace("rst", "pdf"), jenkins_workspace_tbot + "/index.pdf"], stdout=subprocess.PIPE)
