@@ -5,7 +5,7 @@ import subprocess
 import os
 
 CONFS = [
-    ("raspi", "k30rf", "/home/hs/data/Entwicklung/newtbot/gen_doc"),
+    ("raspi", "piinstall", "./generators/create_doc_test"),
 ]
 
 def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
