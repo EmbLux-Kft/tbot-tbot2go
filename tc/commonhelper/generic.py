@@ -41,6 +41,13 @@ def set_toolchain(
 
     https://toolchains.bootlin.com/downloads/releases/toolchains/
 
+    !! Bootlin toolchain does not work for U-Boot as there are
+       problems with relocate-sdk.sh script !!
+
+    Also, this part is integrated into tbot now:
+    tbot/machine/linux/build/toolchain.py
+    search for EnvSetBootlinToolchain
+
     :param LinuxMachine: Linux machine:
     :param str arch: architecture, default "armv7-eabihf"
     :param str libc: used libc. default "glibc"
@@ -66,6 +73,8 @@ def set_toolchain(
         tbot.log.message(msg)
         ma.exec0("wget", "https://toolchains.bootlin.com/downloads/releases/toolchains/" + fn2 + ending)
         ma.exec0("tar", "xfj", fn + ending)
+        ma.exec0("cd", fn)
+        ma.exec0("./relocate-sdk.sh")
         log_event.doc_end("set_toolchain_install")
     ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
     if ret[0] == 1:
