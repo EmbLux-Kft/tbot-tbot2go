@@ -91,7 +91,15 @@ def main() -> None:
         # also find possibility for making chapters generic
         #
         for t in tags:
-            content = content.replace(t["tagid"], t["tagval"])
+            old = t["tagid"]
+            new = t["tagval"]
+            if "fixlen" in old:
+                if len(new) < len(old):
+                    c = len(old) - len(new)
+                    addstring = " " * c
+                    new = new + addstring
+
+            content = content.replace(old, new)
         # fix following underlines length
         # or fix underlines when found
         return content
