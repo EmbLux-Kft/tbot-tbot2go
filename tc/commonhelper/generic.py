@@ -14,6 +14,68 @@ def get_board_workdir(
         ma.exec0("mkdir", "-p", p2)
     return p2
 
+@tbot.testcase
+def get_toolchain_dir(
+    ma: typing.Optional[linux.LinuxMachine],
+) -> str:
+    """
+    return path where toolchains are installed.
+
+    :param LinuxMachine: Linux machine
+    """
+    p2 = ma.workdir / "toolchain"
+    if not p2.exists():
+        ma.exec0("mkdir", "-p", p2)
+    return p2
+
+@tbot.testcase
+def set_toolchain(
+    ma: typing.Optional[linux.LabHost],
+    arch = "armv7-eabihf",
+    libc = "glibc",
+    typ = "stable",
+    date = "2018.11-1",
+) -> None:
+    """
+    download and set a toolchain from:
+
+    https://toolchains.bootlin.com/downloads/releases/toolchains/
+
+    :param LinuxMachine: Linux machine:
+    :param str arch: architecture, default "armv7-eabihf"
+    :param str libc: used libc. default "glibc"
+    :param str typ: "stable" or "bleeding-edge", defaule "stable"
+    :param str date: "2018.11-1"
+    """
+    log_event.doc_begin("set_toolchain_check_installed")
+    td = get_toolchain_dir(ma)
+    ma.exec0("cd", td)
+    fn = arch + "--" + libc + "--" + typ + "-" + date
+    fn2 = arch + "/tarballs/" + fn
+    ending = ".tar.bz2"
+    tooldir = td / fn / "bin"
+    ret = ma.exec("test", "-d", tooldir)
+    log_event.doc_end("set_toolchain_check_installed")
+    if ret[0] == 1:
+        log_event.doc_begin("set_toolchain_install")
+        msg = "Get toolchain " + fn
+        tbot.log.message(msg)
+        ma.exec0("wget", "https://toolchains.bootlin.com/downloads/releases/toolchains/" + fn2 + ending)
+        ma.exec0("tar", "xfvj", fn + ending)
+        log_event.doc_end("set_toolchain_install")
+    ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
+    if ret[0] == 1:
+        log_event.doc_begin("set_toolchain_add")
+        msg = "Add toolchain to PATH", str(tooldir).split(":")[1]
+        tbot.log.message(msg)
+        ma.exec0(linux.Raw("export PATH=" + str(tooldir).split(":")[1] + ":$PATH"))
+        log_event.doc_end("set_toolchain_add")
+    ma.exec0("printenv", "PATH")
+    if "arm" in arch:
+        log_event.doc_begin("set_toolchain_set_shell_vars")
+        ma.exec0("export", "ARCH=arm" )
+        ma.exec0("CROSS_COMPILE=arm-linux-")
+        log_event.doc_end("set_toolchain_set_shell_vars")
 
 @tbot.testcase
 def cd_board_workdir(
