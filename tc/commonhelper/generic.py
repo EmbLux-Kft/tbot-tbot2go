@@ -47,6 +47,10 @@ def set_toolchain(
     :param str typ: "stable" or "bleeding-edge", defaule "stable"
     :param str date: "2018.11-1"
     """
+    log_event.doc_tag("set_bootlin_toolchain_arch_fixlen", arch)
+    log_event.doc_tag("set_bootlin_toolchain_libc_fixlen", libc)
+    log_event.doc_tag("set_bootlin_toolchain_typ_fixlen", typ)
+    log_event.doc_tag("set_bootlin_toolchain_date_fixlen", date)
     log_event.doc_begin("set_toolchain_check_installed")
     td = get_toolchain_dir(ma)
     ma.exec0("cd", td)
@@ -61,7 +65,7 @@ def set_toolchain(
         msg = "Get toolchain " + fn
         tbot.log.message(msg)
         ma.exec0("wget", "https://toolchains.bootlin.com/downloads/releases/toolchains/" + fn2 + ending)
-        ma.exec0("tar", "xfvj", fn + ending)
+        ma.exec0("tar", "xfj", fn + ending)
         log_event.doc_end("set_toolchain_install")
     ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
     if ret[0] == 1:
