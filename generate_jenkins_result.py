@@ -19,7 +19,17 @@ fn = fn[1].strip()
 res = subprocess.run(["cp", fn, jenkins_workspace + "/tbot_results.xml"], stdout=subprocess.PIPE)
 
 # setup subdir for tbot results
-classname = "00 - piinstall_install_tools.00000 - piinstall_install_tools"
+classname = ""
+with open(jenkins_workspace + "/tbot_results.xml", "r") as f:
+    for line in f:
+        if "classname=" in line:
+            line = line.split('"')
+            classname = line[1]
+
+if classname == "":
+    print("Could not detect classname")
+    sys.exit(-1)
+
 jenkins_workspace_tbot = jenkins_workspace + "/" + classname
 res = subprocess.run(["mkdir", jenkins_workspace_tbot], stdout=subprocess.PIPE)
 
