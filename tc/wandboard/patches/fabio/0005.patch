@@ -1,0 +1,177 @@
+From patchwork Fri Apr 17 12:27:13 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
+X-Patchwork-Id: 1272210
+X-Patchwork-Delegate: sbabic@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=kEVeM9Yu; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 493b890NQDz9sR4
+ for <incoming@patchwork.ozlabs.org>; Fri, 17 Apr 2020 22:32:24 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id E930381C7B;
+ Fri, 17 Apr 2020 14:32:21 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="kEVeM9Yu";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 400F381C86; Fri, 17 Apr 2020 14:31:14 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com
+ [IPv6:2607:f8b0:4864:20::842])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 50F0281C75
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 14:27:00 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=festevam@gmail.com
+Received: by mail-qt1-x842.google.com with SMTP id x2so1760430qtr.0
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 05:26:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=3HF8cr/rao8oJ0zsntZOqYzXFkwf96B2yY/ZChxh8hA=;
+ b=kEVeM9YuxkHXOYNnLm22Y1/PbZEbJpVp0PJRWfukGF9cB+fJnoJ0lrMIda6NqW+KKZ
+ 7cnrjIJVguVd7jK+KFcRSBWHZdJmhBEmlfXCRumotwiEYwtIoHE94irEk4J1yFw4Fod6
+ tA5W0Khd6vuIL5dLCtwWSZtzqyw3zMLpnHuWL4ll+w5A543DizEQJggV+Q/F5uiqBJGl
+ uHu0/E9lyiVKWkxc80kJOOpdgcqyAlgRR8yRkuEvFwhMztryRke8/HNO4EHCRSO+W5lx
+ aAnYVxDiawemHtGVvghRtOttFrnH7GXhczvJLb1vRbECpcCiP/xM6FAuUZpsH3uoHZ/l
+ m6xg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=3HF8cr/rao8oJ0zsntZOqYzXFkwf96B2yY/ZChxh8hA=;
+ b=s5nOddnzLsGO7SSn8th5L74ICAM/6VKR0WmglzEpYSfowFNhdbmtbnpOEaQfb+zN0J
+ VUglrv+nhkmDyLYSEozQRlNh60fIuY7XoFzITSnZZ0FKrOOvCtNEOOJGvrul5T54h3Hs
+ jgD/rE2q2ubuYvIGjtASW7JEWfz+z2dT25pmTDau2nB9+1OrIRrbEEka0gLdLmZl7Nks
+ TvynVt0hofekTXmVW8FOVyKH1hYJ3tcugQX+MblNjznwSZynLUXintKHKmCNaDf6OQcZ
+ MIg0D/9vy0D6Ir/fTbXw3aPzNkFfrBMscumNzJ6uBPLvnBZ50FKizjzk6vVoGh4yfmbO
+ DKuw==
+X-Gm-Message-State: AGi0Pub/h3ZQNjRAI0yUHZOfEKgWLEDhrJ3MPyc93lhoBoOp69JXLp59
+ LA2iPoHLknyPq5kBhiSsPI3BXP5V
+X-Google-Smtp-Source: APiQypIfbXHKlg1oFI7xhEx2yvP2YtoKjBXDsnznfvcPu/KZHdKYikE4kDiOsmEZWdz3IHLDCcNfMw==
+X-Received: by 2002:aed:2625:: with SMTP id z34mr2664135qtc.70.1587126409337; 
+ Fri, 17 Apr 2020 05:26:49 -0700 (PDT)
+Received: from localhost.localdomain ([2804:14c:482:271:a8cc:37bd:62f6:da03])
+ by smtp.gmail.com with ESMTPSA id
+ m66sm16997985qkf.42.2020.04.17.05.26.47
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 17 Apr 2020 05:26:48 -0700 (PDT)
+From: Fabio Estevam <festevam@gmail.com>
+To: sbabic@denx.de
+Cc: hs@denx.de, derek@ihtfp.com, u-boot@lists.denx.de,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH v2 5/5] wandboard: Print the board version in board_late_init()
+Date: Fri, 17 Apr 2020 09:27:13 -0300
+Message-Id: <20200417122713.30574-5-festevam@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200417122713.30574-1-festevam@gmail.com>
+References: <20200417122713.30574-1-festevam@gmail.com>
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Since CONFIG_DISPLAY_BOARDINFO_LATE is no longer used,  the checkboard()
+function is no longer called.
+
+As it is useful to print the board revision, print it inside
+board_late_init() instead.
+
+Also, to avoid GPIO errors related to using a GPIO without requesting it,
+move the gpio_request(REV_DETECTION, "REV_DETECT") call prior to its
+usage. 
+
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+---
+Changes since v1:
+- Still print the board revision, but on a different location now.
+
+ board/wandboard/wandboard.c | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/board/wandboard/wandboard.c b/board/wandboard/wandboard.c
+index 7fd60682a5..fb2f3c1fd2 100644
+--- a/board/wandboard/wandboard.c
++++ b/board/wandboard/wandboard.c
+@@ -404,6 +404,7 @@ static const struct boot_mode board_boot_modes[] = {
+ static bool is_revc1(void)
+ {
+ 	SETUP_IOMUX_PADS(rev_detection_pad);
++	gpio_request(REV_DETECTION, "REV_DETECT");
+ 	gpio_direction_input(REV_DETECTION);
+ 
+ 	if (gpio_get_value(REV_DETECTION))
+@@ -442,6 +443,14 @@ int board_late_init(void)
+ 		env_set("board_name", "B1");
+ #endif
+ 	setup_iomux_enet();
++
++	if (is_revd1())
++		puts("Board: Wandboard rev D1\n");
++	else if (is_revc1())
++		puts("Board: Wandboard rev C1\n");
++	else
++		puts("Board: Wandboard rev B1\n");
++
+ 	return 0;
+ }
+ 
+@@ -466,20 +475,6 @@ int board_init(void)
+ 	return 0;
+ }
+ 
+-int checkboard(void)
+-{
+-	gpio_request(REV_DETECTION, "REV_DETECT");
+-
+-	if (is_revd1())
+-		puts("Board: Wandboard rev D1\n");
+-	else if (is_revc1())
+-		puts("Board: Wandboard rev C1\n");
+-	else
+-		puts("Board: Wandboard rev B1\n");
+-
+-	return 0;
+-}
+-
+ #ifdef CONFIG_SPL_LOAD_FIT
+ int board_fit_config_name_match(const char *name)
+ {

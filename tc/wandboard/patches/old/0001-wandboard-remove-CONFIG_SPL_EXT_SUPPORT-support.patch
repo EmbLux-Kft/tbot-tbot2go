@@ -1,0 +1,27 @@
+From 70282be8c9e6e5408b338c6e36a58f88f1552115 Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Sat, 12 Jan 2019 12:29:33 +0100
+Subject: [PATCH] wandboard: remove CONFIG_SPL_EXT_SUPPORT support
+
+as SPL is too big, remove CONFIG_SPL_EXT_SUPPORT
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+ configs/wandboard_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/configs/wandboard_defconfig b/configs/wandboard_defconfig
+index adcaf93b29..2598209e10 100644
+--- a/configs/wandboard_defconfig
++++ b/configs/wandboard_defconfig
+@@ -20,7 +20,6 @@ CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+ CONFIG_BOARD_EARLY_INIT_F=y
+-CONFIG_SPL_EXT_SUPPORT=y
+ CONFIG_SPL_I2C_SUPPORT=y
+ CONFIG_SPL_WATCHDOG_SUPPORT=y
+ # CONFIG_CMD_FLASH is not set
+-- 
+2.17.2
+
