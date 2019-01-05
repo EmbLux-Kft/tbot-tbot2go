@@ -6,6 +6,13 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir + '/tc/commonhelper')
 import generic as ge
 
+class Tbot2goUBootBuildInfo(uboot.BuildInfo):
+    print(" ===== tbot.selectable.LabHost.name ", tbot.selectable.LabHost.name)
+    if tbot.selectable.LabHost.name == "pollux":
+        uboot_remote = "/home/git/u-boot.git"
+    elif tbot.selectable.LabHost.name == "tbot2go":
+        uboot_remote = "/home/hs/data/Entwicklung/work/hs/tbot2go/sources/u-boot"
+
 class Tbot2goBoard(board.Board):
     connect_wait = 1.0
 
