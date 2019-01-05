@@ -6,7 +6,7 @@ import os
 import sys, getopt
 
 CONFS = [
-    ("raspi", "bbb"),
+    ("pollux", "wandboard"),
 ]
 
 def do_conf(cfg: typing.Tuple[str, str, str], tbotpath) -> None:
