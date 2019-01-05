@@ -1,0 +1,32 @@
+From 5445c6411232da60dcede0ab591cc9041208aa5f Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Sat, 12 Jan 2019 09:04:09 +0100
+Subject: [PATCH] tests/test_env.py: fix
+ test_env_import_whitelist_checksum_no_size()
+
+output on wandboard:
+
+-    assert(response == '## Error: external checksum format must pass size')
++    assert(response == '## Error: bad CRC, import failed')
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+ test/py/tests/test_env.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/test/py/tests/test_env.py b/test/py/tests/test_env.py
+index 9bdaef9373..862bedc5a9 100644
+--- a/test/py/tests/test_env.py
++++ b/test/py/tests/test_env.py
+@@ -265,7 +265,7 @@ def test_env_import_whitelist_checksum_no_size(state_test_env):
+ 
+     with c.disable_check('error_notification'):
+         response = c.run_command('env import -c %s - foo1 foo2 foo4' % addr)
+-    assert(response == '## Error: external checksum format must pass size')
++    assert(response == '## Error: bad CRC, import failed')
+ 
+ @pytest.mark.buildconfigspec('cmd_exportenv')
+ @pytest.mark.buildconfigspec('cmd_importenv')
+-- 
+2.17.2
+

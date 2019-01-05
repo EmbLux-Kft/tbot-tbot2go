@@ -1,0 +1,24 @@
+From 04dfc52578abd3b8b36d388dc1a48dfe38e61011 Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Fri, 15 Feb 2019 07:04:54 +0100
+Subject: [PATCH] wandboard_defconfig: add unit tests
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+ configs/wandboard_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/configs/wandboard_defconfig b/configs/wandboard_defconfig
+index 5725487..84528a7 100644
+--- a/configs/wandboard_defconfig
++++ b/configs/wandboard_defconfig
+@@ -44,3 +44,6 @@ CONFIG_USB=y
+ CONFIG_VIDEO=y
+ # CONFIG_VIDEO_SW_CURSOR is not set
+ CONFIG_OF_LIBFDT=y
++CONFIG_UNIT_TEST=y
++# CONFIG_UT_UNICODE is not set
++CONFIG_UT_ENV=y
+-- 
+2.1.0
+

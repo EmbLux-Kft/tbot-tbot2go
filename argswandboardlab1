@@ -1,0 +1,7 @@
+-l
+labs/lab1.py
+-b
+boards/wandboard.py
+-f
+lab-1-build
+-vv
