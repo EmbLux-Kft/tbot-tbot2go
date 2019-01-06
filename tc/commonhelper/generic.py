@@ -5,6 +5,12 @@ from tbot.machine import linux
 from tbot.machine import board
 from tbot import log_event
 
+def get_path(path : tbot.machine.linux.path.Path) -> str:
+    """
+    return the path from a pathlib
+    """
+    return str(path).split(":")[1]
+
 @tbot.testcase
 def get_board_workdir(
     ma: typing.Optional[linux.LinuxMachine],
@@ -79,9 +85,9 @@ def set_toolchain(
     ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
     if ret[0] == 1:
         log_event.doc_begin("set_toolchain_add")
-        msg = "Add toolchain to PATH", str(tooldir).split(":")[1]
+        msg = "Add toolchain to PATH", get_path(tooldir)
         tbot.log.message(msg)
-        ma.exec0(linux.Raw("export PATH=" + str(tooldir).split(":")[1] + ":$PATH"))
+        ma.exec0(linux.Raw("export PATH=" + get_path(tooldir) + ":$PATH"))
         log_event.doc_end("set_toolchain_add")
     ma.exec0("printenv", "PATH")
     if "arm" in arch:
