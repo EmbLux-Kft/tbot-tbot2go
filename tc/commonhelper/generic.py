@@ -153,8 +153,7 @@ def lx_replace_in_file(
     dumpfile = True,
 ) -> bool:
     """
-    replace a line in filename which contains searchstring
-    with line in newvalue
+    replace searchstring in filename which with newvalue
 
     :param machine ma: machine on which commands are executed
     :param filename str: filename of file on which testcase runs
@@ -171,7 +170,45 @@ def lx_replace_in_file(
     if dumpfile:
         ma.exec0(linux.Raw(dump))
 
-    cmd = pre + "sed -i 's/" + searchstring + "/" + newvalue + "/' " + filename
+    cmd = pre + "sed -i '/" + searchstring + "/" + newvalue + "/d' " + filename
+    ma.exec0(linux.Raw(cmd))
+
+    if dumpfile:
+        ma.exec0(linux.Raw(dump))
+
+    return True
+
+@tbot.testcase
+def lx_replace_line_in_file(
+    ma: typing.Optional[linux.LinuxMachine],
+    filename,
+    searchstring,
+    newvalue,
+    use_sudo = False,
+    dumpfile = True,
+) -> bool:
+    """
+    replace a line in filename which contains searchstring
+    with line containing newvalue
+
+    :param machine ma: machine on which commands are executed
+    :param filename str: filename of file on which testcase runs
+    :param searchstring str: line which contain this string gets deleted
+    :param newvalue str: newline which get added to the end of file
+    :param use_sudo bool: use sudo default False
+    :param dumpfile bool: dump file with cat before and after replace string default True
+    """
+    pre = ""
+    if use_sudo:
+        pre = "sudo "
+
+    dump = pre + "cat " + filename
+    if dumpfile:
+        ma.exec0(linux.Raw(dump))
+
+    cmd = pre + "sed -i '/" + searchstring + "/d' " + filename
+    ma.exec0(linux.Raw(cmd))
+    cmd = pre + "echo '" + newvalue + "' >> " + filename
     ma.exec0(linux.Raw(cmd))
 
     if dumpfile:
