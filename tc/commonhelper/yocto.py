@@ -121,13 +121,13 @@ class Yocto:
                         # set DL_DIR specific for build host
                         try:
                             if bh.dl_dir:
-                                ge.lx_replace_in_file(bh, "conf/auto.conf", "DL_DIR", 'DL_DIR="' + bh.dl_dir + '"')
+                                ge.lx_replace_line_in_file(bh, "conf/auto.conf", "DL_DIR", 'DL_DIR="' + bh.dl_dir + '"')
                         except:
                             pass
                         # set SSTATE_DIR specific for build host
                         try:
                             if bh.sstate_dir:
-                                ge.lx_replace_in_file(bh, "conf/auto.conf", "SSTATE_DIR", 'SSTATE_DIR="' + bh.sstate_dir + '/' + tbot.selectable.Board.name + '"')
+                                ge.lx_replace_line_in_file(bh, "conf/auto.conf", "SSTATE_DIR", 'SSTATE_DIR="' + bh.sstate_dir + '/' + tbot.selectable.Board.name + '"')
                         except:
                             pass
                 else:
