@@ -23,7 +23,7 @@ def do_conf(cfg: typing.Tuple[str, str]) -> None:
     html_name = htmldir / f"{log.stem}.html"
     print(f"{log} -> {html_name}")
     handle = subprocess.Popen(
-        ["../tbot/generators/generate_htmllog.py", log], stdout=subprocess.PIPE
+        ["../tbot/generators/htmllog.py", log], stdout=subprocess.PIPE
     )
     html = handle.stdout.read().decode("utf-8")
     with open(html_name, mode="w") as f:
