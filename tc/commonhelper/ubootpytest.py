@@ -45,4 +45,7 @@ class Ubootpytest:
                 b = cx.enter_context(tbot.acquire_board(lh))
                 b.poweroff()
 
-        return retval
+        if retval != True:
+            raise RuntimeError("Calling test/py failed")
+
+        return True
