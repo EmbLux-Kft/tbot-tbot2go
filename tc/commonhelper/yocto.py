@@ -246,17 +246,21 @@ class Yocto:
     def repo_get_deploydir_name(
         self,
         ma: typing.Optional[linux.LinuxMachine],
+        extension: str = None,
     ) -> str:
         bd = "tmp/deploy/images/" + tbot.selectable.Board.name
+        if extension != None:
+            bd += extension
         return bd
 
     @tbot.testcase
     def repo_get_deploydir(
         self,
         ma: typing.Optional[linux.LinuxMachine],
+        extension: str = None,
     ) -> str:
         p = self.repo_get_builddir(ma)
-        n = self.repo_get_deploydir_name(ma)
+        n = self.repo_get_deploydir_name(ma, extension)
         p = p / n
         return p
 
