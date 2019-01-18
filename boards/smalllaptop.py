@@ -59,4 +59,4 @@ class SmalllaptopBoard(board.Board):
 
 class SmalllaptopUBootBuildInfo(uboot.BuildInfo):
     if tbot.selectable.LabHost.name == "small-lab":
-        uboot_remote = "/work/hs/tbot-workdir/sources/u-boot"
+        uboot_remote = "/home/hs/data/Entwicklung/sources/u-boot"

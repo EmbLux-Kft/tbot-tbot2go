@@ -6,7 +6,7 @@ from tbot.machine import linux
 class SmalllaptopLab(lab.SSHLabHost, linux.BuildMachine):
     name = "small-lab"
     # oder 192.168.2.177 ?
-    hostname = "192.168.1.106"
+    hostname = "192.168.1.105"
     username = "hs"
 
     serverip = "192.168.2.177"
