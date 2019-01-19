@@ -9,6 +9,8 @@ class DenxBoard(board.Board):
     def _get_boardname(self):
         if self.name == "wandboard":
             n = "wandboard_dl"
+        elif self.name == "taurus":
+            n = "at91_taurus"
         else:
             n = self.name
         return n
