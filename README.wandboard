@@ -1,0 +1,31 @@
+
+lab-1
+tbot @argswandboardlab1 wandboard_ub_build_install_test
+source env_vars.sh
+./push-testresult.py -p /home/hs/data/Entwicklung/tbot/
+
+tbot @argswandboardlab1 uboot_testpy -p testpy_args='["-k", "not reset", "-s"]'
+
+
+pollux:
+tbot -l labs/pollux.py -b boards/wandboard.py interactive_lab --log-auto -vv
+tbot -l labs/pollux.py -b boards/wandboard.py interactive_uboot --log-auto -vv
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv uboot_build
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv wandboard_ub_install
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv wandboard_ub_call_test_py
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv interactive_linux
+
+embedded
+
+./messe_iperf.sh /var/lib/jenkins/workspace/wandboard_iperf_test 5
+
+tbot @argswandboard wandboard_ub_interactive
+tbot @argswandboard wandboard_ub_build
+tbot @argswandboard wandboard_ub_install
+tbot @argswandboard wandboard_check_iperf
+
+tbot @argswandboard interactive_linux
+tbot @argswandboard wandboard_lx_check_register
