@@ -1,0 +1,12 @@
+
+pollux:
+tbot -l labs/pollux.py -b boards/wandboard.py interactive_lab --log-auto -vv
+tbot -l labs/pollux.py -b boards/wandboard.py interactive_uboot --log-auto -vv
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv uboot_build
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv wandboard_ub_install
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv wandboard_ub_call_test_py
+
+tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv interactive_linux
+
