@@ -10,3 +10,9 @@ tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv wandboard_ub_call_t
 
 tbot -l labs/pollux.py -b boards/wandboard.py --log-auto -vv interactive_linux
 
+embedded
+
+tbot -l labs/smalllaptop.py -b boards/wandboard.py --log-auto -vv uboot_build
+tbot -l labs/smalllaptop.py -b boards/wandboard.py --log-auto -vv interactive_uboot
+tbot -l labs/smalllaptop.py -b boards/wandboard.py --log-auto -vv wandboard_ub_install
+tbot -l labs/smalllaptop.py -b boards/wandboard.py --log-auto -vv wandboard_ub_call_test_py
