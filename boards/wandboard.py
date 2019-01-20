@@ -79,3 +79,8 @@ class wandboardLinux(board.LinuxWithUBootMachine[wandboard]):
 BOARD = wandboard
 UBOOT = wandboardUBoot
 LINUX = wandboardLinux
+from tbot import log_event
+log_event.doc_tag("board_name", BOARD.name)
+log_event.doc_tag("ub_prompt", UBOOT.prompt)
+log_event.doc_begin("ub_abstract")
+log_event.doc_end("ub_abstract")
