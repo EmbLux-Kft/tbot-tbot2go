@@ -28,7 +28,7 @@ U-Boot
 Current Versions
 ================
 
-Das :redtext:`U-Boot` (or just "U-Boot" for short) is Open Source Firmware for Embedded Power Architecture®, ARM, MIPS, x86 and other processors. The U-Boot project is hosted by DENX, where you can also find the project home page: http://www.denx.de/wiki/U-Boot/
+:redtext:`Das U-Boot` (or just "U-Boot" for short) is Open Source Firmware for Embedded Power Architecture®, ARM, MIPS, x86 and other processors. The U-Boot project is hosted by DENX, where you can also find the project home page: http://www.denx.de/wiki/U-Boot/
 
 |TIP| The current version of the U-Boot source code can be retrieved from the DENX "git" repository.
 
