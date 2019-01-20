@@ -10,6 +10,7 @@ sys.path.append(parentdir + '/commonhelper')
 import generic as ge
 
 from tbot.tc import uboot
+from tbot import log_event
 
 ub_resfiles = [
     "System.map",
@@ -49,7 +50,6 @@ def wandboard_ub_prepare(
                 # set correct path to patches on build host
                 tbot.selectable.UBootMachine.build.ub_patches_path = ge.get_path(bh.workdir / "patches/ub-wandboard")
                 tp = tbot.selectable.UBootMachine.build.ub_patches_path
-                print("======== ", tbot.selectable.UBootMachine.build.ub_patches_path)
                 sftp = bh.client.open_sftp()
                 for fn in files:
                     tbot.log.message(f"put local file {lp}/{fn} to build host {tp}/{fn}")
@@ -63,6 +63,7 @@ def wandboard_ub_setenv(
     ub: typing.Optional[board.UBootMachine],
 ) -> None:
     # print(" Set Envvars ")
+    log_event.doc_begin("set_ub_env_vars")
     ta = lh.tftp_dir
     f = ta / "SPL"
     ub.exec0("setenv", "spl_file", ge.get_path(f))
@@ -74,6 +75,7 @@ def wandboard_ub_setenv(
     ub.exec0("setenv", "cmp_addr_r", "11000000")
     for env in ub_env:
         ub.env(env["name"], env["val"])
+    log_event.doc_end("set_ub_env_vars")
 
 @tbot.testcase
 def wandboard_ub_ins(
@@ -82,12 +84,14 @@ def wandboard_ub_ins(
     ub: typing.Optional[board.UBootMachine],
 ) -> None:
     # and install
+    log_event.doc_begin("ub_install")
     ub.exec0("run", "load_spl")
     ub.exec0("run", "upd_spl")
     ub.exec0("run", "cmp_spl")
     ub.exec0("run", "load_ub")
     ub.exec0("run", "upd_ub")
     ub.exec0("run", "cmp_ub")
+    log_event.doc_end("ub_install")
 
 @tbot.testcase
 def wandboard_ub_install(
@@ -103,17 +107,26 @@ def wandboard_ub_install(
             wandboard_ub_prepare(lh, bh)
             ta = lh.tftp_dir
             gitp = uboot.build(bh)
+            log_event.doc_begin("ub_copy_2_tftp")
             for f in ub_resfiles:
                 s = gitp / f
                 t = ta / f
                 tbot.tc.shell.copy(s, t)
                 # get SPL / U-Boot Version
+            log_event.doc_end("ub_copy_2_tftp")
+            for f in ub_resfiles:
                 if "SPL" in f:
                     # strings /tftpboot/wandboard_dl/tbot/SPL | grep --color=never "U-Boot SPL"
+                    log_event.doc_begin("get_spl_vers")
                     spl_vers = bh.exec0(linux.Raw('strings /tftpboot/wandboard_dl/tbot/SPL | grep --color=never "U-Boot SPL"'))
+                    log_event.doc_tag("ub_spl_new_version", spl_vers)
+                    log_event.doc_end("get_spl_vers")
                 if "u-boot.bin" in f:
                     # strings /tftpboot/wandboard_dl/tbot/u-boot.bin | grep --color=never "U-Boot 2"
+                    log_event.doc_begin("get_ub_vers")
                     ub_vers = bh.exec0(linux.Raw('strings /tftpboot/wandboard_dl/tbot/u-boot.bin | grep --color=never "U-Boot 2"'))
+                    log_event.doc_tag("ub_ub_new_version", ub_vers)
+                    log_event.doc_end("get_ub_vers")
 
         with contextlib.ExitStack() as cx:
             b = cx.enter_context(tbot.acquire_board(lh))
@@ -122,10 +135,12 @@ def wandboard_ub_install(
             wandboard_ub_ins(lh, b, ub)
 
         # reboot
+        log_event.doc_begin("ub_new_boot")
         with contextlib.ExitStack() as cx:
             b = cx.enter_context(tbot.acquire_board(lh))
             ub = cx.enter_context(tbot.acquire_uboot(b))
-            wandboard_ub_setenv(lh, b, ub)
+            log_event.doc_end("ub_new_boot")
+            log_event.doc_begin("ub_check_new_versions")
             # check new SPL / U-Boot version
             if spl_vers:
                 if spl_vers not in ub.bootlog:
@@ -133,6 +148,9 @@ def wandboard_ub_install(
             if ub_vers:
                 if ub_vers not in ub.bootlog:
                     raise RuntimeError(f"{ub_vers} not found.")
+            log_event.doc_end("ub_check_new_versions")
+
+        wandboard_ub_call_test_py(lab)
 
 import ubootpytest
 
