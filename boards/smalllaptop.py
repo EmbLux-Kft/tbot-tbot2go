@@ -1,4 +1,5 @@
 import tbot
+import time
 from tbot.machine import channel
 from tbot.machine import board
 from tbot.tc import uboot
@@ -23,9 +24,8 @@ class SmalllaptopBoard(board.Board):
         self.lh.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-f", "3")
 
     def connect(self) -> channel.Channel:
-        #n = self._get_boardname()
-        # kermit ?
-        #return self.lh.new_channel("connect", n)
+        # need here a small sleep, to calm down serial driver
+        time.sleep(2)
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'wandboard':
             n = self._get_boardname()
@@ -53,10 +53,12 @@ class SmalllaptopBoard(board.Board):
 
     def console_check(self) -> None:
         n = self._get_boardname()
-        if "off" not in self.lh.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-g", "3"):
+        ret = self.lh.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-g", "3")
+        if "off" not in ret:
             raise RuntimeError("Board is already on, someone might be using it!")
 
 
 class SmalllaptopUBootBuildInfo(uboot.BuildInfo):
     if tbot.selectable.LabHost.name == "small-lab":
         uboot_remote = "/home/hs/data/Entwicklung/sources/u-boot"
+        ub_patches_path = None
