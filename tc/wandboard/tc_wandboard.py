@@ -1,15 +1,15 @@
 import contextlib
 import typing
 import tbot
-from tbot.machine import linux
-from tbot.machine import board
+from tbot.machine import board, linux
+from tbot.tc import uboot
+
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir + '/commonhelper')
 import generic as ge
 
-from tbot.tc import uboot
 from tbot.tc.uboot import build as uboot_build
 from tbot import log_event
 
@@ -21,212 +21,140 @@ ub_resfiles = [
     "SPL",
 ]
 
-ub_env = [
-    {"name" : "calc_size", "val" : "setexpr fw_sz \${filesize} / 0x200\; setexpr fw_sz \${fw_sz} + 1"},
-    {"name" : "load_spl", "val" : "tftp \${loadaddr} \${spl_file}\;run calc_size"},
-    {"name" : "load_ub", "val" : "tftp \${loadaddr} \${ub_file}\;run calc_size"},
-    {"name" : "upd_prep", "val" : "mmc dev 0"},
-    {"name" : "upd_spl", "val" : "run upd_prep\;mmc write \${loadaddr} 2 \${fw_sz}"},
-    {"name" : "upd_ub", "val" : "run upd_prep\;mmc write \${loadaddr} 8a \${fw_sz}"},
-    {"name" : "cmp_spl", "val" : "run load_spl\;mmc read \${cmp_addr_r} 2 \${fw_sz}\;cmp.b \${loadaddr} \${cmp_addr_r} \${filesize}"},
-    {"name" : "cmp_ub", "val" : "run load_ub\;mmc read \${cmp_addr_r} 8a \${fw_sz}\;cmp.b \${loadaddr} \${cmp_addr_r} \${filesize}"},
-]
+@tbot.testcase
+def wandboard_check_iperf(
+    lab: linux.LinuxShell = None,
+    board: board.Board = None,
+    blx: linux.LinuxShell = None,
+    cycles: str = "5",
+    minval: str = "70",
+    intervall: str = "5",
+) -> bool:
+    """
+    check networkperformance with iperf
+    """
+    with contextlib.ExitStack() as cx:
+        if lab is not None:
+            lh = lab
+        else:
+            lh = cx.enter_context(tbot.acquire_lab())
+
+        if board is not None:
+            b = board
+        else:
+            b = cx.enter_context(tbot.acquire_board(lh))
+
+        if blx is not None:
+            lnx = blx
+        else:
+            lnx = cx.enter_context(tbot.acquire_linux(b))
+
+        ge.lx_check_iperf(
+            lh,
+            lnx,
+            intervall=intervall,
+            cycles=cycles,
+            minval=minval,
+            filename="iperf.dat",
+            showlog=True)
+
+    return True
 
 @tbot.testcase
-def wandboard_ub_prepare(
-    lab: typing.Optional[linux.LabHost] = None,
-    build: typing.Optional[linux.BuildMachine] = None,
+def wandboard_ub_build(
+    lab: typing.Optional[linux.LinuxShell] = None,
 ) -> None:
+    """
+    build u-boot
+    """
     with lab or tbot.acquire_lab() as lh:
-        with build or lh.build() as bh:
-            try:
-                p = tbot.selectable.ub_patches_path
-            except:
-                return
-            if tbot.selectable.ub_patches == "yes":
-                # copy from host u-boot patches to build host
-                # ToDo get local path
-                lp = f"{tbot.selectable.workdir}/tc/wandboard/patches"
-                # ToDo
-                # get list of files in /home/hs/data/Entwicklung/newtbot/tbot-tbot2go/tc/wandboard/patches
-                # How to run a command on host ?
-                files = ["0001-wandboard_defconfig-add-unit-tests.patch"]
-                # set correct path to patches on build host
-                tbot.selectable.ub_patches_path = ge.get_path(bh.workdir / "patches/ub-wandboard")
-                tp = tbot.selectable.ub_patches_path
-                sftp = bh.client.open_sftp()
-                for fn in files:
-                    tbot.log.message(f"put local file {lp}/{fn} to build host {tp}/{fn}")
-                    ret = sftp.put(f"{lp}/{fn}", f"{tp}/{fn}")
-                sftp.close()
+        # remove all old source code
+        lh.exec0("rm", "-rf", "/work/hs/tbot-workdir/uboot-wandboard-builder")
+        git = uboot_build(lab=lh)
+
+        for f in ub_resfiles:
+            s = git / f
+            r = lh.tftp_root_path / ge.get_path(lh.tftp_dir_board)
+            t = r / f
+            tbot.tc.shell.copy(s, t)
 
 @tbot.testcase
-def wandboard_ub_setenv(
-    lh: typing.Optional[linux.LabHost],
-    b: typing.Optional[board.Board],
-    ub: typing.Optional[board.UBootMachine],
+def wandboard_ub_check_version(
+    lab: typing.Optional[linux.LinuxShell] = None,
 ) -> None:
-    # print(" Set Envvars ")
-    log_event.doc_begin("set_ub_env_vars")
-    ta = lh.tftp_dir_board
-    f = ta / "SPL"
-    ub.exec0("setenv", "spl_file", ge.get_path(f))
-    f = ta / "u-boot.img"
-    ub.exec0("setenv", "ub_file", ge.get_path(f))
-    ub.exec0("setenv", "serverip", tbot.selectable.LabHost.serverip)
-    ub.exec0("setenv", "netmask", tbot.selectable.LabHost.netmask)
-    ub.exec0("setenv", "ipaddr", tbot.selectable.LabHost.boardip["wandboard"])
-    ub.exec0("setenv", "cmp_addr_r", "11000000")
-    for env in ub_env:
-        ub.env(env["name"], env["val"])
-    log_event.doc_end("set_ub_env_vars")
+    """
+    check if installed U-Boot version is the same as in
+    tftp directory.
+    """
+    with lab or tbot.acquire_lab() as lh:
+        r = ge.get_path(lh.tftp_root_path) + "/" + ge.get_path(lh.tftp_dir_board)
+        spl_vers = None
+        ub_vers = None
+        for f in ub_resfiles:
+            if "SPL" in f:
+                log_event.doc_begin("get_spl_vers")
+                spl_vers = lh.exec0(linux.Raw(f'strings {r}/SPL | grep --color=never "U-Boot SPL"'))
+                spl_vers = spl_vers.strip()
+                log_event.doc_tag("ub_spl_new_version", spl_vers)
+                log_event.doc_end("get_spl_vers")
+                tbot.log.message(tbot.log.c(f"found in image U-Boot SPL version {spl_vers}").green)
+            if "u-boot.bin" in f:
+                log_event.doc_begin("get_ub_vers")
+                ub_vers = lh.exec0(linux.Raw(f'strings {r}/u-boot.bin | grep --color=never "U-Boot 2"'))
+                ub_vers = ub_vers.strip()
+                log_event.doc_tag("ub_ub_new_version", ub_vers)
+                log_event.doc_end("get_ub_vers")
+                tbot.log.message(tbot.log.c(f"found in image U-Boot version {ub_vers}").green)
+
+        with contextlib.ExitStack() as cx:
+            b = cx.enter_context(tbot.acquire_board(lh))
+            ub = cx.enter_context(tbot.acquire_uboot(b))
+            if spl_vers != None:
+                if spl_vers not in ub.bootlog:
+                    raise RuntimeError(f"{spl_vers} not found.")
+                tbot.log.message(tbot.log.c(f"found U-Boot SPL version {spl_vers} installed").green)
+            if ub_vers == None:
+                raise RuntimeError(f"No U-Boot version defined")
+            else:
+                if ub_vers not in ub.bootlog:
+                    raise RuntimeError(f"{ub_vers} not found.")
+                tbot.log.message(tbot.log.c(f"found U-Boot version {ub_vers} installed").green)
+ 
+@tbot.testcase
+@tbot.with_uboot
+def wandboard_ub_interactive(ub) -> None:
+    """
+    set ub environment and go into interactive console
+    """
+    ub.do_set_env(ub)
+    ub.interactive()
 
 @tbot.testcase
-def wandboard_ub_ins(
-    lh: typing.Optional[linux.LabHost],
-    b: typing.Optional[board.Board],
-    ub: typing.Optional[board.UBootMachine],
-) -> None:
+@tbot.with_uboot
+def wandboard_ub_install(ub) -> None:
     # and install
-    log_event.doc_begin("ub_install")
+    ub.do_set_env(ub)
     ub.exec0("run", "load_spl")
     ub.exec0("run", "upd_spl")
     ub.exec0("run", "cmp_spl")
     ub.exec0("run", "load_ub")
     ub.exec0("run", "upd_ub")
     ub.exec0("run", "cmp_ub")
-    log_event.doc_end("ub_install")
-
-@tbot.testcase
-def wandboard_ub_interactive(
-    lab: typing.Optional[linux.LabHost] = None,
-    board: typing.Optional[board.Board] = None,
-    ubma: typing.Optional[board.UBootMachine] = None,
-) -> None:
-    with lab or tbot.acquire_lab() as lh:
-        with contextlib.ExitStack() as cx:
-            b = cx.enter_context(tbot.acquire_board(lh))
-            ub = cx.enter_context(tbot.acquire_uboot(b))
-            wandboard_ub_setenv(lh, b, ub)
-            ub.interactive()
-
-@tbot.testcase
-def wandboard_ub_install(
-    lab: typing.Optional[linux.LabHost] = None,
-    board: typing.Optional[board.Board] = None,
-    ubma: typing.Optional[board.UBootMachine] = None,
-    build: typing.Optional[linux.BuildMachine] = None,
-) -> None:
-    with lab or tbot.acquire_lab() as lh:
-        spl_vers = None
-        ub_vers = None
-        with build or lh.build() as bh:
-            wandboard_ub_prepare(lh, bh)
-            ta = lh.tftp_dir
-            gitp = uboot_build(lab = lh)
-            log_event.doc_begin("ub_copy_2_tftp")
-            for f in ub_resfiles:
-                s = gitp / f
-                t = ta / f
-                tbot.tc.shell.copy(s, t)
-                # get SPL / U-Boot Version
-
-            tfpath = ge.get_path(ta)
-            log_event.doc_end("ub_copy_2_tftp")
-            for f in ub_resfiles:
-                if "SPL" in f:
-                    # strings /tftpboot/wandboard_dl/tbot/SPL | grep --color=never "U-Boot SPL"
-                    log_event.doc_begin("get_spl_vers")
-                    spl_vers = bh.exec0(linux.Raw(f'strings {tfpath}/SPL | grep --color=never "U-Boot SPL"'))
-                    log_event.doc_tag("ub_spl_new_version", spl_vers)
-                    log_event.doc_end("get_spl_vers")
-                if "u-boot.bin" in f:
-                    # strings /tftpboot/wandboard_dl/tbot/u-boot.bin | grep --color=never "U-Boot 2"
-                    log_event.doc_begin("get_ub_vers")
-                    ub_vers = bh.exec0(linux.Raw(f'strings {tfpath}/u-boot.bin | grep --color=never "U-Boot 2"'))
-                    log_event.doc_tag("ub_ub_new_version", ub_vers)
-                    log_event.doc_end("get_ub_vers")
-
-        with contextlib.ExitStack() as cx:
-            b = cx.enter_context(tbot.acquire_board(lh))
-            ub = cx.enter_context(tbot.acquire_uboot(b))
-            wandboard_ub_setenv(lh, b, ub)
-            wandboard_ub_ins(lh, b, ub)
-
-        # reboot
-        with contextlib.ExitStack() as cx:
-            b = cx.enter_context(tbot.acquire_board(lh))
-            log_event.doc_begin("ub_new_boot")
-            ub = cx.enter_context(tbot.acquire_uboot(b))
-            log_event.doc_end("ub_new_boot")
-            log_event.doc_begin("ub_check_new_versions")
-            # check new SPL / U-Boot version
-            if spl_vers:
-                if spl_vers not in ub.bootlog:
-                    raise RuntimeError(f"{spl_vers} not found.")
-            if ub_vers:
-                if ub_vers not in ub.bootlog:
-                    raise RuntimeError(f"{ub_vers} not found.")
-            log_event.doc_end("ub_check_new_versions")
-
-            # call unit test
-            log_event.doc_begin("ub_call_unit_test")
-            ub.exec0("ut", "all")
-            log_event.doc_end("ub_call_unit_test")
-            log_event.doc_reset("ub_call_unit_test")
-
-        wandboard_ub_call_test_py(lab)
-
-import ubootpytest
-
-ubt = ubootpytest.Ubootpytest("/home/hs/data/Entwicklung/messe/2019/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard-builder")
-
-@tbot.testcase
-def wandboard_ub_call_test_py(
-    lab: typing.Optional[linux.LabHost] = None,
-) -> bool:
-    with lab or tbot.acquire_lab() as lh:
-        try:
-            ubt.ub_call_test_py(lh)
-        except:
-            # fail, but we pass here
-            pass
-
-        return True
 
 ### Linux
-
 regfile_path = 'tc/wandboard/files/'
 reg_file = [
     regfile_path + "wandboard_iomux.reg",
 ]
 
 @tbot.testcase
-def wandboard_lx_get_register_dump(
-    lab: typing.Optional[linux.LabHost] = None,
-    board: typing.Optional[board.Board] = None,
-    blx: typing.Optional[board.LinuxMachine] = None,
-) -> None:
-    with lab or tbot.acquire_lab() as lh:
-        with board or tbot.acquire_board(lh) as b:
-            with blx or tbot.acquire_linux(b) as lnx:
-                p = regfile_path
-                ret = ge.lx_create_revfile(lnx, p + 'wandboard_iomux.reg', '0x20e0000', '0x20e094c')
-
-@tbot.testcase
-def wandboard_lx_check_register(
-    lab: typing.Optional[linux.LabHost] = None,
-    board: typing.Optional[board.Board] = None,
-    blx: typing.Optional[board.LinuxMachine] = None,
-) -> bool:
+@tbot.with_linux
+def wandboard_lx_check_register(lnx) -> bool:
     """
     check registers on wandboard board. register files
     defined in reg_file
     """
-    with lab or tbot.acquire_lab() as lh:
-        with board or tbot.acquire_board(lh) as b:
-            with blx or tbot.acquire_linux(b) as lnx:
-                for f in reg_file:
-                    ret = ge.lx_check_revfile(lnx, f)
-                    if ret == False:
-                        raise RuntimeError("found register differences")
+    for f in reg_file:
+        ret = ge.lx_check_revfile(lnx, f, "regdifferences_wandboard_lnx")
+        if ret == False:
+            raise RuntimeError("found register differences")
