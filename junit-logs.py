@@ -5,7 +5,7 @@ import subprocess
 import sys, getopt
 
 CONFS = [
-    ("pollux", "wandboard"),
+    ("smalllaptop", "wandboard"),
 ]
 
 

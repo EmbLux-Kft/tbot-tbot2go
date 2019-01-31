@@ -40,14 +40,14 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
 
 class SmalllaptopLab(lab.SSHLabHost, linux.BuildMachine):
     name = "small-lab"
-    # oder 192.168.2.177 ?
-    hostname = "192.168.1.105"
+    #hostname = "192.168.1.105"
+    hostname = "192.168.3.10"
     username = "hs"
 
-    serverip = "192.168.2.177"
+    serverip = "192.168.3.10"
     netmask = "255.255.255.0"
     boardip = {}
-    boardip["wandboard"] = "192.168.2.238"
+    boardip["wandboard"] = "192.168.3.20"
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
 
@@ -62,7 +62,11 @@ class SmalllaptopLab(lab.SSHLabHost, linux.BuildMachine):
 
     @property
     def tftp_dir(self) -> "linux.path.Path[SmallLab]":
-        return linux.Path(self, f"/srv/tftpboot/" + self.get_boardname + "/tbot")
+        return linux.Path(self, f"/var/lib/tftpboot/{self.get_boardname}/tbot")
+
+    @property
+    def tftp_dir_board(self) -> "linux.path.Path[SmallLab]":
+        return linux.Path(self, f"{self.get_boardname}/tbot")
 
     @property
     def workdir(self) -> "linux.path.Path[SmallLab]":
