@@ -66,7 +66,7 @@ def wandboard_ub_setenv(
 ) -> None:
     # print(" Set Envvars ")
     log_event.doc_begin("set_ub_env_vars")
-    ta = lh.tftp_dir
+    ta = lh.tftp_dir_board
     f = ta / "SPL"
     ub.exec0("setenv", "spl_file", ge.get_path(f))
     f = ta / "u-boot.img"
@@ -96,6 +96,19 @@ def wandboard_ub_ins(
     log_event.doc_end("ub_install")
 
 @tbot.testcase
+def wandboard_ub_interactive(
+    lab: typing.Optional[linux.LabHost] = None,
+    board: typing.Optional[board.Board] = None,
+    ubma: typing.Optional[board.UBootMachine] = None,
+) -> None:
+    with lab or tbot.acquire_lab() as lh:
+        with contextlib.ExitStack() as cx:
+            b = cx.enter_context(tbot.acquire_board(lh))
+            ub = cx.enter_context(tbot.acquire_uboot(b))
+            wandboard_ub_setenv(lh, b, ub)
+            ub.interactive()
+
+@tbot.testcase
 def wandboard_ub_install(
     lab: typing.Optional[linux.LabHost] = None,
     board: typing.Optional[board.Board] = None,
@@ -115,18 +128,20 @@ def wandboard_ub_install(
                 t = ta / f
                 tbot.tc.shell.copy(s, t)
                 # get SPL / U-Boot Version
+
+            tfpath = ge.get_path(ta)
             log_event.doc_end("ub_copy_2_tftp")
             for f in ub_resfiles:
                 if "SPL" in f:
                     # strings /tftpboot/wandboard_dl/tbot/SPL | grep --color=never "U-Boot SPL"
                     log_event.doc_begin("get_spl_vers")
-                    spl_vers = bh.exec0(linux.Raw('strings /tftpboot/wandboard_dl/tbot/SPL | grep --color=never "U-Boot SPL"'))
+                    spl_vers = bh.exec0(linux.Raw(f'strings {tfpath}/SPL | grep --color=never "U-Boot SPL"'))
                     log_event.doc_tag("ub_spl_new_version", spl_vers)
                     log_event.doc_end("get_spl_vers")
                 if "u-boot.bin" in f:
                     # strings /tftpboot/wandboard_dl/tbot/u-boot.bin | grep --color=never "U-Boot 2"
                     log_event.doc_begin("get_ub_vers")
-                    ub_vers = bh.exec0(linux.Raw('strings /tftpboot/wandboard_dl/tbot/u-boot.bin | grep --color=never "U-Boot 2"'))
+                    ub_vers = bh.exec0(linux.Raw(f'strings {tfpath}/u-boot.bin | grep --color=never "U-Boot 2"'))
                     log_event.doc_tag("ub_ub_new_version", ub_vers)
                     log_event.doc_end("get_ub_vers")
 
@@ -156,7 +171,7 @@ def wandboard_ub_install(
 
 import ubootpytest
 
-ubt = ubootpytest.Ubootpytest("/home/hs/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard")
+ubt = ubootpytest.Ubootpytest("/home/hs/data/Entwicklung/messe/2019/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard")
 
 @tbot.testcase
 def wandboard_ub_call_test_py(
