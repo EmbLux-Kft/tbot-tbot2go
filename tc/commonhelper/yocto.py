@@ -142,7 +142,8 @@ class Yocto:
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
-                self.yo_repo_sync(lh, bh)
+                if "nosync" not in tbot.flags:
+                    self.yo_repo_sync(lh, bh)
                 self.yo_repo_config(lh, bh)
                 m = 'MACHINE=' + tbot.selectable.Board.name
                 for name in self.cfg["bitbake_targets"]:
@@ -305,3 +306,7 @@ class Yocto:
             ma.exec0("source", "oe-init-build-env", bd)
         else:
             return False
+
+FLAGS = {
+        "nosync":"build without repo sync",
+        }
