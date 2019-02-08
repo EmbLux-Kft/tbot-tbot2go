@@ -2,6 +2,7 @@ import typing
 import tbot
 from tbot.machine import board
 from tbot.machine import linux
+from tbot.tc import uboot
 
 if tbot.selectable.LabHost.name == "pollux":
     # Use pollux specific config
@@ -9,23 +10,11 @@ if tbot.selectable.LabHost.name == "pollux":
 
     BoardBase = denx.DenxBoard
 
-    class wandboardUbootBuild(denx.DenxUBootBuildInfo):
-        name = "wandboard"
-        defconfig = "wandboard_defconfig"
-        toolchain = "linaro-gnueabi"
-        # how to get here the workdir from the build host ?
-        ub_patches_path = None
-
 elif tbot.selectable.LabHost.name == "tbot2go":
     # Use your personal lab config
     import raspi
     
     BoardBase = raspi.Tbot2goBoard
-
-    class wandboardUbootBuild(raspi.Tbot2goUBootBuildInfo):
-        name = "wandboard"
-        defconfig = "wandboard_defconfig"
-        toolchain = "linaro-gnueabi"
 
 elif tbot.selectable.LabHost.name == "embedded-lab":
     # Use Stefano specific config
@@ -33,21 +22,17 @@ elif tbot.selectable.LabHost.name == "embedded-lab":
 
     BoardBase = stefano.StefanoBoard
 
-    class wandboardUbootBuild(stefano.StefanoUBootBuildInfo):
-        name = "wandboard"
-        defconfig = "wandboard_defconfig"
-        toolchain = "linaro-gnueabi"
-
 elif tbot.selectable.LabHost.name == "small-lab":
     # Use small laptop specific config
     import smalllaptop
 
     BoardBase = smalllaptop.SmalllaptopBoard
 
-    class wandboardUbootBuild(smalllaptop.SmalllaptopUBootBuildInfo):
-        name = "wandboard"
+    class WandboardUBootBuilder(uboot.UBootBuilder):
+        name = "wandboard-builder"
         defconfig = "wandboard_defconfig"
         toolchain = "linaro-gnueabi"
+        remote = "/home/hs/data/Entwicklung/sources/u-boot"
 
 else:
     raise NotImplementedError("Board not available on this labhost!")
@@ -56,11 +41,9 @@ class wandboard(BoardBase):
     name = "wandboard"
     connect_wait = 0.0
 
-UBOOTBUILD = wandboardUbootBuild
-
 class wandboardUBoot(board.UBootMachine[wandboard]):
     prompt = "=> "
-    build = UBOOTBUILD
+    build = WandboardUBootBuilder()
 
 class wandboardLinux(board.LinuxWithUBootMachine[wandboard]):
     uboot = wandboardUBoot

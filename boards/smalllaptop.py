@@ -82,9 +82,3 @@ class SmalllaptopBoard(board.Board):
             time.sleep(2)
             ret = self.lh.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-o", "3")
             #raise RuntimeError("Board is already on, someone might be using it!")
-
-
-class SmalllaptopUBootBuildInfo(uboot.BuildInfo):
-    if tbot.selectable.LabHost.name == "small-lab":
-        uboot_remote = "/home/hs/data/Entwicklung/sources/u-boot"
-        ub_patches_path = None
