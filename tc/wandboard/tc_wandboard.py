@@ -10,6 +10,7 @@ sys.path.append(parentdir + '/commonhelper')
 import generic as ge
 
 from tbot.tc import uboot
+from tbot.tc.uboot import build as uboot_build
 from tbot import log_event
 
 ub_resfiles = [
@@ -38,6 +39,7 @@ def wandboard_ub_prepare(
 ) -> None:
     with lab or tbot.acquire_lab() as lh:
         with build or lh.build() as bh:
+            return
             p = tbot.selectable.UBootMachine.build.ub_patches_path
             if tbot.selectable.UBootMachine.build.ub_patches_path != None:
                 # copy from host u-boot patches to build host
@@ -106,7 +108,7 @@ def wandboard_ub_install(
         with build or lh.build() as bh:
             wandboard_ub_prepare(lh, bh)
             ta = lh.tftp_dir
-            gitp = uboot.build(bh)
+            gitp = uboot_build(lab = lh)
             log_event.doc_begin("ub_copy_2_tftp")
             for f in ub_resfiles:
                 s = gitp / f
