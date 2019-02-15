@@ -154,9 +154,9 @@ def wandboard_ub_install(
             wandboard_ub_ins(lh, b, ub)
 
         # reboot
-        log_event.doc_begin("ub_new_boot")
         with contextlib.ExitStack() as cx:
             b = cx.enter_context(tbot.acquire_board(lh))
+            log_event.doc_begin("ub_new_boot")
             ub = cx.enter_context(tbot.acquire_uboot(b))
             log_event.doc_end("ub_new_boot")
             log_event.doc_begin("ub_check_new_versions")
