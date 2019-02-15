@@ -39,19 +39,21 @@ def wandboard_ub_prepare(
 ) -> None:
     with lab or tbot.acquire_lab() as lh:
         with build or lh.build() as bh:
-            return
-            p = tbot.selectable.UBootMachine.build.ub_patches_path
-            if tbot.selectable.UBootMachine.build.ub_patches_path != None:
+            try:
+                p = tbot.selectable.ub_patches_path
+            except:
+                return
+            if tbot.selectable.ub_patches == "yes":
                 # copy from host u-boot patches to build host
                 # ToDo get local path
                 lp = f"{tbot.selectable.workdir}/tc/wandboard/patches"
                 # ToDo
                 # get list of files in /home/hs/data/Entwicklung/newtbot/tbot-tbot2go/tc/wandboard/patches
                 # How to run a command on host ?
-                files = ["0001-wandboard-remove-CONFIG_SPL_EXT_SUPPORT-support.patch"]
+                files = ["0001-wandboard_defconfig-add-unit-tests.patch"]
                 # set correct path to patches on build host
-                tbot.selectable.UBootMachine.build.ub_patches_path = ge.get_path(bh.workdir / "patches/ub-wandboard")
-                tp = tbot.selectable.UBootMachine.build.ub_patches_path
+                tbot.selectable.ub_patches_path = ge.get_path(bh.workdir / "patches/ub-wandboard")
+                tp = tbot.selectable.ub_patches_path
                 sftp = bh.client.open_sftp()
                 for fn in files:
                     tbot.log.message(f"put local file {lp}/{fn} to build host {tp}/{fn}")

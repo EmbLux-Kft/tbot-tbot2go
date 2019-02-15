@@ -3,6 +3,7 @@ import tbot
 from tbot.machine import board
 from tbot.machine import linux
 from tbot.tc import uboot
+from tbot.tc import git
 
 if tbot.selectable.LabHost.name == "pollux":
     # Use pollux specific config
@@ -27,6 +28,8 @@ elif tbot.selectable.LabHost.name == "small-lab":
     import smalllaptop
 
     BoardBase = smalllaptop.SmalllaptopBoard
+    tbot.selectable.ub_patches = "yes"
+    tbot.selectable.ub_patches_path = None
 
     class WandboardUBootBuilder(uboot.UBootBuilder):
         name = "wandboard-builder"
@@ -34,6 +37,11 @@ elif tbot.selectable.LabHost.name == "small-lab":
         toolchain = "linaro-gnueabi"
         remote = "/home/hs/data/Entwicklung/sources/u-boot"
 
+        def do_patch(self, repo: git.GitRepository) -> None:
+            log_event.doc_tag("ub_build_cfg_ub_patches", tbot.selectable.ub_patches_path)
+            log_event.doc_begin("ub_build_patch")
+            repo.am(linux.Path(repo.host, tbot.selectable.ub_patches_path))
+            log_event.doc_begin("ub_build_patch_end")
 else:
     raise NotImplementedError("Board not available on this labhost!")
     
