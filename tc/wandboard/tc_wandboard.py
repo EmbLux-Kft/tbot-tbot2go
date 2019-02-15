@@ -173,7 +173,7 @@ def wandboard_ub_install(
 
 import ubootpytest
 
-ubt = ubootpytest.Ubootpytest("/home/hs/data/Entwicklung/messe/2019/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard")
+ubt = ubootpytest.Ubootpytest("/home/hs/data/Entwicklung/messe/2019/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard-builder")
 
 @tbot.testcase
 def wandboard_ub_call_test_py(
