@@ -1,4 +1,8 @@
 
+.. raw:: pdf
+
+   PageBreak
+
 Build U-Boot for the board_name
 ===============================
 

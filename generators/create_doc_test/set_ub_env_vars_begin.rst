@@ -1,4 +1,8 @@
 
+.. raw:: pdf
+
+   PageBreak
+
 Install U-Boot on the board_name
 ================================
 
