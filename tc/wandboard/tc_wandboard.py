@@ -169,6 +169,12 @@ def wandboard_ub_install(
                     raise RuntimeError(f"{ub_vers} not found.")
             log_event.doc_end("ub_check_new_versions")
 
+            # call unit test
+            log_event.doc_begin("ub_call_unit_test")
+            ub.exec0("ut", "all")
+            log_event.doc_end("ub_call_unit_test")
+            log_event.doc_reset("ub_call_unit_test")
+
         wandboard_ub_call_test_py(lab)
 
 import ubootpytest
