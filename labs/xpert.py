@@ -7,6 +7,7 @@ import builders
 from tbot.machine import channel
 from tbot.machine.linux import lab
 from tbot.machine import linux
+import builders
 
 class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     name = "xpert"
@@ -47,15 +48,15 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     def build(self) -> linux.BuildMachine:
         if "xpert-build" in tbot.flags:
-            return XpertSSH(self)
+            return builders.XpertSSH(self)
         elif "hercules-build" in tbot.flags:
-            return HerculesSSH(self)
+            return builders.HerculesSSH(self)
         elif "hercules-1604-build" in tbot.flags:
-            return Hercules1604SSH(self)
+            return builders.Hercules1604SSH(self)
         elif "threadripper-1604-build" in tbot.flags:
-            return Threadripper1604SSH(self)
+            return builders.Threadripper1604SSH(self)
         elif "xmg-build" in tbot.flags:
-            return xmgSSH(self)
+            return builders.xmgSSH(self)
         raise RuntimeError ("build Machine not specified")
 
 LAB = XpertLab
