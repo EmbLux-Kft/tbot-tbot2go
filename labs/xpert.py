@@ -24,6 +24,15 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     ethaddr["sanvito"] = "1e:a7:65:aa:71:59"
 
     @property
+    def get_boardname(self) -> str:
+        if tbot.selectable.Board.name == "taurus":
+            return "at91_taurus"
+        elif tbot.selectable.Board.name == "wandboard":
+            return "wandboard_dl"
+
+        return tbot.selectable.Board.name
+
+    @property
     def yocto_result_dir(self) -> "linux.path.Path[XpertLab]":
         return linux.Path(self, f"/tftpboot/" + tbot.selectable.Board.name + "/yocto_results")
 
