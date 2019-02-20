@@ -31,6 +31,10 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
     @property
+    def tftp_dir(self) -> "linux.path.Path[XpertLab]":
+        return linux.Path(self, f"/tftpboot/" + self.get_boardname + "/tbot")
+
+    @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
             "generic-armv7a": linux.build.EnvScriptToolchain(
