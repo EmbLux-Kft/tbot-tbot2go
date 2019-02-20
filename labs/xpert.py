@@ -50,6 +50,8 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
             return Hercules1604SSH(self)
         elif "threadripper-1604-build" in tbot.flags:
             return Threadripper1604SSH(self)
+        elif "xmg-build" in tbot.flags:
+            return xmgSSH(self)
         raise RuntimeError ("build Machine not specified")
 
 LAB = XpertLab

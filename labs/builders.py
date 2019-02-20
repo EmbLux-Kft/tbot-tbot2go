@@ -128,14 +128,20 @@ class xmgSSH(linux.SSHMachine, linux.BuildMachine):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "armv7-eabihf--glibc--bleeding-edge": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
-            ),
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
+                ),
+            "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
+                host_arch = "i686",
+                arch = "arm-linux-gnueabi",
+                date = "2018.05",
+                gcc_vers = "7.3",
+                gcc_subvers = "1",
+                ),
         }
-
 
 FLAGS = {
         "xmg-build" : "build on XMG laptop",
