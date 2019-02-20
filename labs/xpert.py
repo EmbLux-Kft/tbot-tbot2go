@@ -19,7 +19,7 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     boardip = {}
     boardip["sanvito"] = "192.168.1.11"
     boardip["sanvito-b"] = "192.168.1.12"
-    boardip["db-basic"] = "192.168.0.2"
+    boardip["dbbasic"] = "192.168.0.2"
     ethaddr = {}
     ethaddr["sanvito"] = "1e:a7:65:aa:71:59"
 
@@ -43,6 +43,10 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     @property
     def tftp_dir(self) -> "linux.path.Path[XpertLab]":
         return linux.Path(self, f"/tftpboot/" + self.get_boardname + "/tbot")
+
+    @property
+    def tftp_dir_board(self) -> "linux.path.Path[XpertLab]":
+        return linux.Path(self, f"{self.get_boardname}/tbot")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
