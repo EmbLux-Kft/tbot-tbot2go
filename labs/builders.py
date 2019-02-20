@@ -108,6 +108,44 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
+class XpertSSH(linux.SSHMachine, linux.BuildMachine):
+    name = "xpert-build"
+    hostname = "xpert.denx.de"
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath(f"/home/{self.username}/.ssh/id_rsa")
+    )
+
+    @property
+    def workdir(self) -> "linux.Path[HerculesSSH]":
+        return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
+
+    @property
+    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
+        return {
+            "generic-armv7a": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                )
+            ),
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
+                ),
+            "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
+                host_arch = "i686",
+                arch = "arm-linux-gnueabi",
+                date = "2018.05",
+                gcc_vers = "7.3",
+                gcc_subvers = "1",
+                ),
+        }
+
 class xmgSSH(linux.SSHMachine, linux.BuildMachine):
     name = "xmg-build"
     username = "hs"
@@ -145,6 +183,7 @@ class xmgSSH(linux.SSHMachine, linux.BuildMachine):
 
 FLAGS = {
         "xmg-build" : "build on XMG laptop",
+        "xpert-build" : "build on xpert",
         "hercules-build":"Use hercules for build",
         "pollux-build":"Use pollux as buildhost",
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
