@@ -39,7 +39,6 @@ class Hercules1604SSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-
 class HerculesSSH(linux.SSHMachine, linux.BuildMachine):
     name = "hercules"
     hostname = "hercules"
@@ -109,7 +108,37 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
+class xmgSSH(linux.SSHMachine, linux.BuildMachine):
+    name = "xmg-build"
+    username = "hs"
+    hostname = "192.168.1.106"
+    dl_dir = "/work/downloads"
+    sstate_dir = f"/work/{username}/tbot2go/yocto-sstate"
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath("/home") / "hs" / ".ssh" / "id_rsa"
+    )
+
+    @property
+    def workdir(self) -> "linux.Path[XmglapBuild]":
+        return linux.Workdir.static(self, f"/work/{self.username}/tbot2go")
+
+    @property
+    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
+        return {
+            "armv7-eabihf--glibc--bleeding-edge": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                )
+            ),
+        }
+
+
 FLAGS = {
+        "xmg-build" : "build on XMG laptop",
         "hercules-build":"Use hercules for build",
         "pollux-build":"Use pollux as buildhost",
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
