@@ -12,7 +12,6 @@ import builders
 class XpertLab(lab.SSHLabHost, linux.BuildMachine):
     name = "xpert"
     hostname = "xpert.denx.de"
-    username = "hs"
 
     serverip = "192.168.0.4"
     netmask = "255.255.128.0"
