@@ -41,11 +41,11 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     @property
     def tftp_dir(self) -> "linux.path.Path[XpertLab]":
-        return linux.Path(self, f"/tftpboot/" + self.get_boardname + "/tbot")
+        return linux.Path(self, f"/tftpboot/{self.get_boardname}/{self.username}/tbot")
 
     @property
     def tftp_dir_board(self) -> "linux.path.Path[XpertLab]":
-        return linux.Path(self, f"{self.get_boardname}/tbot")
+        return linux.Path(self, f"{self.get_boardname}/{self.username}/tbot")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
