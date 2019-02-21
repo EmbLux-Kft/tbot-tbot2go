@@ -193,3 +193,40 @@ def wandboard_ub_call_test_py(
             pass
 
         return True
+
+### Linux
+
+regfile_path = 'tc/wandboard/files/'
+reg_file = [
+    regfile_path + "wandboard_iomux.reg",
+]
+
+@tbot.testcase
+def wandboard_lx_get_register_dump(
+    lab: typing.Optional[linux.LabHost] = None,
+    board: typing.Optional[board.Board] = None,
+    blx: typing.Optional[board.LinuxMachine] = None,
+) -> None:
+    with lab or tbot.acquire_lab() as lh:
+        with board or tbot.acquire_board(lh) as b:
+            with blx or tbot.acquire_linux(b) as lnx:
+                p = regfile_path
+                ret = ge.lx_create_revfile(lnx, p + 'wandboard_iomux.reg', '0x20e0000', '0x20e094c')
+
+@tbot.testcase
+def wandboard_lx_check_register(
+    lab: typing.Optional[linux.LabHost] = None,
+    board: typing.Optional[board.Board] = None,
+    blx: typing.Optional[board.LinuxMachine] = None,
+) -> bool:
+    """
+    check registers on wandboard board. register files
+    defined in reg_file
+    """
+    with lab or tbot.acquire_lab() as lh:
+        with board or tbot.acquire_board(lh) as b:
+            with blx or tbot.acquire_linux(b) as lnx:
+                for f in reg_file:
+                    ret = ge.lx_check_revfile(lnx, f)
+                    if ret == False:
+                        raise RuntimeError("found register differences")
