@@ -5,6 +5,8 @@ import tbot
 from tbot.machine import linux
 from tbot.machine import board
 from tbot import log_event
+from tbot import tc
+import tbot.tc.shell
 import generic as ge
 
 class Ubootpytest:
@@ -42,10 +44,18 @@ class Ubootpytest:
 
             if ret[0] == 1:
                 retval = False
-            sftp = lh.client.open_sftp()
-            sftp.get(f"{self.ubpath}/test-log.html", f"{tbot.log.LOGFILE.name}-testpy-result.html")
-            sftp.get(f"{self.ubpath}/test/py/multiplexed_log.css", f"{tbot.log.LOGFILE.name}-multiplexed_log.css")
-            sftp.close()
+
+            log_event.doc_end("ub_call_test_py")
+
+            with linux.lab.LocalLabHost() as lo:
+                tbot.log.message("Fetching test log ...")
+                # Copy test-log
+                ubpath = linux.Path(lh, self.ubpath)
+                for p_remote, p_local in [
+                    (ubpath / "test-log.html", linux.Path(lo, f"{tbot.log.LOGFILE.name}-testpy-result.html")),
+                    (ubpath / "test" / "py" / "multiplexed_log.css", linux.Path(lo, f"{tbot.log.LOGFILE.name}-multiplexed_log.css")),
+                ]:
+                    tc.shell.copy(p_remote, p_local)
 
             with contextlib.ExitStack() as cx:
                 b = cx.enter_context(tbot.acquire_board(lh))
