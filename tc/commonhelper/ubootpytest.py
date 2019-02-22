@@ -33,7 +33,13 @@ class Ubootpytest:
                 ub.exec0("echo", "start with test from u-boot sources")
 
             # now board should be off and console free
-            ret = lab.exec(linux.Raw(f"PATH={self.hookscriptpath}:$PATH;PYTHONPATH={self.ubpath};{self.ubpath}/test/py/test.py --bd {lab.get_boardname} -s --build-dir {self.ubpath}"))
+            with lh.subshell():
+                old_path = lh.env("PATH")
+                lh.env("PATH", f"{self.hookscriptpath}:{old_path}")
+                lh.env("PYTHONPATH", self.ubpath)
+
+                ret = lh.exec(f"{self.ubpath}/test/py/test.py", "--bd", lab.get_boardname, "-s", "--build-dir", self.ubpath)
+
             if ret[0] == 1:
                 retval = False
             sftp = lh.client.open_sftp()
