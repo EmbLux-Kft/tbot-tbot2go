@@ -415,8 +415,7 @@ def ub_check_i2c_dump(
             with uboot or tbot.acquire_uboot(b) as ub:
                 ub.exec0("i2c", "dev", dev)
                 for l in i2c_dump:
-                    addr = l.split(":")[0]
-                    values = l.split(":")[1]
+                    addr, values, *_ = l.split(":")
                     values = values.split(" ")
                     ad = int(addr, 0)
                     for v in values:
@@ -427,8 +426,7 @@ def ub_check_i2c_dump(
                         rval = ret.split(":")[1]
                         rval = rval.split(" ")[1]
                         if rval != str(v):
-                            msg = f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}"
-                            tbot.log.message(msg)
+                            tbot.log.message(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}")
                             retval = False
                         ad += 1
 

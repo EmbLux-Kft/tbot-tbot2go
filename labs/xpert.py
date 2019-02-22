@@ -15,12 +15,14 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     serverip = "192.168.0.4"
     netmask = "255.255.128.0"
-    boardip = {}
-    boardip["sanvito"] = "192.168.1.11"
-    boardip["sanvito-b"] = "192.168.1.12"
-    boardip["dbbasic"] = "192.168.0.2"
-    ethaddr = {}
-    ethaddr["sanvito"] = "1e:a7:65:aa:71:59"
+    boardip = {
+        "sanvito": "192.168.1.11",
+        "sanvito-b": "192.168.1.12",
+        "dbbasic": "192.168.0.2",
+    }
+    ethaddr = {
+        "sanvito": "1e:a7:65:aa:71:59",
+    }
 
     @property
     def get_boardname(self) -> str:
@@ -33,7 +35,7 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[XpertLab]":
-        return linux.Path(self, f"/tftpboot/" + tbot.selectable.Board.name + "/yocto_results")
+        return linux.Path(self, f"/tftpboot/{tbot.selectable.Board.name}/yocto_results")
 
     @property
     def workdir(self) -> "linux.path.Path[XpertLab]":
@@ -60,7 +62,7 @@ class XpertLab(lab.SSHLabHost, linux.BuildMachine):
 
     def build(self) -> linux.BuildMachine:
         if "xpert-build" in tbot.flags:
-            return builders.XpertSSH(self)
+            return self
         elif "hercules-build" in tbot.flags:
             return builders.HerculesSSH(self)
         elif "hercules-1604-build" in tbot.flags:
