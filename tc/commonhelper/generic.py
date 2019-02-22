@@ -9,7 +9,7 @@ def get_path(path : tbot.machine.linux.path.Path) -> str:
     """
     return the path from a pathlib
     """
-    return str(path).split(":")[1]
+    return path._local_str()
 
 @tbot.testcase
 def get_board_workdir(
