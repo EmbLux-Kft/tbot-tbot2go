@@ -85,9 +85,9 @@ def set_toolchain(
     ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
     if ret[0] == 1:
         log_event.doc_begin("set_toolchain_add")
-        msg = "Add toolchain to PATH", get_path(tooldir)
-        tbot.log.message(msg)
-        ma.exec0(linux.Raw("export PATH=" + get_path(tooldir) + ":$PATH"))
+        tbot.log.message(f"Add toolchain to PATH ({tooldir})")
+        old_path = ma.env("PATH")
+        ma.env("PATH", linux.F("{}:{}", tooldir, old_path))
         log_event.doc_end("set_toolchain_add")
     ma.exec0("printenv", "PATH")
     if "arm" in arch:
