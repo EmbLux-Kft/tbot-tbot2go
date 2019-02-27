@@ -151,7 +151,7 @@ def recv_timeout(
 # linux testcases
 @tbot.testcase
 def lx_replace_in_file(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: linux.LinuxMachine,
     filename,
     searchstring,
     newvalue,
@@ -168,25 +168,23 @@ def lx_replace_in_file(
     :param use_sudo bool: use sudo default False
     :param dumpfile bool: dump file with cat before and after replace string default True
     """
-    pre = ""
+    pre = []
     if use_sudo:
-        pre = "sudo "
-
-    dump = pre + "cat " + filename
-    if dumpfile:
-        ma.exec0(linux.Raw(dump))
-
-    cmd = pre + "sed -i '/" + searchstring + "/" + newvalue + "/d' " + filename
-    ma.exec0(linux.Raw(cmd))
+        pre = ["sudo"]
 
     if dumpfile:
-        ma.exec0(linux.Raw(dump))
+        ma.exec0(*pre, "cat", filename)
+
+    ma.exec0(*pre, "sed", "-i", f"/{searchstring}/{newvalue}/d", filename)
+
+    if dumpfile:
+        ma.exec0(*pre, "cat", filename)
 
     return True
 
 @tbot.testcase
 def lx_replace_line_in_file(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: linux.LinuxMachine,
     filename,
     searchstring,
     newvalue,
@@ -204,21 +202,18 @@ def lx_replace_line_in_file(
     :param use_sudo bool: use sudo default False
     :param dumpfile bool: dump file with cat before and after replace string default True
     """
-    pre = ""
+    pre = []
     if use_sudo:
-        pre = "sudo "
-
-    dump = pre + "cat " + filename
-    if dumpfile:
-        ma.exec0(linux.Raw(dump))
-
-    cmd = pre + "sed -i '/" + searchstring + "/d' " + filename
-    ma.exec0(linux.Raw(cmd))
-    cmd = pre + "echo '" + newvalue + "' >> " + filename
-    ma.exec0(linux.Raw(cmd))
+        pre = ["sudo"]
 
     if dumpfile:
-        ma.exec0(linux.Raw(dump))
+        ma.exec0(*pre, "cat", filename)
+
+    ma.exec0(*pre, "sed", "-i", f"/{searchstring}/d", filename)
+    ma.exec0(*pre, "echo", newvalue, linux.Raw(">>"), filename)
+
+    if dumpfile:
+        ma.exec0(*pre, "cat", filename)
 
     return True
 
@@ -306,7 +301,7 @@ def lx_create_revfile(
     except IOError:
         raise RuntimeError("Could not open: " + revfile)
 
-    ret = ma.exec0(linux.Raw("uname -a")).splitlines()
+    ret = ma.exec0("uname", "-a").splitlines()
     vers = ret[0]
 
     processor = "ToDo"

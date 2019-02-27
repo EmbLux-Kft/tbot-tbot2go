@@ -57,9 +57,16 @@ class Ubootpytest:
                 ]:
                     tc.shell.copy(p_remote, p_local)
 
-            with contextlib.ExitStack() as cx:
-                b = cx.enter_context(tbot.acquire_board(lh))
-                b.poweroff()
+            # Hack, as U-Boot test py let the board on
+            # we cannot power it off as console_check
+            # uses power state for this :-(
+            # find a way to find out, if a console is used
+            # and use this as a trigger in console_check ...
+            # lab.exec0("remote_power", lab.get_boardname, "off")
+            lab.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-f", "3")
+            #with contextlib.ExitStack() as cx:
+            #    b = cx.enter_context(tbot.acquire_board(lh))
+            #    b.poweroff()
 
         if retval != True:
             raise RuntimeError("Calling test/py failed")
