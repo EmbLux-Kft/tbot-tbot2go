@@ -375,7 +375,7 @@ def lx_check_cmd(
         cmdret = ma.exec0(linux.Raw(c["cmd"]))
         if c["val"] != "undef":
             if c["val"] not in cmdret:
-                raise RuntimeError(f["val"] + " not found in " + ret)
+                raise RuntimeError(c["val"] + " not found in " + cmdret)
 
     return True
 
