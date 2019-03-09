@@ -425,4 +425,11 @@ def ub_check_i2c_dump(
 
     return retval
 
-
+@tbot.testcase
+def ub_get_var(
+    ub: typing.Optional[board.UBootMachine],
+    name,
+) -> str:
+    ret = ub.exec0("printenv", name)
+    return ret.split("=")[1].strip()
+    
