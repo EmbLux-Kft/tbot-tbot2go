@@ -254,8 +254,7 @@ def lx_get_uboot_var(
     varname,
 ) -> str:
     ret = ma.exec0("fw_printenv", varname)
-    print ("===== varname ", varname, ret)
-    return "ToDo"
+    return ret
 
 @tbot.testcase
 def lx_check_revfile(
