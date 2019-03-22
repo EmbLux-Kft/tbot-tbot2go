@@ -338,21 +338,31 @@ def lx_create_revfile(
 @tbot.testcase
 def lx_check_dmesg(
     ma: typing.Optional[linux.LinuxMachine],
-    dmesg_strings,
+    dmesg_strings = None,
+    dmesg_false_strings = None,
 ) -> bool:
     """
     check if dmesg output contains strings in dmesg_list
 
     :param machine ma: machine on which dmesg command is executed
-    :param list dmesg_strings: list of strings
+    :param list dmesg_strings: list of strings which must be in dmesg
+    :param list dmesg_false_strings: list of strings which sould not occur in dmesg
     """
     buf = ma.exec0("dmesg")
     ret = True
-    for s in dmesg_strings:
-        if s not in buf:
-            msg = f"String {s} not in dmesg output."
-            tbot.log.message(msg)
-            ret = False
+    if dmesg_strings != None:
+        for s in dmesg_strings:
+            if s not in buf:
+                msg = f"String {s} not in dmesg output."
+                tbot.log.message(msg)
+                ret = False
+
+    if dmesg_false_strings != None:
+        for s in dmesg_false_strings:
+            if s in buf:
+                msg = f"String {s} in dmesg output."
+                tbot.log.message(msg)
+                ret = False
 
     return ret
 
