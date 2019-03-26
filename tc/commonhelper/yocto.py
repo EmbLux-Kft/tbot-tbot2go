@@ -149,7 +149,10 @@ class Yocto:
                     bh.env("MACHINE", tbot.selectable.Board.name)
 
                     for name in self.cfg["bitbake_targets"]:
-                        bh.exec0("bitbake", name)
+                        if " " in name:
+                            bh.exec0(linux.Raw(f"bitbake {name}"))
+                        else:
+                            bh.exec0("bitbake", name)
 
     @tbot.testcase
     def get_yocto_workdir(
