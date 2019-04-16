@@ -29,5 +29,8 @@ class DenxBoard(board.Board):
 
     def console_check(self) -> None:
         n = self._get_boardname()
-        if "off" not in self.lh.exec0("remote_power", n, "-l"):
+        ret = self.lh.exec0("remote_power", n, "-l")
+        if "off" in ret or "OFF" in ret:
+            pass
+        else:
             raise RuntimeError("Board is already on, someone might be using it!")
