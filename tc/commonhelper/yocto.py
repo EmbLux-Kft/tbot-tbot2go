@@ -145,9 +145,14 @@ class Yocto:
                 if "nosync" not in tbot.flags:
                     self.yo_repo_sync(lh, bh)
                 self.yo_repo_config(lh, bh)
-                m = 'MACHINE=' + tbot.selectable.Board.name
-                for name in self.cfg["bitbake_targets"]:
-                    bh.exec0(linux.Raw(m + " bitbake " + name))
+                with bh.subshell():
+                    bh.env("MACHINE", tbot.selectable.Board.name)
+
+                    for name in self.cfg["bitbake_targets"]:
+                        if " " in name:
+                            bh.exec0(linux.Raw(f"bitbake {name}"))
+                        else:
+                            bh.exec0("bitbake", name)
 
     @tbot.testcase
     def get_yocto_workdir(
@@ -180,8 +185,9 @@ class Yocto:
 
         if self.tested == False:
             try:
-                ma.exec0(linux.Raw("export PATH=$PATH:" + ma.repo_path))
-                ma.exec0(linux.Raw("printenv PATH"))
+                old_path = ma.env("PATH")
+                ma.env("PATH", f"{old_path}:{ma.repo_path}")
+                ma.env("PATH")
             except:
                 pass
             self.tested = True

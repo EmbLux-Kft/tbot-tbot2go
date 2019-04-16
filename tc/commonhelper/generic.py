@@ -9,7 +9,7 @@ def get_path(path : tbot.machine.linux.path.Path) -> str:
     """
     return the path from a pathlib
     """
-    return str(path).split(":")[1]
+    return path._local_str()
 
 @tbot.testcase
 def get_board_workdir(
@@ -85,9 +85,9 @@ def set_toolchain(
     ret = ma.exec("printenv", "PATH", tbot.machine.linux.Pipe, "grep", "--color=never", tooldir)
     if ret[0] == 1:
         log_event.doc_begin("set_toolchain_add")
-        msg = "Add toolchain to PATH", get_path(tooldir)
-        tbot.log.message(msg)
-        ma.exec0(linux.Raw("export PATH=" + get_path(tooldir) + ":$PATH"))
+        tbot.log.message(f"Add toolchain to PATH ({tooldir})")
+        old_path = ma.env("PATH")
+        ma.env("PATH", linux.F("{}:{}", tooldir, old_path))
         log_event.doc_end("set_toolchain_add")
     ma.exec0("printenv", "PATH")
     if "arm" in arch:
@@ -151,7 +151,7 @@ def recv_timeout(
 # linux testcases
 @tbot.testcase
 def lx_replace_in_file(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: linux.LinuxMachine,
     filename,
     searchstring,
     newvalue,
@@ -168,25 +168,23 @@ def lx_replace_in_file(
     :param use_sudo bool: use sudo default False
     :param dumpfile bool: dump file with cat before and after replace string default True
     """
-    pre = ""
+    pre = []
     if use_sudo:
-        pre = "sudo "
-
-    dump = pre + "cat " + filename
-    if dumpfile:
-        ma.exec0(linux.Raw(dump))
-
-    cmd = pre + "sed -i '/" + searchstring + "/" + newvalue + "/d' " + filename
-    ma.exec0(linux.Raw(cmd))
+        pre = ["sudo"]
 
     if dumpfile:
-        ma.exec0(linux.Raw(dump))
+        ma.exec0(*pre, "cat", filename)
+
+    ma.exec0(*pre, "sed", "-i", f"/{searchstring}/{newvalue}/d", filename)
+
+    if dumpfile:
+        ma.exec0(*pre, "cat", filename)
 
     return True
 
 @tbot.testcase
 def lx_replace_line_in_file(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: linux.LinuxMachine,
     filename,
     searchstring,
     newvalue,
@@ -204,21 +202,18 @@ def lx_replace_line_in_file(
     :param use_sudo bool: use sudo default False
     :param dumpfile bool: dump file with cat before and after replace string default True
     """
-    pre = ""
+    pre = []
     if use_sudo:
-        pre = "sudo "
-
-    dump = pre + "cat " + filename
-    if dumpfile:
-        ma.exec0(linux.Raw(dump))
-
-    cmd = pre + "sed -i '/" + searchstring + "/d' " + filename
-    ma.exec0(linux.Raw(cmd))
-    cmd = pre + "echo '" + newvalue + "' >> " + filename
-    ma.exec0(linux.Raw(cmd))
+        pre = ["sudo"]
 
     if dumpfile:
-        ma.exec0(linux.Raw(dump))
+        ma.exec0(*pre, "cat", filename)
+
+    ma.exec0(*pre, "sed", "-i", f"/{searchstring}/d", filename)
+    ma.exec0(*pre, "echo", newvalue, linux.Raw(">>"), filename)
+
+    if dumpfile:
+        ma.exec0(*pre, "cat", filename)
 
     return True
 
@@ -254,8 +249,7 @@ def lx_get_uboot_var(
     varname,
 ) -> str:
     ret = ma.exec0("fw_printenv", varname)
-    print ("===== varname ", varname, ret)
-    return "ToDo"
+    return ret
 
 @tbot.testcase
 def lx_check_revfile(
@@ -307,7 +301,7 @@ def lx_create_revfile(
     except IOError:
         raise RuntimeError("Could not open: " + revfile)
 
-    ret = ma.exec0(linux.Raw("uname -a")).splitlines()
+    ret = ma.exec0("uname", "-a").splitlines()
     vers = ret[0]
 
     processor = "ToDo"
@@ -339,21 +333,31 @@ def lx_create_revfile(
 @tbot.testcase
 def lx_check_dmesg(
     ma: typing.Optional[linux.LinuxMachine],
-    dmesg_strings,
+    dmesg_strings = None,
+    dmesg_false_strings = None,
 ) -> bool:
     """
     check if dmesg output contains strings in dmesg_list
 
     :param machine ma: machine on which dmesg command is executed
-    :param list dmesg_strings: list of strings
+    :param list dmesg_strings: list of strings which must be in dmesg
+    :param list dmesg_false_strings: list of strings which sould not occur in dmesg
     """
     buf = ma.exec0("dmesg")
     ret = True
-    for s in dmesg_strings:
-        if s not in buf:
-            msg = f"String {s} not in dmesg output."
-            tbot.log.message(msg)
-            ret = False
+    if dmesg_strings != None:
+        for s in dmesg_strings:
+            if s not in buf:
+                msg = f"String {s} not in dmesg output."
+                tbot.log.message(msg)
+                ret = False
+
+    if dmesg_false_strings != None:
+        for s in dmesg_false_strings:
+            if s in buf:
+                msg = f"String {s} in dmesg output."
+                tbot.log.message(msg)
+                ret = False
 
     return ret
 
@@ -375,7 +379,7 @@ def lx_check_cmd(
         cmdret = ma.exec0(linux.Raw(c["cmd"]))
         if c["val"] != "undef":
             if c["val"] not in cmdret:
-                raise RuntimeError(f["val"] + " not found in " + ret)
+                raise RuntimeError(c["val"] + " not found in " + cmdret)
 
     return True
 
@@ -406,8 +410,7 @@ def ub_check_i2c_dump(
             with uboot or tbot.acquire_uboot(b) as ub:
                 ub.exec0("i2c", "dev", dev)
                 for l in i2c_dump:
-                    addr = l.split(":")[0]
-                    values = l.split(":")[1]
+                    addr, values, *_ = l.split(":")
                     values = values.split(" ")
                     ad = int(addr, 0)
                     for v in values:
@@ -418,11 +421,17 @@ def ub_check_i2c_dump(
                         rval = ret.split(":")[1]
                         rval = rval.split(" ")[1]
                         if rval != str(v):
-                            msg = f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}"
-                            tbot.log.message(msg)
+                            tbot.log.message(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}")
                             retval = False
                         ad += 1
 
     return retval
 
-
+@tbot.testcase
+def ub_get_var(
+    ub: typing.Optional[board.UBootMachine],
+    name,
+) -> str:
+    ret = ub.exec0("printenv", name)
+    return ret.split("=")[1].strip()
+    

@@ -188,15 +188,17 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     hostname = "192.168.1.110"
     username = "pi"
     serverip = "192.168.3.1"
-    boardip = {}
-    boardip["sanvito"] = "192.168.3.22"
-    boardip["h03pl086"] = "192.168.3.32"
-    boardip["k30rf"] = "192.168.7.37"
-    boardip["piinstall"] = "192.168.1.113"
+    tftproot = "/srv/tftpboot"
+    boardip = {
+        "sanvito":   "192.168.3.22",
+        "h03pl086":  "192.168.3.32",
+        "k30rf":     "192.168.7.37",
+        "piinstall": "192.168.1.113",
+    }
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
-        return linux.Path(self, f"/srv/tftpboot/" + tbot.selectable.Board.name + "/tbot/yocto_results")
+        return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
     def workdir(self) -> "linux.path.Path[Tbot2goLab]":

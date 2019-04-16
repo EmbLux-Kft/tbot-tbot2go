@@ -8,26 +8,26 @@ class DenxBoard(board.Board):
 
     def _get_boardname(self):
         if self.name == "wandboard":
-            n = "wandboard_dl"
+            return "wandboard_dl"
         elif self.name == "taurus":
-            n = "at91_taurus"
-        else:
-            n = self.name
-        return n
+            return "at91_taurus"
+        return self.name
 
     def poweron(self) -> None:
-        n = self._get_boardname()
-        self.lh.exec0("remote_power", n, "on")
+        self.lh.exec0("remote_power", self._get_boardname(), "on")
 
     def poweroff(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         n = self._get_boardname()
-        self.lh.exec0("remote_power", n, "off")
+        self.lh.exec0("remote_power", self._get_boardname(), "off")
 
     def connect(self) -> channel.Channel:
-        n = self._get_boardname()
-        return self.lh.new_channel("connect", n)
+        return self.lh.new_channel("connect", self._get_boardname())
 
     def console_check(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
         n = self._get_boardname()
         ret = self.lh.exec0("remote_power", n, "-l")
         if "off" in ret or "OFF" in ret:

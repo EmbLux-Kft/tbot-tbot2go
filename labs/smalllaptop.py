@@ -20,10 +20,10 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
     def authenticator(self) -> linux.auth.Authenticator:
         return linux.auth.PrivateKeyAuthenticator(
             pathlib.PurePosixPath("/home") / "hs" / ".ssh" / "id_rsa"
-    )
+        )
 
     @property
-    def workdir(self) -> "linux.Path[XmglapBuild]":
+    def workdir(self) -> "linux.Path[Threadripper1604SSH]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot2go")
 
     @property
