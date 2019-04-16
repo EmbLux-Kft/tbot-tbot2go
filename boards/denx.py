@@ -31,8 +31,3 @@ class DenxBoard(board.Board):
         n = self._get_boardname()
         if "off" not in self.lh.exec0("remote_power", n, "-l"):
             raise RuntimeError("Board is already on, someone might be using it!")
-
-
-class DenxUBootBuildInfo(uboot.BuildInfo):
-    if tbot.selectable.LabHost.name == "pollux":
-        uboot_remote = "/home/git/u-boot.git"
