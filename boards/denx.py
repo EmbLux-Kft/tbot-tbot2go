@@ -15,6 +15,11 @@ class DenxBoard(board.Board):
         return self.name
 
     def poweron(self) -> None:
+        if self.name == "aristainetos":
+            if "bootmodesd" in tbot.flags:
+                self.lh.set_bootmode("sd")
+            if "bootmodespi" in tbot.flags:
+                self.lh.set_bootmode("spi")
         self.lh.exec0("remote_power", self._get_boardname(), "on")
 
     def poweroff(self) -> None:
@@ -36,4 +41,9 @@ class DenxBoard(board.Board):
         if "off" in ret or "OFF" in ret:
             pass
         else:
-            raise RuntimeError("Board is already on, someone might be using it!")
+           raise RuntimeError("Board is already on, someone might be using it!")
+
+FLAGS = {
+        "bootmodesd" : "Boot with bootmode sd",
+        "bootmodespi" : "Boot with bootmode spi"
+}
