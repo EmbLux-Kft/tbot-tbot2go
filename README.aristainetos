@@ -1,0 +1,42 @@
+u-boot bauen mit
+
+./mk.sh -s -c
+
+source /home/hs/data/Entwicklung/newtbot/tbot/completions.sh
+
+
+tbot @argsaristainetos -vv interactive_uboot
+
+tbot @argsaristainetos -vv ari_ub_build -f pollux-build
+tbot @argsaristainetos -vv ari_ub_basic_checks
+
+tbot @argsaristainetos -vv ari_ub_update
+tbot @argsaristainetos -vv ari_ub_update_i
+tbot @argsaristainetos -vv ari_ub_update_i -f oldversion
+tbot @argsaristainetos -vv ari_ub_check_register
+
+you can switch bootmode with tbot flags bootmodesd (default) or bootmodespi
+
+tbot @argsaristainetos -vv ari_ub_dump_register
+----
+
+webcam:
+webcam auf pollux
+ssh -C -Y -L 8100:pollux:8180 hs@pollux.denx.org
+ssh pollux
+
+vlc v4l2:///dev/video0:size=320x240  -I dummy -v --noaudio --ttl 12 --sout '#transcode{vcodec=theo,vb=256}:standard{access=http,mux=ogg,dst=:8180}'
+
+anderes fenster
+vlc http://localhost:8100
+
+-----
+
+test py, see:
+/home/hs/data/Entwicklung/abb/uboot-rework/README.aristainetos.testpy
+
+setenv disable_giga yes
+setenv serverip 192.168.1.1
+setenv netmask 255.255.0.0
+setenv ipaddr 192.168.20.75
+setenv ethaddr 32:8f:5c:26:25:b9
