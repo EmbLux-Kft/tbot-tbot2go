@@ -434,4 +434,202 @@ def ub_get_var(
 ) -> str:
     ret = ub.exec0("printenv", name)
     return ret.split("=")[1].strip()
-    
+
+def ub_check_size(
+    size,
+) -> bool:
+    if any(i in size for i in ('b', 'w', 'l')):
+        return True
+    else:
+        raise RuntimeError(f"size {size} not supported.")
+
+@tbot.testcase
+def ub_get_mem_addr(
+    ub: typing.Optional[board.UBootMachine],
+    addr,
+    size,
+) -> str:
+    """
+    address  : memory addr
+    size: b, w or l
+    """
+    ub_check_size(size)
+
+    ret = ub.exec(f"md.{size}", addr, "1")
+    if ret[0] != 0:
+        raise RuntimeError(f"Error reading {addr} {ret}")
+    return "0x" + ret[1].split(" ")[1]
+
+@tbot.testcase
+def ub_set_mem_addr(
+    ub: typing.Optional[board.UBootMachine],
+    addr,
+    size,
+    value,
+    count = "1",
+) -> None:
+    """
+    address  : memory addr
+    size : b, w or l
+    value: the value
+    count : count
+    """
+    ub_check_size(size)
+
+    ret = ub.exec(f"mw.{size}", addr, value, count)
+    if ret[0] != 0:
+        raise RuntimeError(f"Error wrinting {addr} {value} {ret}")
+
+@tbot.testcase
+def ub_create_revfile(
+    ub: typing.Optional[board.UBootMachine],
+    revfile,
+    startaddr,
+    endaddr,
+    mask = '0xffffffff',
+    size = 'l',
+) -> bool:
+    ub_check_size(size)
+
+    try:
+        fd = open(revfile, 'w')
+    except IOError:
+        raise RuntimeError("Could not open: " + revfile)
+
+    vers = ub.exec0("vers")
+
+    fd.write("# U-Boot   :\n")
+    vers = vers.split("\n")
+    for line in vers:
+        fd.write("# %s\n" % line)
+    fd.write("# regaddr mask type defval\n")
+
+    start = int(startaddr, 16)
+    stop = int(endaddr, 16)
+
+    if size == 'l':
+        step = 4
+    if size == 'w':
+        step = 2
+    if size == 'b':
+        step = 1
+
+    for i in iter(range(start, stop, step)):
+        val = ub_get_mem_addr(ub, hex(i), size)
+        fd.write('%-10s %10s %10s %10s\n' % (hex(i), mask, size, val))
+
+    fd.close()
+    return True
+
+def get_name(socfile, addr):
+    """
+    you need the RM converted from pdf to txt, used
+    https://www.pdf2go.com/de/pdf-in-text
+    for converting ...
+    """
+    if socfile == None:
+        return
+
+    try:
+        fd = open(socfile, 'r')
+    except IOError:
+        raise RuntimeError("Could not open: " + socfile)
+
+    oldline = ""
+    lines = fd.readlines()
+    addr = addr.replace("0x", "")
+    addr = addr.upper()
+    last = addr[-4:]
+    rest = addr[:-4]
+    addr = rest + "_" + last + "h"
+    for line in lines:
+        if addr in line:
+            oldline = oldline.replace("(", "")
+            oldline = oldline.replace(")", "")
+            fd.close()
+            return oldline
+
+        oldline = line
+
+    fd.close()
+    return "notfound\n"
+
+@tbot.testcase
+def ub_write_dump(
+    ub: typing.Optional[board.UBootMachine],
+    revfile,
+    newaddr,
+) -> bool:
+    """
+    write content of revfile into memory.
+    """
+    ret = True
+    try:
+        fd = open(revfile, 'r')
+    except IOError:
+        raise RuntimeError("Could not open: " + revfile)
+
+    off = None
+
+    tbot.log.message(f"dump {revfile} to {newaddr}")
+    lnr = 0
+    for line in fd.readlines():
+        lnr += 1
+        cols = line.split()
+        if cols[0] == '#':
+            continue
+
+        if off == None:
+            if newaddr == cols[0]:
+                off = 0
+            else:
+                inew = int(newaddr, 16)
+                icol = int(cols[0], 16)
+                off = inew - icol
+
+        icol = int(cols[0], 16)
+        addr = icol + off
+        ub_set_mem_addr(ub, hex(addr), cols[2], cols[3])
+
+@tbot.testcase
+def ub_check_revfile(
+    ub: typing.Optional[board.UBootMachine],
+    revfile,
+    difffile = None,
+    socfile = None,
+) -> bool:
+    ret = True
+    try:
+        fd = open(revfile, 'r')
+    except IOError:
+        raise RuntimeError("Could not open: " + revfile)
+
+    if difffile != None:
+        try:
+            fddiff = open(difffile, 'a')
+        except IOError:
+            raise RuntimeError("Could not open: " + difffile)
+
+    tbot.log.message(f"Checking file {revfile}")
+    lnr = 0
+    for line in fd.readlines():
+        lnr += 1
+        cols = line.split()
+        if cols[0] == '#':
+            continue
+
+        val = ub_get_mem_addr(ub, cols[0], cols[2])
+        if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
+            msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
+            tbot.log.message(msg)
+            if difffile != None:
+                fddiff.write(msg + "\n")
+                fddiff.write(get_name(socfile, cols[0]))
+
+            ret = False
+
+    fd.close()
+    if difffile != None:
+        fddiff.close()
+
+    return ret
