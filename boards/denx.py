@@ -2,6 +2,7 @@ import tbot
 from tbot.machine import channel
 from tbot.machine import board
 from tbot.tc import uboot
+import time
 
 class DenxBoard(board.Board):
     connect_wait = 0.0
@@ -21,6 +22,8 @@ class DenxBoard(board.Board):
             return
         n = self._get_boardname()
         self.lh.exec0("remote_power", self._get_boardname(), "off")
+        if self.name == "aristainetos":
+            time.sleep(2)
 
     def connect(self) -> channel.Channel:
         return self.lh.new_channel("connect", self._get_boardname())
