@@ -17,6 +17,15 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
 
+    def set_bootmode(self, state):
+        if tbot.selectable.Board.name == "aristainetos":
+            if state == "sd":
+                self.exec0("relais", "relsrv-02-03", "1", "on")
+            else:
+                self.exec0("relais", "relsrv-02-03", "1", "off")
+        else:
+            raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
+
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
