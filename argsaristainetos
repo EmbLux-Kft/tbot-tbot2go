@@ -1,0 +1,9 @@
+-l
+labs/pollux.py
+-b
+boards/aristainetos.py
+-f
+bootmodesd
+-f
+pollux-build
+-vv

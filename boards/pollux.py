@@ -58,12 +58,27 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             ch.sendline("exit")
             ch.sendline("OK")
 
+    @contextlib.contextmanager
+    def telnet_connect(self, mach: linux.LinuxShell) -> channel.Channel:
+        n = self._get_boardname()
+        TELNET_PROMPT = "> "
+        ch = mach.open_channel("connect", n)
+        try:
+            yield ch
+        finally:
+            ch.send('\x1d')
+            ch.read_until_prompt(TELNET_PROMPT)
+            ch.sendline("quit")
+
+
     def ssh_connect(self) -> channel.Channel:
         return mach.open_channel("ssh", "hs@" + self.host.boardip[self.name])
 
     def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if self.name == 'piinstall':
             return self.ssh_connect(mach)
+        elif self.name == 'aristainetos':
+            return self.telnet_connect(mach)
         else:
             return self.kermit_connect(mach)
 
@@ -86,6 +101,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     def __init__(self, lh: linux.LinuxShell) -> None:
         # Check lab
         assert (
+            #lh.name == self.lab_name
             lh.name == "pollux"
         ), f"{lh!r} is the wrong lab for this board! (Expected 'pollux')"
         super().__init__(lh)

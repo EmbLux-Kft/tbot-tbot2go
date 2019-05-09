@@ -135,6 +135,7 @@ class PolluxLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
                 )
             ),
             "powerpc": linux.build.DistroToolchain("/home/hs/.buildman-toolchains/gcc-7.3.0-nolibc/powerpc-linux/bin", "powerpc", "powerpc-linux-"),
+            "arm": linux.build.DistroToolchain("/home/hs/.buildman-toolchains/gcc-7.3.0-nolibc/arm-linux-gnueabi/bin", "arm", "arm-linux-gnueabi-"),
         }
 
     def build(self) -> linux.Builder:

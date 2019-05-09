@@ -1,0 +1,15 @@
+# U-Boot   :
+# U-Boot 2019.10-rc3-00455-gd3424e5806 (Sep 26 2019 - 07:40:52 +0200)abb_0.9.5.0
+# 
+# arm-linux-gcc.br_real (Buildroot 2017.11-rc2) 7.2.0
+# GNU ld (GNU Binutils) 2.29.1
+# 
+# regaddr mask type defval
+0x20a4000  0xffffffff          l 0xa39f0000
+0x20a4004  0xffffffff          l 0x20000000
+0x20a4008  0xffffffff          l 0x839f0000
+0x20a400c  0xffffffff          l 0x00000000
+0x20a4010  0xffffffff          l 0x00000000
+0x20a4014  0xffffffff          l 0x00000000
+0x20a4018  0xffffffff          l 0x7c60ffff
+0x20a401c  0xffffffff          l 0x00000000
