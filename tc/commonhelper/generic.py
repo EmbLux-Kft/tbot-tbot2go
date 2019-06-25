@@ -255,6 +255,7 @@ def lx_get_uboot_var(
 def lx_check_revfile(
     ma: typing.Optional[linux.LinuxMachine],
     revfile,
+    difffile = None,
 ) -> bool:
     # check if devmem exist
     ret = lx_cmd_exists(ma, 'devmem2')
@@ -267,6 +268,12 @@ def lx_check_revfile(
     except IOError:
         raise RuntimeError("Could not open: " + revfile)
 
+    if difffile != None:
+        try:
+            fddiff = open(difffile, 'a')
+        except IOError:
+            raise RuntimeError("Could not open diffile: " + difffile)
+
     lnr = 0
     for line in fd.readlines():
         lnr += 1
@@ -278,8 +285,14 @@ def lx_check_revfile(
         if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
             msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
             tbot.log.message(msg)
+            if difffile != None:
+                fddiff.write(msg + "\n")
+
             ret = False
 
+    fd.close()
+    if difffile != None:
+        fddiff.close()
     return ret
 
 @tbot.testcase
