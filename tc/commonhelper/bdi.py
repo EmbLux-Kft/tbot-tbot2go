@@ -52,13 +52,22 @@ class Bdi:
     @tbot.testcase
     def check_ready(
         self,
+        check_run = True,
     ) -> str:
         while (True):
             ret = self.exec("i")
             if "Current SPSR" in ret:
+                self.lhbdi.read_until_prompt(self.prompt)
+                return ret
+            elif "Current CCSRBAR" in ret:
+                self.lhbdi.read_until_prompt(self.prompt)
                 return ret
             elif "running" in ret:
-                self.bdi_reset_board()
+                if check_run == True:
+                    self.bdi_reset_board()
+                else:
+                    self.lhbdi.read_until_prompt(self.prompt)
+                    return ret
             else:
                 time.sleep(self.wait)
 
@@ -95,6 +104,13 @@ class Bdi:
     ) -> None:
         ret = self.exec("res", "halt")
         self.check_ready()
+
+    @tbot.testcase
+    def bdi_reset_board_run(
+        self,
+    ) -> None:
+        ret = self.exec("res", "run")
+        self.check_ready(check_run=False)
 
     @tbot.testcase
     def bdi_load_spl(
