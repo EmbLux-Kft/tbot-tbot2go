@@ -13,7 +13,7 @@ class Bdi:
     cfg : configuration dictionary
     """
 
-    def __init__(self, bdiname, prompt, thumbbase, loadaddrspl, loadaddrub, splfile, ubfile):
+    def __init__(self, bdiname, prompt, thumbbase, loadaddrspl, loadaddrub, splfile, ubfile, bdicfgfile):
         self.bdiname = bdiname
         self.name = self.bdiname
         self.prompt = prompt
@@ -22,6 +22,7 @@ class Bdi:
         self.loadaddrub = loadaddrub
         self.splfile = splfile
         self.ubfile = ubfile
+        self.bdicfgfile = bdicfgfile
         self.bdiend = '\r'
         self.wait = 0.5
 
@@ -68,6 +69,14 @@ class Bdi:
                 else:
                     self.lhbdi.read_until_prompt(self.prompt)
                     return ret
+            elif "CONFIG: cannot open" in ret:
+                tbot.log.message(f"BDI has wrong config file, try to set {self.bdicfgfile}")
+                self.exec("config", self.bdicfgfile)
+                # bdi reboots now
+                self.lhbdi.close()
+                self.lhbdi = self.lh.new_channel("telnet", self.bdiname)
+                self.lhbdi.read_until_prompt(self.prompt)
+                self.check_ready()
             else:
                 time.sleep(self.wait)
 
@@ -94,9 +103,13 @@ class Bdi:
         lh: typing.Optional[linux.Lab],
         b: typing.Optional[board.Board],
     ) -> None:
+        self.lh = lh
         self.lhbdi = lh.new_channel("telnet", self.bdiname)
         self.lhbdi.read_until_prompt(self.prompt)
         self.check_ready()
+        ret = self.exec("config")
+        if self.bdicfgfile not in ret:
+            raise RuntimeError("BDI has wrong config file")
 
     @tbot.testcase
     def bdi_reset_board(
