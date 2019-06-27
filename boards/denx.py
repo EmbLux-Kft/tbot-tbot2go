@@ -1,3 +1,4 @@
+import abc
 import typing
 import tbot
 from tbot.machine import board, channel, linux, connector
@@ -7,11 +8,19 @@ import time
 class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     connect_wait = 0.0
 
+    #@property
+    #@abc.abstractmethod
+    #def lab_name(self) -> str:
+    #    """Return the name of this board's lab."""
+    #    pass
+
     def _get_boardname(self):
         if self.name == "wandboard":
             return "wandboard_dl"
         elif self.name == "taurus":
             return "at91_taurus"
+        elif self.name == "socrates":
+            return "socrates-abb"
         return self.name
 
     def poweron(self) -> None:

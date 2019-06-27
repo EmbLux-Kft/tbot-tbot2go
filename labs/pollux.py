@@ -5,7 +5,7 @@ import builders
 
 class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "pollux"
-    hostname = "pollux.denx.de"
+    hostname = "pollux.denx.org"
     username = "hs"
 
     tftproot = "/tftpboot"
