@@ -1,5 +1,6 @@
 import typing
 import pathlib
+import tbot
 from tbot.machine import linux
 
 class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
@@ -61,7 +62,10 @@ class Hercules1604SSH(linux.SSHMachine, linux.BuildMachine):
 
     @property
     def workdir(self) -> "linux.Path[HerculesSSH]":
-        return linux.Workdir.static(self, f"/work/{self.username}/tbot")
+        if "gitlabrunner" in tbot.flags:
+            return linux.Workdir.static(self, f"/work/{self.username}/tbot2go/gitlab")
+        else:
+            return linux.Workdir.static(self, f"/work/{self.username}/tbot")
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Hercules1604SSH]":
