@@ -49,6 +49,9 @@ class Hercules1604SSH(linux.SSHMachine, linux.BuildMachine):
     @property
     def ssh_config(self) -> typing.List[str]:
         return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules"]
+        # try if problems with host key check
+        return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules", "StrictHostKeyChecking=no"]
+        return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules", "UserKnownHostsFile=/dev/null", "StrictHostKeyChecking=no"]
 
     @property
     def authenticator(self) -> linux.auth.Authenticator:
