@@ -54,9 +54,9 @@ class Tbot2goBoard(board.Board):
     def kermit_connect(self) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
-            cfg_file = "/home/pi/kermrc_" + self.boardlabname
+            cfg_file = f"/home/{self.lh.username}/kermrc_{self.boardlabname}"
         elif self.name == 'h03pl086':
-            cfg_file = "/home/pi/kermrc_h03pl086"
+            cfg_file = f"/home/{self.lh.username}/kermrc_h03pl086"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = self.lh.new_channel("kermit", cfg_file)
