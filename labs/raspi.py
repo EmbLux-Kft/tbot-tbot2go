@@ -11,7 +11,7 @@ import builders
 class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     name = "tbot2go"
     hostname = "192.168.1.110"
-    hostname = "192.168.2.103"
+    # hostname = "192.168.2.103"
     username = "hs"
     serverip = "192.168.3.1"
     tftproot = "/srv/tftpboot"
