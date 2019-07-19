@@ -137,7 +137,7 @@ class ThreadripperSSH(linux.SSHMachine, linux.BuildMachine):
     @property
     def authenticator(self) -> linux.auth.Authenticator:
         return linux.auth.PrivateKeyAuthenticator(
-            pathlib.PurePosixPath("/home") / "pi" / ".ssh" / "id_rsa"
+            pathlib.PurePosixPath("/home") / self.username / ".ssh" / "id_rsa"
     )
 
     @property
@@ -176,7 +176,7 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
     @property
     def authenticator(self) -> linux.auth.Authenticator:
         return linux.auth.PrivateKeyAuthenticator(
-            pathlib.PurePosixPath("/home") / "hs" / ".ssh" / "id_rsa"
+            pathlib.PurePosixPath("/home") / self.username / ".ssh" / "id_rsa"
     )
 
     @property
