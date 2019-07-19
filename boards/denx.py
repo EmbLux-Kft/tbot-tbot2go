@@ -15,6 +15,9 @@ class DenxBoard(board.Board):
         return self.name
 
     def poweron(self) -> None:
+        if "nopoweroff" in tbot.flags:
+            return
+
         if self.name == "aristainetos":
             if "bootmodesd" in tbot.flags:
                 self.lh.set_bootmode("sd")
@@ -31,9 +34,15 @@ class DenxBoard(board.Board):
             time.sleep(2)
 
     def connect(self) -> channel.Channel:
+        if "no_console_check" in tbot.flags:
+            return
+
         return self.lh.new_channel("connect", self._get_boardname())
 
     def console_check(self) -> None:
+        if "no_console_check" in tbot.flags:
+            return
+
         if "nopoweroff" in tbot.flags:
             return
         n = self._get_boardname()
@@ -45,5 +54,6 @@ class DenxBoard(board.Board):
 
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",
-        "bootmodespi" : "Boot with bootmode spi"
+        "bootmodespi" : "Boot with bootmode spi",
+        "no_console_check" : "do not check if console is used",
 }
