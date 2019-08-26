@@ -81,6 +81,13 @@ class Yocto:
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
+                if "yocto_full_clean" in tbot.flags:
+                    try:
+                        p = ge.get_board_workdir(bh)
+                        bh.exec0("rm", "-rf", p)
+                    except:
+                        pass
+
                 try:
                     p = self.cd2repo(bh)
                 except:
@@ -315,4 +322,5 @@ class Yocto:
 
 FLAGS = {
         "nosync":"build without repo sync",
+        "yocto_full_clean":"remove all source files before configuration",
         }
