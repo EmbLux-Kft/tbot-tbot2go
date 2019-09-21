@@ -1,6 +1,7 @@
 import contextlib
 import typing
 import tbot
+import time
 from tbot.machine import linux
 from tbot.machine import board
 from tbot import log_event
@@ -256,6 +257,7 @@ def lx_check_revfile(
     ma: typing.Optional[linux.LinuxMachine],
     revfile,
     difffile = None,
+    timeout = None,
 ) -> bool:
     # check if devmem exist
     ret = lx_cmd_exists(ma, 'devmem2')
@@ -289,6 +291,9 @@ def lx_check_revfile(
                 fddiff.write(msg + "\n")
 
             ret = False
+
+        if timeout != None:
+            time.sleep(timeout)
 
     fd.close()
     if difffile != None:
