@@ -4,6 +4,7 @@ from tbot.machine import board
 from tbot.tc import uboot
 from tbot.machine.board import special
 from tbot.machine import linux
+import time
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -43,6 +44,24 @@ class Tbot2goBoard(board.Board):
             pass
         else:
             raise RuntimeError("Board ", self.name, " not configured")
+        if "usbloader" in tbot.flags:
+            loop = True
+            while loop:
+                try:
+                    self.lh.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/SPL-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
+
+            loop = True
+            while loop:
+                try:
+                    self.lh.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/u-boot-ivt.img-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
 
     def poweroff(self) -> None:
         if "nopoweroff" in tbot.flags:
@@ -107,4 +126,5 @@ class Tbot2goBoard(board.Board):
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",
         "bootmodeemmc" : "Boot with bootmode emmc",
+        "usbloader" : "load SPL / U-Boot with imx_usb_loader"
 }
