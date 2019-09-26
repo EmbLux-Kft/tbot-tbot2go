@@ -14,8 +14,10 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
     netmask = "255.255.0.0"
     boardip = {}
     boardip["wandboard"] = "192.168.20.62"
+    boardip["aristainetos"] = "192.168.20.75"
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
+    ethaddr["aristainetos"] = "32:8f:5c:26:25:b9"
 
     def set_bootmode(self, state):
         if tbot.selectable.Board.name == "aristainetos":
