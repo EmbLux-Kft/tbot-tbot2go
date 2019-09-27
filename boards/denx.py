@@ -1,7 +1,7 @@
+import typing
 import tbot
-from tbot.machine import channel
-from tbot.machine import board
-from tbot.tc import uboot
+from tbot.machine import board, channel, linux
+from tbot.tc import uboot, git, kconfig
 import time
 
 class DenxBoard(board.Board):
@@ -51,6 +51,26 @@ class DenxBoard(board.Board):
             pass
         else:
            raise RuntimeError("Board is already on, someone might be using it!")
+
+BH = typing.TypeVar("BH", bound=linux.BuildMachine)
+
+class UBootBuilder(uboot.UBootBuilder):
+    if tbot.selectable.LabHost.name in ["pollux", "hercules"]:
+        remote = "git@gitlab.denx.de:abb/aristainetos-uboot.git"
+
+    def do_configure(self, bh: BH, repo: git.GitRepository[BH]) -> None:
+        super().do_configure(bh, repo)
+
+        tbot.log.message("Patching U-Boot config ...")
+
+        # Add local-version tbot
+        kconfig.set_string_value(repo / ".config", "CONFIG_LOCALVERSION", "-tbot")
+
+        # Tab completion
+        kconfig.enable(repo / ".config", "CONFIG_AUTO_COMPLETE")
+
+        # Enable configs for network setup
+        kconfig.enable(repo / ".config", "CONFIG_CMD_DHCP")
 
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",
