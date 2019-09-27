@@ -23,10 +23,47 @@ class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
+                ),
+            "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
+                host_arch = "i686",
+                arch = "arm-linux-gnueabi",
+                date = "2018.05",
+                gcc_vers = "7.3",
+                gcc_subvers = "1",
+                ),
+            "generic-armv5te": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/yocto-2.4/generic-armv5te/environment-setup-armv5e-poky-linux-gnueabi",
+                )
+            ),
+            "generic-armv6": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/yocto-2.4/generic-armv6/environment-setup-armv6-vfp-poky-linux-gnueabi",
+                )
+            ),
             "generic-armv7a": linux.build.EnvScriptToolchain(
                 linux.Path(
                     self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                    "/home/hs/toolchain/linaro/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabi",
+                )
+            ),
+            "generic-armv7a-hf": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/yocto-2.4/generic-armv7a-hf/environment-setup-armv7ahf-neon-poky-linux-gnueabi",
+                )
+            ),
+            "generic-powerpc-e500v2": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/yocto-2.4/generic-powerpc-e500v2/environment-setup-ppce500v2-poky-linux-gnuspe",
                 )
             ),
         }
