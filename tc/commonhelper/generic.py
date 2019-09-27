@@ -423,28 +423,41 @@ def ub_check_i2c_dump(
                'xx' ignore
     """
     retval = True
-    with lab or tbot.acquire_lab() as lh:
-        with board or tbot.acquire_board(lh) as b:
-            with uboot or tbot.acquire_uboot(b) as ub:
-                ub.exec0("i2c", "dev", dev)
-                for l in i2c_dump:
-                    addr, values, *_ = l.split(":")
-                    values = values.split(" ")
-                    ad = int(addr, 0)
-                    for v in values:
-                        if v == '':
-                            continue
-                        if v == 'xx':
-                            ad += 1
-                            continue
-                        adh = format(ad, '02x')
-                        ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
-                        rval = ret.split(":")[1]
-                        rval = rval.split(" ")[1]
-                        if rval != str(v):
-                            tbot.log.message(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}")
-                            retval = False
-                        ad += 1
+    if lab is not None:
+        lh = lab
+    else:
+        lh = tbot.acquire_lab()
+
+    with contextlib.ExitStack() as cx:
+        if board is not None:
+            b = board
+        else:
+            b = cx.enter_context(tbot.acquire_board(lh))
+
+        if uboot is not None:
+            ub = uboot
+        else:
+            ub = cx.enter_context(tbot.acquire_uboot(b))
+
+        ub.exec0("i2c", "dev", dev)
+        for l in i2c_dump:
+            addr, values, *_ = l.split(":")
+            values = values.split(" ")
+            ad = int(addr, 0)
+            for v in values:
+                if v == '':
+                    continue
+                if v == 'xx':
+                    ad += 1
+                    continue
+                adh = format(ad, '02x')
+                ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
+                rval = ret.split(":")[1]
+                rval = rval.split(" ")[1]
+                if rval != str(v):
+                    tbot.log.message(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}")
+                    retval = False
+                ad += 1
 
     return retval
 
