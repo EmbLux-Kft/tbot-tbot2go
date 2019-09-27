@@ -49,6 +49,10 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
             return linux.Path(self, f"/tftpboot/{self.get_boardname}/tbot")
 
     @property
+    def sign_dir(self) -> "linux.path.Path[PolluxLab]":
+        return linux.Path(self, f"/home/hs/tools/cst-2.3.3/linux64/bin")
+
+    @property
     def workdir(self) -> "linux.path.Path[PolluxLab]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
@@ -83,7 +87,7 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
             "generic-armv7a": linux.build.EnvScriptToolchain(
                 linux.Path(
                     self,
-                    "/opt/yocto-2.4/generic-armv7a/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                    "/home/hs/toolchain/linaro/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabi",
                 )
             ),
             "generic-armv7a-hf": linux.build.EnvScriptToolchain(
