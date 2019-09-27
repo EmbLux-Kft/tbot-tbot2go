@@ -432,7 +432,10 @@ def ub_check_i2c_dump(
                     values = values.split(" ")
                     ad = int(addr, 0)
                     for v in values:
-                        if v == '' or v == 'xx':
+                        if v == '':
+                            continue
+                        if v == 'xx':
+                            ad += 1
                             continue
                         adh = format(ad, '02x')
                         ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
