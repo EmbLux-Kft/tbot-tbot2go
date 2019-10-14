@@ -26,7 +26,7 @@ class Yocto:
 
     get deploy directory: repo_get_deploydir()
     repo_get_builddir() / repo_get_deploydir_name ()
-                          "tmp/deploy/images/" + tbot.selectable.Board.name
+                          "tmp/deploy/images/" + self.build_machine
 
     configuration
 
@@ -47,6 +47,10 @@ class Yocto:
         self.repodirname = repodirname
         self.tested = False
         self.cfg = cfg
+        try:
+            self.build_machine = self.cfg["build_machine"]
+        except:
+            self.build_machine = tbot.selectable.Board.name
 
     @tbot.testcase
     def yo_repo_install(
@@ -156,7 +160,7 @@ class Yocto:
                     self.yo_repo_sync(lh, bh)
                 self.yo_repo_config(lh, bh)
                 with bh.subshell():
-                    bh.env("MACHINE", tbot.selectable.Board.name)
+                    bh.env("MACHINE", self.build_machine)
 
                     for name in self.cfg["bitbake_targets"]:
                         if " " in name:
@@ -265,7 +269,7 @@ class Yocto:
         ma: typing.Optional[linux.LinuxMachine],
         extension: str = None,
     ) -> str:
-        bd = "tmp/deploy/images/" + tbot.selectable.Board.name
+        bd = "tmp/deploy/images/" + self.build_machine
         if extension != None:
             bd += extension
         return bd
