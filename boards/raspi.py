@@ -19,9 +19,19 @@ class Tbot2goBoard(board.Board):
         pin = "4"
         boardlabname = "k30rf-16mb"
 
+    def _get_boardname(self):
+        return self.name
+
     def poweron(self) -> None:
         if "nopoweroff" in tbot.flags:
             return
+
+        if self.name == "bbb":
+            if "bootmodesd" in tbot.flags:
+                self.lh.set_bootmode("sd")
+            if "bootmodeemmc" in tbot.flags:
+                self.lh.set_bootmode("emmc")
+
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
@@ -93,3 +103,8 @@ class Tbot2goBoard(board.Board):
             return self.ssh_connect()
         else:
             return self.kermit_connect()
+
+FLAGS = {
+        "bootmodesd" : "Boot with bootmode sd",
+        "bootmodeemmc" : "Boot with bootmode emmc",
+}
