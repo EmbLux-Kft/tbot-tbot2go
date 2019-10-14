@@ -2,6 +2,8 @@ import tbot
 from tbot.machine import channel
 from tbot.machine import board
 from tbot.tc import uboot
+from tbot.machine.board import special
+from tbot.machine import linux
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -23,6 +25,8 @@ class Tbot2goBoard(board.Board):
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
+        elif self.name == 'bbb':
+            self.lh.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
         elif self.name == 'h03pl086':
             self.lh.exec0("power.py", "-p", "14", "-s", "on")
         elif self.name == 'piinstall':
@@ -36,6 +40,8 @@ class Tbot2goBoard(board.Board):
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "off")
             self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
+        elif self.name == 'bbb':
+            self.lh.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
         elif self.name == 'h03pl086':
             self.lh.exec0("power.py", "-p", "14", "-s", "off")
         elif self.name == 'piinstall':
@@ -55,6 +61,8 @@ class Tbot2goBoard(board.Board):
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
             cfg_file = f"/home/{self.lh.username}/kermrc_{self.boardlabname}"
+        elif self.name == 'bbb':
+            cfg_file = f"/home/{self.lh.username}/kermrc_bbb"
         elif self.name == 'h03pl086':
             cfg_file = f"/home/{self.lh.username}/kermrc_h03pl086"
         else:
@@ -67,6 +75,9 @@ class Tbot2goBoard(board.Board):
             loop = True
             while loop:
                 raw += ch.recv_n(1, timeout=2.0)
+                # bbb send 0x00 endless if of ...
+                if b"0" in raw:
+                    return ch
         except TimeoutError:
             pass
         except TimeoutException:
