@@ -22,6 +22,18 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
         "piinstall": "192.168.1.113",
     }
 
+    def set_bootmode(self, state):
+        if tbot.selectable.Board.name == "bbb":
+            if state == "sd":
+                self.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
+            elif state == "emmc":
+                self.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
+            else:
+                raise NotImplementedError(f"{state} bootmode defined for {tbot.selectable.Board.name}!")
+        else:
+            raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
+
+
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
