@@ -93,29 +93,32 @@ class Yocto:
                 except:
                     p = self.yo_repo_install(lh, bh)
 
-                if self.cfg["priv_layer"] != None:
-                    if isinstance(self.cfg["priv_layer"], str):
-                        self.cfg["priv_layer"] = [self.cfg["priv_layer"]]
-                    if isinstance(self.cfg["priv_layer_branch"], str):
-                        self.cfg["priv_layer_branch"] = [self.cfg["priv_layer_branch"]]
+                try:
+                    if self.cfg["priv_layer"] != None:
+                        if isinstance(self.cfg["priv_layer"], str):
+                            self.cfg["priv_layer"] = [self.cfg["priv_layer"]]
+                        if isinstance(self.cfg["priv_layer_branch"], str):
+                            self.cfg["priv_layer_branch"] = [self.cfg["priv_layer_branch"]]
 
-                    i = 0
-                    for layer in self.cfg["priv_layer"]:
-                        basename = os.path.basename(layer)
-                        if '.' in basename:
-                            basename = basename.split('.')[0]
-                        p2 = p / basename
-                        if p2.exists():
-                            # get newest commit
-                            bh.exec0("cd", p2)
-                            bh.exec0("git", "pull")
-                            bh.exec0("cd", p)
-                        else:
-                            if self.cfg["priv_layer_branch"][i] != None:
-                                bh.exec0("git", "clone", "-b", self.cfg["priv_layer_branch"][i], layer)
+                        i = 0
+                        for layer in self.cfg["priv_layer"]:
+                            basename = os.path.basename(layer)
+                            if '.' in basename:
+                                basename = basename.split('.')[0]
+                            p2 = p / basename
+                            if p2.exists():
+                                # get newest commit
+                                bh.exec0("cd", p2)
+                                bh.exec0("git", "pull")
+                                bh.exec0("cd", p)
                             else:
-                                bh.exec0("git", "clone", layer)
-                        i += 1
+                                if self.cfg["priv_layer_branch"][i] != None:
+                                    bh.exec0("git", "clone", "-b", self.cfg["priv_layer_branch"][i], layer)
+                                else:
+                                    bh.exec0("git", "clone", layer)
+                            i += 1
+                except:
+                    pass
 
                 p = self.cd2repo(bh)
                 bd = self.repo_get_builddir_name(bh)
