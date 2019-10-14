@@ -15,11 +15,14 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     username = "hs"
     serverip = "192.168.3.1"
     tftproot = "/srv/tftpboot"
+    ub_load_board_env_subdir = "tbot"
+    nfs_root = "/work/tbot2go/tbot/nfs"
     boardip = {
         "sanvito":   "192.168.3.22",
         "h03pl086":  "192.168.3.32",
         "k30rf":     "192.168.7.37",
         "piinstall": "192.168.1.113",
+        "bbb": "192.168.3.20",
     }
 
     def set_bootmode(self, state):
