@@ -16,7 +16,6 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     serverip = "192.168.3.1"
     tftproot = "/srv/tftpboot"
     ub_load_board_env_subdir = "tbot"
-    nfs_root = "/work/tbot2go/tbot/nfs"
     boardip = {
         "sanvito":   "192.168.3.22",
         "h03pl086":  "192.168.3.32",
@@ -28,14 +27,17 @@ class Tbot2goLab(lab.SSHLabHost, linux.BuildMachine):
     def set_bootmode(self, state):
         if tbot.selectable.Board.name == "bbb":
             if state == "sd":
-                self.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
-            elif state == "emmc":
                 self.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
+            elif state == "emmc":
+                self.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
             else:
                 raise NotImplementedError(f"{state} bootmode defined for {tbot.selectable.Board.name}!")
         else:
             raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
 
+    @property
+    def nfs_root(self) -> "linux.path.Path[Tbot2goLab]":
+        return linux.Path(self, f"/work/tbot2go/tbot/nfs")
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
