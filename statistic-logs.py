@@ -5,12 +5,12 @@ import subprocess
 import os
 
 CONFS = [
-    ("raspi", "k30rf", "results/stats/balkenplot.sem"),
+    ("raspi", "bbb", "results/stats/balkenplot.sem"),
 ]
 
 def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     # Find latest config
-    logs = list(pathlib.Path("log").glob(f"{cfg[0]}-{cfg[1]}-*.json"))
+    logs = list(pathlib.Path("log").glob(f"{cfg[0]}-{cfg[1]}*.json"))
     logs.sort()
     log = logs[-1]
     #log = pathlib.Path("log/raspi-h03pl086-0042.json")
@@ -21,7 +21,7 @@ def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     title = f"{log.stem}"
     print(f"{log} -> {stat_name}")
     handle = subprocess.Popen(
-        ["generators/statistic.py", log], stdout=subprocess.PIPE
+        ["/home/hs/data/Entwicklung/newtbot/tbot/generators/statistic.py", log], stdout=subprocess.PIPE
     )
     stats = handle.stdout.read().decode("utf-8")
     with open(stat_name, mode="w") as f:
