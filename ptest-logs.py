@@ -5,6 +5,9 @@ import subprocess
 import os
 import sys, getopt
 
+# good examples for balkenplot.sem
+# http://gnuplot.sourceforge.net/demo/histograms.html
+
 CONFS = [
     ("raspi", "bbb", "results/ptest/balkenplot.sem"),
 ]
