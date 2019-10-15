@@ -455,7 +455,7 @@ def ub_check_i2c_dump(
                 rval = ret.split(":")[1]
                 rval = rval.split(" ")[1]
                 if rval != str(v):
-                    tbot.log.message(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}")
+                    tbot.log.message(tbot.log.c(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}").red)
                     retval = False
                 ad += 1
 
@@ -654,8 +654,7 @@ def ub_check_revfile(
 
         val = ub_get_mem_addr(ub, cols[0], cols[2])
         if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
-            msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
-            tbot.log.message(msg)
+            tbot.log.message(tbot.log.c(f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}").red)
             if difffile != None:
                 fddiff.write(msg + "\n")
                 fddiff.write(get_name(socfile, cols[0]))
