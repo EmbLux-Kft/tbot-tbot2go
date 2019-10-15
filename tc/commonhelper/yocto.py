@@ -1,9 +1,11 @@
 import contextlib
 import typing
+import pathlib
 import os
 import tbot
 from tbot.machine import linux
 import generic as ge
+from tbot.machine.board import special
 
 class Yocto:
     """class for yocto tasks
@@ -39,6 +41,8 @@ class Yocto:
     yo_cfg["bitbake_targets"] = ["cuby-image", "qt-cuby -c do_populate_sdk"]
     yo_cfg["priv_layer"] = "url to private layer"
     yo_cfg["priv_layer_branch"] = "branch which get checked out"
+    yo_cfg["build_machine"] = "build machine"
+    yo_cfg["patchesdir"] = "path to directory which contains patches for meta layers"
     
     """
 
@@ -76,6 +80,59 @@ class Yocto:
             with build or lh.build() as bh:
                 self.cd_yocto_workdir(bh)
                 self.repo_sync(bh)
+
+    @tbot.testcase
+    def yo_repo_patch(
+        self,
+        lab: typing.Optional[linux.LabHost] = None,
+        build: typing.Optional[linux.BuildMachine] = None,
+    ) -> None:
+        try:
+            self.cfg["patchesdir"]
+        except:
+            return True
+
+        with lab or tbot.acquire_lab() as lh:
+            with build or lh.build() as bh:
+                p = self.cd2repo(bh)
+                # unfortunately, I do not know how to copy from host to build host
+                #
+                #print("WDIR ", tbot.selectable.workdir)
+                # wd = linux.Path(lh, self.cfg["patchesdir"])
+                # patchdirs = list(pathlib.Path(wd).glob(f"meta*"))
+                # patchdirs.sort()
+
+                # get list of dirs
+                pd = self.cfg["patchesdir"]
+
+                pd = linux.Raw("find " + pd + " -name meta* | sort")
+                patchdirs = lh.exec0(pd)
+                for d in patchdirs.split("\n"):
+                    if d == "":
+                        continue
+                    # get directory name
+                    layername = os.path.basename(d)
+                    # path to layer on build host
+                    layerpath = p / layername
+
+                    # cd into meta layer
+                    bh.exec0("cd", layerpath)
+
+                    # get list of files
+                    tmp = linux.Raw("find " + d + " -name *.patch | sort")
+                    patches = lh.exec0(tmp)
+                    for f in patches.split("\n"):
+                        # copy patch to build host
+                        if f == "":
+                            continue
+                        f = linux.Path(lh, f)
+                        tbot.tc.shell.copy(f, layerpath)
+
+                        # git am patch
+                        bh.exec0("git", "am", "-3", os.path.basename(f))
+
+                    # cd out
+                    bh.exec0("cd", "..")
 
     @tbot.testcase
     def yo_repo_config(
@@ -125,6 +182,7 @@ class Yocto:
                     pass
 
                 p = self.cd2repo(bh)
+                self.yo_repo_patch(lh, bh)
                 bd = self.repo_get_builddir_name(bh)
                 p2 = p / bd
                 if p2.exists() == False:
