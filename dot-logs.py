@@ -3,12 +3,13 @@ import typing
 import pathlib
 import subprocess
 import os
+import sys, getopt
 
 CONFS = [
     ("raspi", "bbb"),
 ]
 
-def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
+def do_conf(cfg: typing.Tuple[str, str, str], tbotpath) -> None:
     # Find latest config
     logs = list(pathlib.Path("log").glob(f"{cfg[0]}-{cfg[1]}*.json"))
     logs.sort()
@@ -20,7 +21,7 @@ def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     title = f"{log.stem}"
     print(f"{log} -> {dot_name}")
     handle = subprocess.Popen(
-        ["/home/hs/data/Entwicklung/newtbot/tbot/generators/dot.py", log], stdout=subprocess.PIPE
+        [f"{tbotpath}/generators/dot.py", log], stdout=subprocess.PIPE
     )
     stats = handle.stdout.read().decode("utf-8")
     with open(dot_name, mode="w") as f:
@@ -29,9 +30,23 @@ def do_conf(cfg: typing.Tuple[str, str, str]) -> None:
     cmd = "dot -Tjpg " + str(dot_name) + " > "  + str(png_name)
     os.system(cmd)
 
-def main() -> None:
+def main(argv) -> None:
+    try:
+        opts, args = getopt.getopt(argv,"hp:",["path="])
+    except getopt.GetoptError:
+        print('dot-logs.py -p <pathtotbot>')
+        sys.exit(2)
+
+    path = ''
+    for opt, arg in opts:
+        if opt == '-h':
+            print('dot-logs.py -p <pathtotbot>')
+            sys.exit()
+        elif opt in ("-p", "--path"):
+            path = arg
+
     for conf in CONFS:
-        do_conf(conf)
+        do_conf(conf, path)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
