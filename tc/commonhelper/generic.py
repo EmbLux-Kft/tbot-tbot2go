@@ -285,8 +285,7 @@ def lx_check_revfile(
 
         val = lx_devmem2_get(ma, cols[0], cols[2])
         if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
-            msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
-            tbot.log.message(msg)
+            tbot.log.message(tbot.log.c(f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}").red)
             if difffile != None:
                 fddiff.write(msg + "\n")
 
