@@ -34,6 +34,7 @@ if classname == "":
     print("Could not detect classname")
     sys.exit(-1)
 
+classname = "tbot_results"
 jenkins_workspace_tbot = jenkins_workspace + "/" + classname
 res = subprocess.run(["mkdir", "-p", jenkins_workspace_tbot], stdout=subprocess.PIPE)
 
@@ -76,6 +77,6 @@ subdirname = "iperf"
 tmpp = f"{res_path}/{subdirname}"
 res = subprocess.run(["test", "-f", f"{tmpp}/iperf.jpg"], stdout=subprocess.PIPE)
 if res.returncode == 0:
-    res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/ptest.jpg"], stdout=subprocess.PIPE)
-    res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/ptest_data.txt"], stdout=subprocess.PIPE)
-    res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_ptest.sem"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/iperf.jpg", f"{jenkins_workspace_tbot}/iperf.jpg"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/iperf.dat", f"{jenkins_workspace_tbot}/iperf_data.txt"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/balkenplot_iperf.sem", f"{jenkins_workspace_tbot}/balkenplot_iperf.sem"], stdout=subprocess.PIPE)
