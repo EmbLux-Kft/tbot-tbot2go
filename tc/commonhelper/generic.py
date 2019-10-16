@@ -5,6 +5,7 @@ import time
 from tbot.machine import linux
 from tbot.machine import board
 from tbot import log_event
+from tbot import log
 
 def get_path(path : tbot.machine.linux.path.Path) -> str:
     """
@@ -665,3 +666,68 @@ def ub_check_revfile(
         fddiff.close()
 
     return ret
+
+@tbot.testcase
+def lx_check_iperf(
+    lab: typing.Optional[linux.LabHost] = None,
+    board: typing.Optional[board.Board] = None,
+    blx: typing.Optional[board.LinuxMachine] = None,
+    intervall = "1",
+    cycles = "10",
+    minval = "80",
+    filename = "iperf.dat",
+    showlog = False,
+) -> bool:
+    """
+    check networkperformance with iperf
+    intervall: "-i" iperf paramter in seconds
+    cycles: "-t" iperf parameter
+    minval: if bandwith is lower than this value, fail
+    """
+    with lab or tbot.acquire_lab() as lh:
+        with board or tbot.acquire_board(lh) as b:
+            with blx or tbot.acquire_linux(b) as lnx:
+                result = []
+                error = False
+                ret = lh.exec0("ps", "afx", linux.Pipe , "grep", "iperf")
+                start = True
+                for l in ret.split("\n"):
+                    if "iperf" in l and not "grep" in l:
+                        start = False
+                if start:
+                    ret = lh.exec("iperf", "-s", linux.Background)
+                    time.sleep(1)
+                oldverbosity = log.VERBOSITY
+                if showlog:
+                    log.VERBOSITY = log.Verbosity.STDOUT
+                t = str(int(cycles) * int(intervall))
+                ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", t)
+                for l in ret.split("\n"):
+                    if "Mbits/sec" in l:
+                        tmp = l.split(" ")
+                        val = tmp[-2]
+                        result.append({"bandwith" : val})
+                        if float(tmp[-2]) < float(minval):
+                            if error == False:
+                                tbot.log.message(tbot.log.c(f"Not enough Bandwith {val} < {minval}").red)
+                            error = True
+
+                log.VERBOSITY = oldverbosity
+                # remove last line, as it is not a measurement
+                result = result[:-1]
+                step = 0
+                fd = open('results/iperf/' + filename, 'w')
+                fd.write("step bandwith minimum\n")
+                for el in result:
+                    s = str(step)
+                    fd.write(f'{step} {el["bandwith"]} {minval}\n')
+                    step += int(intervall)
+                fd.close()
+
+                if error:
+                    raise RuntimeError(f"Not enough Bandwith {val} < {minval}")
+                else:
+                    tbot.log.message(tbot.log.c(f"Bandwith always above minimum {minval} MBit/s").green)
+    return True
+
+
