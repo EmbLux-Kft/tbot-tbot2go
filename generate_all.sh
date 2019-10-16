@@ -5,4 +5,5 @@
 ./statistic-logs.py -p $1
 ./junit-logs.py -p $1
 ./ptest-logs.py -p $1
+./iperf.sh
 #./create_doc-logs.py
