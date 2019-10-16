@@ -40,26 +40,34 @@ res = subprocess.run(["mkdir", "-p", jenkins_workspace_tbot], stdout=subprocess.
 # cp dot results
 subdirname = "dot"
 tmpp = f"{res_path}/{subdirname}"
-
-res = subprocess.run(["cp", f"{tmpp}/{name}.dot", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/graph.jpg"], stdout=subprocess.PIPE)
+res = subprocess.run(["test", "-f", f"{tmpp}/{name}.jpg"], stdout=subprocess.PIPE)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/{name}.dot", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/graph.jpg"], stdout=subprocess.PIPE)
 
 # cp html results
 subdirname = "html"
 tmpp = f"{res_path}/{subdirname}"
-res = subprocess.run(["cp", f"{tmpp}/myscript.js", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/{name}.html", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+res = subprocess.run(["test", "-f", f"{tmpp}/{name}.html"], stdout=subprocess.PIPE)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/myscript.js", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/{name}.html", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
 
 # cp statistic
 subdirname = "stats"
 tmpp = f"{res_path}/{subdirname}"
-res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/statistic.jpg"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/statistic_data.txt"], stdout=subprocess.PIPE)
+res = subprocess.run(["test", "-f", f"{tmpp}/{name}.jpg"], stdout=subprocess.PIPE)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/statistic.jpg"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/statistic_data.txt"], stdout=subprocess.PIPE)
 
 # cp ptest
 subdirname = "ptest"
 tmpp = f"{res_path}/{subdirname}"
-res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/ptest.jpg"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/ptest_data.txt"], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_ptest.sem"], stdout=subprocess.PIPE)
+res = subprocess.run(["test", "-f", f"{tmpp}/{name}.jpg"], stdout=subprocess.PIPE)
+print("RES ", res)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/ptest.jpg"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/ptest_data.txt"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_ptest.sem"], stdout=subprocess.PIPE)
