@@ -7,18 +7,19 @@ import sys
 print ('Number of arguments:', len(sys.argv))
 print ('Argument List:', str(sys.argv))
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
 	sys.exit(-1)
 
 jenkins_workspace = sys.argv[1]
+tbot_path = sys.argv[2]
+
+name = "raspi-bbb"
+wp = "/home/hs/src/bbb/tbot-tbot2go"
+res_path = "results"
 
 # generate junit file
-res = subprocess.run(["./junit-logs.py"], stdout=subprocess.PIPE)
-result = str(res.stdout.decode('utf-8'))
-fn = result.split("->")
-json_fn = fn[0].strip()
-fn = fn[1].strip()
-res = subprocess.run(["cp", fn, jenkins_workspace + "/tbot_results.xml"], stdout=subprocess.PIPE)
+res = subprocess.run([f"{wp}/generate_all.sh", tbot_path], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"results/junit/{name}.xml", jenkins_workspace + "/tbot_results.xml"], stdout=subprocess.PIPE)
 
 # setup subdir for tbot results
 classname = ""
@@ -36,37 +37,29 @@ if classname == "":
 jenkins_workspace_tbot = jenkins_workspace + "/" + classname
 res = subprocess.run(["mkdir", "-p", jenkins_workspace_tbot], stdout=subprocess.PIPE)
 
-# generate dot
-res = subprocess.run(["./dot-logs.py"], stdout=subprocess.PIPE)
-result = str(res.stdout.decode('utf-8'))
-fn = result.split("->")
-fn = fn[1].strip()
-res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", fn.replace(".dot", ".jpg"), jenkins_workspace_tbot + "/graph.jpg"], stdout=subprocess.PIPE)
+# cp dot results
+subdirname = "dot"
+tmpp = f"{res_path}/{subdirname}"
 
-# generate html logs
-res = subprocess.run(["./html-logs.py"], stdout=subprocess.PIPE)
-result = str(res.stdout.decode('utf-8'))
-fn = result.split("->")
-fn = fn[1].strip()
-res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", "results/html/myscript.js", jenkins_workspace_tbot], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.dot", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/graph.jpg"], stdout=subprocess.PIPE)
 
-# generate statistic
-res = subprocess.run(["./statistic-logs.py"], stdout=subprocess.PIPE)
-result = str(res.stdout.decode('utf-8'))
-fn = result.split("->")
-fn = fn[1].strip()
-res = subprocess.run(["cp", fn, jenkins_workspace_tbot], stdout=subprocess.PIPE)
-res = subprocess.run(["cp", fn.replace("txt", "jpg"), jenkins_workspace_tbot + "/statistic.jpg"], stdout=subprocess.PIPE)
+# cp html results
+subdirname = "html"
+tmpp = f"{res_path}/{subdirname}"
+res = subprocess.run(["cp", f"{tmpp}/myscript.js", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.html", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
 
-# collect other result files
+# cp statistic
+subdirname = "stats"
+tmpp = f"{res_path}/{subdirname}"
+res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/statistic.jpg"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/statistic_data.txt"], stdout=subprocess.PIPE)
 
-# test results from U-Boot test/py
-sname = json_fn.replace("json", "json-testpy-result.html")
-cmd = "sed -i 's/<script src=\"http:\/\/code.jquery.com\/jquery.min.js\"><\/script>/<script src=\"myscript.js\"><\/script>/' " + sname
-os.system(cmd)
-res = subprocess.run(["cp", sname, f"{jenkins_workspace_tbot}/testpy.html"], stdout=subprocess.PIPE)
-
-sname = json_fn.replace("json", "json-multiplexed_log.css")
-res = subprocess.run(["cp", sname, f"{jenkins_workspace_tbot}/multiplexed_log.css"], stdout=subprocess.PIPE)
+# cp ptest
+subdirname = "ptest"
+tmpp = f"{res_path}/{subdirname}"
+res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/ptest.jpg"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/ptest_data.txt"], stdout=subprocess.PIPE)
+res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_ptest.sem"], stdout=subprocess.PIPE)
