@@ -27,6 +27,12 @@ def do_conf(cfg: typing.Tuple[str, str], tbotpath) -> None:
         [f"{tbotpath}/generators/ptest-runner.py", log], stdout=subprocess.PIPE
     )
     stats = handle.stdout.read().decode("utf-8")
+    count = 0
+    for l in stats.split("\n"):
+        count += 1
+    
+    if count <= 2:
+        sys.exit(0)
     with open(stat_name, mode="w") as f:
         f.write(stats)
 
