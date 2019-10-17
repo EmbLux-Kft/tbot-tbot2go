@@ -106,6 +106,36 @@ def cd_board_workdir(
     bh.exec0("cd", p)
 
 # misc
+def recv_count_lines(
+    blx: typing.Optional[board.LinuxMachine],
+    prompt: str,
+    count: int,
+    *args: typing.Union[str]
+) -> str:
+    command = blx.build_command(*args)
+    chan = blx._obtain_channel()
+    i = 0
+    out = ""
+    res = []
+
+    with tbot.log_event.command(blx.name, command) as ev:
+        ev.prefix = "   <> "
+
+        chan.send(command + "\n")
+        while True:
+            if i > count:
+                break
+            out = chan.read_until_prompt(prompt, stream=ev)
+            i += 1
+            res.append({"out" : out})
+
+        # Send Ctrl-C
+        chan.send("\x03")
+        #print("--- after ctrl-c ---- ", chan.prompt)
+        #out = chan.read_until_prompt(chan.prompt, stream=ev)
+
+    return res
+
 def recv_timeout(
     ch,
     name,
