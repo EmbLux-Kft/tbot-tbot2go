@@ -6,6 +6,7 @@ from tbot.machine import linux
 from tbot.machine import board
 from tbot import log_event
 from tbot import log
+import math
 
 def get_path(path : tbot.machine.linux.path.Path) -> str:
     """
@@ -718,6 +719,7 @@ def lx_check_iperf(
         with board or tbot.acquire_board(lh) as b:
             with blx or tbot.acquire_linux(b) as lnx:
                 result = []
+                ymax = "0"
                 error = False
                 ret = lh.exec0("ps", "afx", linux.Pipe , "grep", "iperf")
                 start = True
@@ -730,27 +732,35 @@ def lx_check_iperf(
                 oldverbosity = log.VERBOSITY
                 if showlog:
                     log.VERBOSITY = log.Verbosity.STDOUT
-                t = str(int(cycles) * int(intervall))
-                ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", t)
+                xmax = str(int(cycles) * int(intervall))
+                ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
+                step = str(float(intervall) / 2)
                 for l in ret.split("\n"):
                     if "Mbits/sec" in l:
                         tmp = l.split(" ")
                         val = tmp[-2]
-                        result.append({"bandwith" : val})
+                        result.append({"bandwith" : val, "step" : step})
+                        if float(ymax) < float(val):
+                            ymax = val
                         if float(tmp[-2]) < float(minval):
                             if error == False:
                                 tbot.log.message(tbot.log.c(f"Not enough Bandwith {val} < {minval}").red)
                             error = True
+                        step = str(float(step) + float(intervall))
 
                 log.VERBOSITY = oldverbosity
                 # remove last line, as it is not a measurement
                 result = result[:-1]
                 step = 0
+                # round up ymax
+                ymax = str(int(math.ceil(float(ymax) / 10.0)) * 10)
                 fd = open('results/iperf/' + filename, 'w')
-                fd.write("step bandwith minimum\n")
+                # save the xmax and ymax value behind the headlines
+                # gnuplot uses them for setting the correct xmax / ymax values
+                fd.write(f"step bandwith minimum {xmax} {ymax}\n")
                 for el in result:
                     s = str(step)
-                    fd.write(f'{step} {el["bandwith"]} {minval}\n')
+                    fd.write(f'{el["step"]} {el["bandwith"]} {minval}\n')
                     step += int(intervall)
                 fd.close()
 
