@@ -80,3 +80,12 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/iperf.jpg", f"{jenkins_workspace_tbot}/iperf.jpg"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/iperf.dat", f"{jenkins_workspace_tbot}/iperf_data.txt"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/balkenplot_iperf.sem", f"{jenkins_workspace_tbot}/balkenplot_iperf.sem"], stdout=subprocess.PIPE)
+
+# latency ptest
+subdirname = "latency"
+tmpp = f"{res_path}/{subdirname}"
+res = subprocess.run(["test", "-f", f"{tmpp}/latency.jpg"], stdout=subprocess.PIPE)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/latency.jpg", f"{jenkins_workspace_tbot}/latency.jpg"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/latency.dat", f"{jenkins_workspace_tbot}/latency_data.txt"], stdout=subprocess.PIPE)
+    res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_latency.sem"], stdout=subprocess.PIPE)
