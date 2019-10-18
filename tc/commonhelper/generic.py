@@ -4,6 +4,7 @@ import tbot
 import time
 from tbot.machine import linux
 from tbot.machine import board
+from tbot.machine import channel
 from tbot import log_event
 from tbot import log
 import math
@@ -146,13 +147,17 @@ def recv_count_lines(
             if i > count:
                 break
             out = chan.read_until_prompt(prompt, stream=ev)
+            try:
+                ev.data["stdout"] += out
+            except:
+                ev.data["stdout"] = out
             i += 1
             res.append({"out" : out})
 
         # Send Ctrl-C
         chan.send("\x03")
-        #print("--- after ctrl-c ---- ", chan.prompt)
-        #out = chan.read_until_prompt(chan.prompt, stream=ev)
+        out = chan.read_until_prompt(channel.TBOT_PROMPT, stream=ev)
+        ev.data["stdout"] += out
 
     return res
 
