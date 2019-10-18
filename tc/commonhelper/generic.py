@@ -7,6 +7,7 @@ from tbot.machine import board
 from tbot import log_event
 from tbot import log
 import math
+import re
 
 def get_path(path : tbot.machine.linux.path.Path) -> str:
     """
@@ -107,6 +108,24 @@ def cd_board_workdir(
     bh.exec0("cd", p)
 
 # misc
+
+def string_to_dict(string, pattern):
+    """ convert a string into a dictionary via a pattern
+        example pattern:
+        'hello, my name is {name} and I am a {age} year old {what}'
+        string:
+        'hello, my name is dan and I am a 33 year old developer'
+        returned dict:
+        {'age': '33', 'name': 'dan', 'what': 'developer'}
+        from:
+        https://stackoverflow.com/questions/11844986/convert-or-unformat-a-string-to-variables-like-format-but-in-reverse-in-p
+    """
+    regex = re.sub(r'{(.+?)}', r'(?P<_\1>.+)', pattern)
+    values = list(re.search(regex, string).groups())
+    keys = re.findall(r'{(.+?)}', pattern)
+    _dict = dict(zip(keys, values))
+    return _dict
+
 def recv_count_lines(
     blx: typing.Optional[board.LinuxMachine],
     prompt: str,
