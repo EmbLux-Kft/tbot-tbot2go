@@ -1,0 +1,41 @@
+#
+# Run this gnuplot script with the command line:
+#
+# gnuplot -e 'input_file="/path/to/input";output_file="/path/to/output.png";graph_title="title text"' /path/to/histo.gp
+#
+# where the input file is generated using latency option "-g"
+#
+
+set terminal png size 900,700
+set output output_file
+
+set title graph_title
+set xlabel "Sampling period: 1000 us"
+set ylabel "usec"
+set grid
+set key outside top right
+set terminal jpeg enhanced size 2048,768
+
+# get dimensions xmax, ymax and latency_maximum
+# from headline of input file
+xmax = system("head -1 " . input_file . " | cut -f 9 -d ' '")
+ymax = system("head -1 " . input_file . " | cut -f 10 -d ' '")
+lat_max = system("head -1 " . input_file . " | tail -1 | cut -f 11 -d ' '")
+
+set yrange [0:ymax]
+
+set palette model RGB defined (0 "green", 2 "red")
+set cbrange [0:2]
+unset colorbox
+
+set arrow from 0,lat_max to xmax,lat_max nohead front linewidth 2 linecolor rgb"red"
+
+set bar 1.000000
+set style fill  solid 1.00 border -1
+set style rectangle back fc lt -3 fillstyle  solid 1.00 border -1
+plot input_file u 1:2 w lines  title "latency minimum", \
+     input_file u 1:3 w lines  title "latency average", \
+     input_file u 1:4 w lines  title "latency maximum", \
+     input_file u 1:5 w lines  title "overrun", \
+     input_file u 1:7 w lines  title "latency best", \
+     input_file u 1:8 w lines  title "latency worst"

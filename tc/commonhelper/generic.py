@@ -789,4 +789,59 @@ def lx_check_iperf(
                     tbot.log.message(tbot.log.c(f"Bandwith always above minimum {minval} MBit/s").green)
     return True
 
+@tbot.testcase
+def lx_check_latency(
+    lnx: typing.Optional[board.LinuxMachine],
+    count: str = "50",
+    latency_max: str = "20",
+    filename: str = "latency.dat",
+) -> bool:
+    """
+    call latency command and print results into latency.dat
+    count: how many lines with "RTD" will be read
+    latency_max: max value of allowed latency
+    filename: for datfile
+    """
+    # RTT|  00:00:01  (periodic user-mode task, 1000 us period, priority 99)
+    # RTH|----lat min|----lat avg|----lat max|-overrun|---msw|---lat best|--lat worst
+    # RTD|     11.458|     16.702|     39.250|       0|     0|     11.458|     39.250
+    rtd_format = 'RTD\|{min}\|{avg}\|{max}\|{overrun}\|{msw}\|{best}\|{worst}\n'
+    rtd = []
+    result = True
+    ret = recv_count_lines(lnx, "\n", count, "latency", "-g", "results/latency/latency.dat")
+    #
+    # killing does not work, as after the prompt there comes more
+    # output from the latency test, which confuses tbot
+    # ret = lnx.exec0(linux.Raw("latency -g results/latency/latency.dat & sleep 15 ; kill %%"))
+    ymax = 0
+    for l in ret:
+        if 'RTD' in l["out"]:
+            rtd_dict = string_to_dict(l["out"], rtd_format)
+            rtd.append(rtd_dict)
+            if float(latency_max) < float(rtd_dict['max']):
+                tbot.log.message(tbot.log.c(f"measured latency {rtd_dict['max']} greater than allowed maximal latency {latency_max}").red)
+                result = False
+            if float(rtd_dict['overrun']) != 0:
+                tbot.log.message(tbot.log.c(f"overrun {rtd_dict['overrun']}").red)
+                result = False
+            if float(rtd_dict['max']) > ymax:
+                ymax = float(rtd_dict['max'])
 
+    # round up ymax
+    if ymax > float(latency_max):
+        ymax = str(int(math.ceil(float(ymax) / 10.0)) * 10)
+    else:
+        ymax = str(int(latency_max) + 5)
+
+    xmax = str(len(rtd))
+    fd = open('results/latency/' + filename, 'w')
+    # save the xmax, ymax and latency_max value behind the headlines
+    # gnuplot uses them for setting the correct xmax / ymax values
+    fd.write(f'step lat_min lat_avg lat_max overrun msw lat_best lat_worst {xmax} {ymax} {latency_max}\n')
+    step = "0"
+    for d in rtd:
+        fd.write(f"{step} {d['min']} {d['avg']} {d['max']} {d['overrun']} {d['msw']} {d['best']} {d['worst']}\n")
+        step = str(int(step) + 1)
+
+    fd.close()
+    return result
