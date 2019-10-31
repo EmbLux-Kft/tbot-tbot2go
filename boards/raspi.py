@@ -1,9 +1,8 @@
+import abc
+import typing
 import tbot
-from tbot.machine import channel
-from tbot.machine import board
-from tbot.tc import uboot
-from tbot.machine.board import special
-from tbot.machine import linux
+from tbot.machine import board, channel, linux, connector
+from tbot.tc import uboot, git
 import time
 
 import os,sys,inspect
@@ -12,7 +11,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir + '/tc/commonhelper')
 import generic as ge
 
-class Tbot2goBoard(board.Board):
+class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     connect_wait = 1.0
     pin = "3"
     boardlabname = "k30rf"
@@ -29,17 +28,17 @@ class Tbot2goBoard(board.Board):
 
         if self.name == "bbb":
             if "bootmodesd" in tbot.flags:
-                self.lh.set_bootmode("sd")
+                self.host.set_bootmode("sd")
             if "bootmodeemmc" in tbot.flags:
-                self.lh.set_bootmode("emmc")
+                self.host.set_bootmode("emmc")
 
         if self.name == 'k30rf':
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
-            self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
+            self.host.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
         elif self.name == 'bbb':
-            self.lh.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
+            self.host.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
         elif self.name == 'h03pl086':
-            self.lh.exec0("power.py", "-p", "14", "-s", "on")
+            self.host.exec0("power.py", "-p", "14", "-s", "on")
         elif self.name == 'piinstall':
             pass
         else:
@@ -48,7 +47,7 @@ class Tbot2goBoard(board.Board):
             loop = True
             while loop:
                 try:
-                    self.lh.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/SPL-spi.signed")
+                    self.host.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/SPL-spi.signed")
                     loop = False
                 except:
                     time.sleep(2)
@@ -57,7 +56,7 @@ class Tbot2goBoard(board.Board):
             loop = True
             while loop:
                 try:
-                    self.lh.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/u-boot-ivt.img-spi.signed")
+                    self.host.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/u-boot-ivt.img-spi.signed")
                     loop = False
                 except:
                     time.sleep(2)
@@ -67,61 +66,92 @@ class Tbot2goBoard(board.Board):
         if "nopoweroff" in tbot.flags:
             return
         if self.name == 'k30rf':
-            #self.lh.exec0("power.py", "-p", "19", "-s", "off")
-            self.lh.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
+            self.host.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
         elif self.name == 'bbb':
-            self.lh.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
+            self.host.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
         elif self.name == 'h03pl086':
-            self.lh.exec0("power.py", "-p", "14", "-s", "off")
+            self.host.exec0("power.py", "-p", "14", "-s", "off")
         elif self.name == 'piinstall':
             pass
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
-    def console_check(self) -> None:
+    def power_check(self) -> bool:
         if "nopoweroff" in tbot.flags:
-            return
+            return True
+        # check if power is on -> board is in use
+        # ToDo
+        return True
 
     def ssh_connect(self) -> channel.Channel:
-        ch = self.lh.new_channel("ssh", "hs@" + tbot.selectable.LabHost.boardip[self.name])
-        return ch
+        return mach.open_channel("ssh", "hs@" + self.host.boardip[self.name])
 
-    def kermit_connect(self) -> channel.Channel:
+    def kermit_connect(self, mach: linux.LinuxShell) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
-            cfg_file = f"/home/{self.lh.username}/kermrc_{self.boardlabname}"
+            cfg_file = f"/home/{self.host.username}/kermrc_{self.boardlabname}"
         elif self.name == 'bbb':
-            cfg_file = f"/home/{self.lh.username}/kermrc_bbb"
+            cfg_file = f"/home/{self.host.username}/kermrc_bbb"
         elif self.name == 'h03pl086':
-            cfg_file = f"/home/{self.lh.username}/kermrc_h03pl086"
+            cfg_file = f"/home/{self.host.username}/kermrc_h03pl086"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
-        ch = self.lh.new_channel("kermit", cfg_file)
+        return mach.open_channel("kermit", cfg_file)
 
-        # Receive at max the prompt or timeout after 5 seconds
-        raw = b""
-        try:
-            loop = True
-            while loop:
-                raw += ch.recv_n(1, timeout=2.0)
-                # bbb send 0x00 endless if of ...
-                if b"0" in raw:
-                    return ch
-        except TimeoutError:
-            pass
-        except TimeoutException:
-            pass
-
-        if KERMIT_PROMPT in raw:
-            raise RuntimeError("Could not get console for ", self.name)
-
-        return ch
-
-    def connect(self) -> channel.Channel:
+    def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if self.name == 'piinstall':
-            return self.ssh_connect()
+            return self.ssh_connect(mach)
         else:
-            return self.kermit_connect()
+            return self.kermit_connect(mach)
+
+    def __init__(self, lh: linux.LinuxShell) -> None:
+        # Check lab
+        assert (
+            # lh.name == self.lab_name()
+            lh.name == "tbot2go"
+        ), f"{lh!r} is the wrong lab for this board! (Expected '{self.lab_name}')"
+        super().__init__(lh)
+
+B = typing.TypeVar("B", bound=Board)
+BH = typing.TypeVar("BH", bound=linux.Builder)
+
+class UBootMachine(board.Connector, board.UBootAutobootIntercept, board.UBootShell):
+    def flash(self, repo: git.GitRepository) -> None:
+        """Flash a new U-Boot version that was built in the given repo."""
+        raise NotImplementedError("U-Boot flashing was not implemented for this board!")
+
+    def lab_network(self) -> None:
+        """Setup the network connection in the selected lab."""
+        self.host = getattr(self, "host")
+        print("----------- NETWORK SETUP -------------")
+        try:
+            getattr(self.host, "uboot_network_setup")(self)
+        except AttributeError:
+            raise Exception(
+                f"The lab-host {self.host!r} does not seem to support uboot network setup!"
+            )
+
+class UBootBuilder(uboot.UBootBuilder):
+    if tbot.selectable.LabHost.name in ["pollux", "hercules"]:
+        remote = "/home/git/u-boot.git"
+
+    def do_configure(self, bh: BH, repo: git.GitRepository[BH]) -> None:
+        super().do_configure(bh, repo)
+
+        tbot.log.message("Patching U-Boot config ...")
+
+        # Add local-version tbot
+        kconfig.set_string_value(repo / ".config", "CONFIG_LOCALVERSION", "-tbot")
+
+        # Tab completion
+        kconfig.enable(repo / ".config", "CONFIG_AUTO_COMPLETE")
+
+        # Enable configs for network setup
+        kconfig.enable(repo / ".config", "CONFIG_CMD_NET")
+        kconfig.enable(repo / ".config", "CONFIG_CMD_DHCP")
+        kconfig.enable(repo / ".config", "CONFIG_CMD_MII")
+        kconfig.enable(repo / ".config", "CONFIG_BOOTP_PREFER_SERVERIP")
+        kconfig.disable(repo / ".config", "CONFIG_BOOTP_BOOTPATH")
 
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",
