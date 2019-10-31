@@ -1,10 +1,9 @@
 import typing
 import tbot
-from tbot.machine.linux import lab
-from tbot.machine import linux
+from tbot.machine import connector, linux, board
 import builders
 
-class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
+class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "pollux"
     hostname = "pollux.denx.de"
     username = "hs"
@@ -29,7 +28,7 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
             raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
 
     @property
-    def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab]":
+    def yocto_result_dir(self) -> "linux.Path[Tbot2goLab]":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
@@ -42,18 +41,18 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
         return tbot.selectable.Board.name
 
     @property
-    def tftp_dir(self) -> "linux.path.Path[PolluxLab]":
+    def tftp_dir(self) -> "linux.Path[PolluxLab]":
         if tbot.selectable.Board.name == "taurus":
             return linux.Path(self, f"/tftpboot/at91_taurus/tbot/")
         else:
             return linux.Path(self, f"/tftpboot/{self.get_boardname}/tbot")
 
     @property
-    def sign_dir(self) -> "linux.path.Path[PolluxLab]":
+    def sign_dir(self) -> "linux.Path[PolluxLab]":
         return linux.Path(self, f"/home/hs/tools/cst-2.3.3/linux64/bin")
 
     @property
-    def workdir(self) -> "linux.path.Path[PolluxLab]":
+    def workdir(self) -> "linux.Path[PolluxLab]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
     @property
@@ -104,7 +103,7 @@ class PolluxLab(lab.SSHLabHost, linux.BuildMachine):
             ),
         }
 
-    def build(self) -> linux.BuildMachine:
+    def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
             return builders.PolluxSSH(self)
         elif "xpert-build" in tbot.flags:

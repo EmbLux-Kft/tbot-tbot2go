@@ -4,7 +4,7 @@ from tbot.machine import board, channel, linux, connector
 from tbot.tc import uboot, git, kconfig
 import time
 
-class Board(board.LinuxUbootConnector, board.LinuxBootLogin, linux.Ash):
+class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     connect_wait = 0.0
 
     def _get_boardname(self):
@@ -40,11 +40,13 @@ class Board(board.LinuxUbootConnector, board.LinuxBootLogin, linux.Ash):
         return mach.open_channel("connect", self._get_boardname())
 
     def power_check(self) -> bool:
+        print("--------------------------------")
         if "no_console_check" in tbot.flags:
-            return
+            return True
 
         if "nopoweroff" in tbot.flags:
-            return
+            return True
+
         n = self._get_boardname()
         ret = self.host.exec0("remote_power", n, "-l")
         if "off" in ret or "OFF" in ret:
@@ -52,10 +54,12 @@ class Board(board.LinuxUbootConnector, board.LinuxBootLogin, linux.Ash):
         else:
            raise RuntimeError("Board is already on, someone might be using it!")
 
+        return True
+
     def __init__(self, lh: linux.LinuxShell) -> None:
         # Check lab
         assert (
-            lh.name == self.lab_name
+            lh.name == "pollux"
         ), f"{lh!r} is the wrong lab for this board! (Expected '{self.lab_name}')"
         super().__init__(lh)
 
