@@ -40,7 +40,6 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         return mach.open_channel("connect", self._get_boardname())
 
     def power_check(self) -> bool:
-        print("--------------------------------")
         if "no_console_check" in tbot.flags:
             return True
 
