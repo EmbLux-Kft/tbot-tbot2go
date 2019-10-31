@@ -12,7 +12,7 @@ class Tbot2go2Lab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Buil
     # hostname = "192.168.2.103"
     username = "hs"
     serverip = "192.168.3.1"
-    tftproot = "/srv/tftpboot"
+    tftproot = "/srv/tftp"
     ub_load_board_env_subdir = "tbot"
     boardip = {
         "imx8qxpmek": "192.168.3.20",
