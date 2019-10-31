@@ -1,10 +1,10 @@
 import typing
 import tbot
-from tbot.machine import board, channel, linux
+from tbot.machine import board, channel, linux, connector
 from tbot.tc import uboot, git, kconfig
 import time
 
-class DenxBoard(board.Board):
+class Board(board.LinuxUbootConnector, board.LinuxBootLogin, linux.Ash):
     connect_wait = 0.0
 
     def _get_boardname(self):
@@ -20,43 +20,66 @@ class DenxBoard(board.Board):
 
         if self.name == "aristainetos":
             if "bootmodesd" in tbot.flags:
-                self.lh.set_bootmode("sd")
+                self.host.set_bootmode("sd")
             if "bootmodespi" in tbot.flags:
-                self.lh.set_bootmode("spi")
-        self.lh.exec0("remote_power", self._get_boardname(), "on")
+                self.host.set_bootmode("spi")
+        self.host.exec0("remote_power", self._get_boardname(), "on")
 
     def poweroff(self) -> None:
         if "nopoweroff" in tbot.flags:
             return
         n = self._get_boardname()
-        self.lh.exec0("remote_power", self._get_boardname(), "off")
+        self.host.exec0("remote_power", self._get_boardname(), "off")
         if self.name == "aristainetos":
             time.sleep(2)
 
-    def connect(self) -> channel.Channel:
+    def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if "no_console_check" in tbot.flags:
             return
 
-        return self.lh.new_channel("connect", self._get_boardname())
+        return mach.open_channel("connect", self._get_boardname())
 
-    def console_check(self) -> None:
+    def power_check(self) -> bool:
         if "no_console_check" in tbot.flags:
             return
 
         if "nopoweroff" in tbot.flags:
             return
         n = self._get_boardname()
-        ret = self.lh.exec0("remote_power", n, "-l")
+        ret = self.host.exec0("remote_power", n, "-l")
         if "off" in ret or "OFF" in ret:
             pass
         else:
            raise RuntimeError("Board is already on, someone might be using it!")
 
-BH = typing.TypeVar("BH", bound=linux.BuildMachine)
+    def __init__(self, lh: linux.LinuxShell) -> None:
+        # Check lab
+        assert (
+            lh.name == self.lab_name
+        ), f"{lh!r} is the wrong lab for this board! (Expected '{self.lab_name}')"
+        super().__init__(lh)
+
+B = typing.TypeVar("B", bound=Board)
+BH = typing.TypeVar("BH", bound=linux.Builder)
+
+class UBootMachine(board.Connector, board.UBootAutobootIntercept, board.UBootShell):
+    def flash(self, repo: git.GitRepository) -> None:
+        """Flash a new U-Boot version that was built in the given repo."""
+        raise NotImplementedError("U-Boot flashing was not implemented for this board!")
+
+    def lab_network(self) -> None:
+        """Setup the network connection in the selected lab."""
+        self.host = getattr(self, "host")
+        try:
+            getattr(self.host, "uboot_network_setup")(self)
+        except AttributeError:
+            raise Exception(
+                f"The lab-host {self.host!r} does not seem to support uboot network setup!"
+            )
 
 class UBootBuilder(uboot.UBootBuilder):
     if tbot.selectable.LabHost.name in ["pollux", "hercules"]:
-        remote = "git@gitlab.denx.de:abb/aristainetos-uboot.git"
+        remote = "/home/git/u-boot.git"
 
     def do_configure(self, bh: BH, repo: git.GitRepository[BH]) -> None:
         super().do_configure(bh, repo)
@@ -70,7 +93,11 @@ class UBootBuilder(uboot.UBootBuilder):
         kconfig.enable(repo / ".config", "CONFIG_AUTO_COMPLETE")
 
         # Enable configs for network setup
+        kconfig.enable(repo / ".config", "CONFIG_CMD_NET")
         kconfig.enable(repo / ".config", "CONFIG_CMD_DHCP")
+        kconfig.enable(repo / ".config", "CONFIG_CMD_MII")
+        kconfig.enable(repo / ".config", "CONFIG_BOOTP_PREFER_SERVERIP")
+        kconfig.disable(repo / ".config", "CONFIG_BOOTP_BOOTPATH")
 
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",

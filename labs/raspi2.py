@@ -3,12 +3,10 @@ import getpass
 import pathlib
 import typing
 import tbot
-from tbot.machine import channel
-from tbot.machine.linux import lab
-from tbot.machine import linux
+from tbot.machine import connector, linux, board
 import builders
 
-class Tbot2goLab2(lab.SSHLabHost, linux.BuildMachine):
+class Tbot2go2Lab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "tbot2go2"
     hostname = "192.168.1.115"
     # hostname = "192.168.2.103"
@@ -24,15 +22,15 @@ class Tbot2goLab2(lab.SSHLabHost, linux.BuildMachine):
     	raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
 
     @property
-    def nfs_root(self) -> "linux.path.Path[Tbot2goLab2]":
+    def nfs_root(self) -> "linux.Path[Tbot2go2Lab]":
         return linux.Path(self, f"/work/tbot2go/tbot/nfs")
 
     @property
-    def yocto_result_dir(self) -> "linux.path.Path[Tbot2goLab2]":
+    def yocto_result_dir(self) -> "linux.Path[Tbot2go2Lab]":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
-    def workdir(self) -> "linux.path.Path[Tbot2goLab2]":
+    def workdir(self) -> "linux.Path[Tbot2go2Lab]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
     @property
@@ -46,7 +44,7 @@ class Tbot2goLab2(lab.SSHLabHost, linux.BuildMachine):
             ),
         }
 
-    def build(self) -> linux.BuildMachine:
+    def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
             return builders.PolluxSSH(self)
         elif "xpert-build" in tbot.flags:
@@ -67,7 +65,7 @@ class Tbot2goLab2(lab.SSHLabHost, linux.BuildMachine):
         return self
 
 
-LAB = Tbot2goLab2
+LAB = Tbot2go2Lab
 FLAGS = {
         "local-build": "Use Xmglab as buildhost",
         "nopoweroff" : "Do not power off board at the end",

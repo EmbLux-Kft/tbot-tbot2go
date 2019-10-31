@@ -1,9 +1,9 @@
 import typing
 import pathlib
 import tbot
-from tbot.machine import linux
+from tbot.machine import board, channel, linux, connector
 
-class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
+class PolluxSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "pollux"
     hostname = "pollux.denx.org"
     username = "hs"
@@ -72,7 +72,7 @@ class PolluxSSH(linux.SSHMachine, linux.BuildMachine):
         self.exec0(linux.Raw(f"PATH=/home/{self.username}/bin/repo:$PATH"))
         return None
 
-class Hercules1604SSH(linux.SSHMachine, linux.BuildMachine):
+class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "hercules-1604"
     hostname = "hercules"
     username = "hs"
@@ -121,7 +121,7 @@ class Hercules1604SSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class HerculesSSH(linux.SSHMachine, linux.BuildMachine):
+class HerculesSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "hercules"
     hostname = "hercules"
     username = "hs"
@@ -157,7 +157,7 @@ class HerculesSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class ThreadripperSSH(linux.SSHMachine, linux.BuildMachine):
+class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "threadripper-build"
     username = "hs"
     hostname = "192.168.1.120"
@@ -188,7 +188,7 @@ class ThreadripperSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
+class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "threadripper-1604-build"
     username = "hs"
     hostname = "192.168.1.120"
@@ -204,11 +204,12 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
         If again password question pops up, copy id_rsa.pub from
         lab PC to authorized_keys on build PC
         """
-        return [f"ProxyJump=pi@xeidos.ddns.net,{self.username}@192.168.1.120"]
+        #return [f"ProxyJump=pi@xeidos.ddns.net,{self.username}@192.168.1.120"]
         """
         or use this if you have local connection to network
         """
-        return [f"ProxyJump={self.username}@192.168.1.120"]
+        #return [f"ProxyJump={self.username}@192.168.1.120"]
+        return [f""]
 
     @property
     def authenticator(self) -> linux.auth.Authenticator:
@@ -231,7 +232,7 @@ class Threadripper1604SSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class XmglapSSH(linux.SSHMachine, linux.BuildMachine):
+class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "xmglap-build"
     username = "hs"
     hostname = "192.168.1.106"
@@ -258,7 +259,7 @@ class XmglapSSH(linux.SSHMachine, linux.BuildMachine):
             ),
         }
 
-class XpertSSH(linux.SSHMachine, linux.BuildMachine):
+class XpertSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "xpert-build"
     hostname = "xpert.denx.de"
     username = "hs"
@@ -299,7 +300,7 @@ class XpertSSH(linux.SSHMachine, linux.BuildMachine):
                 ),
         }
 
-class xmgSSH(linux.SSHMachine, linux.BuildMachine):
+class xmgSSH(connector.SSHConnector, linux.Bash, linux.Lab):
     name = "xmg-build"
     username = "hs"
     hostname = "192.168.1.106"

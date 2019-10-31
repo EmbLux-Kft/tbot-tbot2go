@@ -4,8 +4,7 @@ import shlex
 import os
 import time
 import tbot
-from tbot.machine import linux
-from tbot.machine import board
+from tbot.machine import board, channel, linux, connector
 import generic as ge
 
 class Bdi:
@@ -83,7 +82,7 @@ class Bdi:
     @tbot.testcase
     def bdi_connect(
         self,
-        lh: typing.Optional[linux.LabHost],
+        lh: typing.Optional[linux.Lab],
         b: typing.Optional[board.Board],
     ) -> None:
         self.lhbdi = lh.new_channel("telnet", self.bdiname)

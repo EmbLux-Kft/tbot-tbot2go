@@ -2,15 +2,13 @@ import contextlib
 import typing
 import tbot
 import time
-from tbot.machine import linux
-from tbot.machine import board
-from tbot.machine import channel
+from tbot.machine import board, channel, linux, connector
 from tbot import log_event
 from tbot import log
 import math
 import re
 
-def get_path(path : tbot.machine.linux.path.Path) -> str:
+def get_path(path : tbot.machine.linux.Path) -> str:
     """
     return the path from a pathlib
     """
@@ -18,7 +16,7 @@ def get_path(path : tbot.machine.linux.path.Path) -> str:
 
 @tbot.testcase
 def get_board_workdir(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
 ) -> str:
     p2 = ma.workdir / tbot.selectable.Board.name
     if not p2.exists():
@@ -27,7 +25,7 @@ def get_board_workdir(
 
 @tbot.testcase
 def get_toolchain_dir(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
 ) -> str:
     """
     return path where toolchains are installed.
@@ -41,7 +39,7 @@ def get_toolchain_dir(
 
 @tbot.testcase
 def set_toolchain(
-    ma: typing.Optional[linux.LabHost],
+    ma: typing.Optional[linux.LinuxShell],
     arch = "armv7-eabihf",
     libc = "glibc",
     typ = "stable",
@@ -103,7 +101,7 @@ def set_toolchain(
 
 @tbot.testcase
 def cd_board_workdir(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
 ) -> None:
     p = get_board_workdir(ma)
     bh.exec0("cd", p)
@@ -128,18 +126,18 @@ def string_to_dict(string, pattern):
     return _dict
 
 def recv_count_lines(
-    blx: typing.Optional[board.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     prompt: str,
     count: int,
     *args: typing.Union[str]
 ) -> str:
-    command = blx.build_command(*args)
-    chan = blx._obtain_channel()
+    command = ma.build_command(*args)
+    chan = ma._obtain_channel()
     i = 0
     out = ""
     res = []
 
-    with tbot.log_event.command(blx.name, command) as ev:
+    with tbot.log_event.command(ma.name, command) as ev:
         ev.prefix = "   <> "
 
         chan.send(command + "\n")
@@ -208,7 +206,7 @@ def recv_timeout(
 # linux testcases
 @tbot.testcase
 def lx_replace_in_file(
-    ma: linux.LinuxMachine,
+    ma: typing.Optional[linux.LinuxShell],
     filename,
     searchstring,
     newvalue,
@@ -241,7 +239,7 @@ def lx_replace_in_file(
 
 @tbot.testcase
 def lx_replace_line_in_file(
-    ma: linux.LinuxMachine,
+    ma: typing.Optional[linux.LinuxShell],
     filename,
     searchstring,
     newvalue,
@@ -277,7 +275,7 @@ def lx_replace_line_in_file(
 
 @tbot.testcase
 def lx_cmd_exists(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     cmd,
 ) -> bool:
     ret = ma.exec(linux.Raw(("command -v " + cmd + " >/dev/null 2>&1")))
@@ -287,7 +285,7 @@ def lx_cmd_exists(
 
 @tbot.testcase
 def lx_devmem2_get(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     addr,
     typ,
 ) -> str:
@@ -302,7 +300,7 @@ def lx_devmem2_get(
 
 @tbot.testcase
 def lx_get_uboot_var(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     varname,
 ) -> str:
     ret = ma.exec0("fw_printenv", varname)
@@ -310,7 +308,7 @@ def lx_get_uboot_var(
 
 @tbot.testcase
 def lx_check_revfile(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     revfile,
     difffile = None,
     timeout = None,
@@ -357,7 +355,7 @@ def lx_check_revfile(
 
 @tbot.testcase
 def lx_create_revfile(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     revfile,
     startaddr,
     endaddr,
@@ -405,7 +403,7 @@ def lx_create_revfile(
 
 @tbot.testcase
 def lx_check_dmesg(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     dmesg_strings = None,
     dmesg_false_strings = None,
 ) -> bool:
@@ -436,7 +434,7 @@ def lx_check_dmesg(
 
 @tbot.testcase
 def lx_check_cmd(
-    ma: typing.Optional[linux.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     cmd_dict,
 ) -> bool:
     """
@@ -458,14 +456,8 @@ def lx_check_cmd(
 
 # U-Boot
 @tbot.testcase
-def ub_check_i2c_dump(
-    lab: typing.Optional[linux.LabHost],
-    board: typing.Optional[board.Board],
-    uboot: typing.Optional[board.UBootMachine],
-    dev,
-    address,
-    i2c_dump,
-) -> bool:
+@tbot.with_uboot
+def ub_check_i2c_dump(ub, dev, address, i2c_dump) -> bool:
     """
     dev      : i2c dev number
     address  : i2c addr
@@ -723,10 +715,11 @@ def ub_check_revfile(
     return ret
 
 @tbot.testcase
+@tbot.with_lab
+@tbot.with_linux
 def lx_check_iperf(
-    lab: typing.Optional[linux.LabHost] = None,
-    board: typing.Optional[board.Board] = None,
-    blx: typing.Optional[board.LinuxMachine] = None,
+    lh,
+    lnx,
     intervall = "1",
     cycles = "10",
     minval = "80",
@@ -739,64 +732,63 @@ def lx_check_iperf(
     cycles: "-t" iperf parameter
     minval: if bandwith is lower than this value, fail
     """
-    with lab or tbot.acquire_lab() as lh:
-        with board or tbot.acquire_board(lh) as b:
-            with blx or tbot.acquire_linux(b) as lnx:
-                result = []
-                ymax = "0"
-                error = False
-                ret = lh.exec0("ps", "afx", linux.Pipe , "grep", "iperf")
-                start = True
-                for l in ret.split("\n"):
-                    if "iperf" in l and not "grep" in l:
-                        start = False
-                if start:
-                    ret = lh.exec("iperf", "-s", linux.Background)
-                    time.sleep(1)
-                oldverbosity = log.VERBOSITY
-                if showlog:
-                    log.VERBOSITY = log.Verbosity.STDOUT
-                xmax = str(int(cycles) * int(intervall))
-                ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
-                step = str(float(intervall) / 2)
-                for l in ret.split("\n"):
-                    if "Mbits/sec" in l:
-                        tmp = l.split(" ")
-                        val = tmp[-2]
-                        result.append({"bandwith" : val, "step" : step})
-                        if float(ymax) < float(val):
-                            ymax = val
-                        if float(tmp[-2]) < float(minval):
-                            if error == False:
-                                tbot.log.message(tbot.log.c(f"Not enough Bandwith {val} < {minval}").red)
-                            error = True
-                        step = str(float(step) + float(intervall))
+    result = []
+    ymax = "0"
+    error = False
+    # check on labhost, if iperf server runs
+    # if not start it
+    ret = lh.exec0("ps", "afx", linux.Pipe , "grep", "iperf")
+    start = True
+    for l in ret.split("\n"):
+        if "iperf" in l and not "grep" in l:
+            start = False
+    if start:
+        ret = lh.exec("iperf", "-s", linux.Background)
+        time.sleep(1)
+    oldverbosity = log.VERBOSITY
+    if showlog:
+        log.VERBOSITY = log.Verbosity.STDOUT
+    xmax = str(int(cycles) * int(intervall))
+    ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
+    step = str(float(intervall) / 2)
+    for l in ret.split("\n"):
+        if "Mbits/sec" in l:
+            tmp = l.split(" ")
+            val = tmp[-2]
+            result.append({"bandwith" : val, "step" : step})
+            if float(ymax) < float(val):
+                ymax = val
+            if float(tmp[-2]) < float(minval):
+                if error == False:
+                    tbot.log.message(tbot.log.c(f"Not enough Bandwith {val} < {minval}").red)
+                error = True
+            step = str(float(step) + float(intervall))
 
-                log.VERBOSITY = oldverbosity
-                # remove last line, as it is not a measurement
-                result = result[:-1]
-                step = 0
-                # round up ymax
-                ymax = str(int(math.ceil(float(ymax) / 10.0)) * 10)
-                fd = open('results/iperf/' + filename, 'w')
-                # save the xmax and ymax value behind the headlines
-                # gnuplot uses them for setting the correct xmax / ymax values
-                fd.write(f"step bandwith minimum {xmax} {ymax}\n")
-                for el in result:
-                    s = str(step)
-                    fd.write(f'{el["step"]} {el["bandwith"]} {minval}\n')
-                    step += int(intervall)
-                fd.close()
+    log.VERBOSITY = oldverbosity
+    # remove last line, as it is not a measurement
+    result = result[:-1]
+    step = 0
+    # round up ymax
+    ymax = str(int(math.ceil(float(ymax) / 10.0)) * 10)
+    fd = open('results/iperf/' + filename, 'w')
+    # save the xmax and ymax value behind the headlines
+    # gnuplot uses them for setting the correct xmax / ymax values
+    fd.write(f"step bandwith minimum {xmax} {ymax}\n")
+    for el in result:
+        s = str(step)
+        fd.write(f'{el["step"]} {el["bandwith"]} {minval}\n')
+        step += int(intervall)
+    fd.close()
 
-                if error:
-                    raise RuntimeError(f"Not enough Bandwith {val} < {minval}")
-                else:
-                    tbot.log.message(tbot.log.c(f"Bandwith always above minimum {minval} MBit/s").green)
+    if error:
+        raise RuntimeError(f"Not enough Bandwith {val} < {minval}")
+    else:
+        tbot.log.message(tbot.log.c(f"Bandwith always above minimum {minval} MBit/s").green)
     return True
 
 @tbot.testcase
 def lx_check_latency(
-    lnx: typing.Optional[board.LinuxMachine],
+    ma: typing.Optional[linux.LinuxShell],
     count: str = "50",
     latency_max: str = "20",
     filename: str = "latency.dat",
@@ -813,7 +805,7 @@ def lx_check_latency(
     rtd_format = 'RTD\|{min}\|{avg}\|{max}\|{overrun}\|{msw}\|{best}\|{worst}\n'
     rtd = []
     result = True
-    ret = recv_count_lines(lnx, "\n", count, "latency", "-g", "results/latency/latency.dat")
+    ret = recv_count_lines(ma, "\n", count, "latency", "-g", "results/latency/latency.dat")
     #
     # killing does not work, as after the prompt there comes more
     # output from the latency test, which confuses tbot

@@ -3,9 +3,8 @@ import typing
 import pathlib
 import os
 import tbot
-from tbot.machine import linux
+from tbot.machine import board, channel, linux, connector
 import generic as ge
-from tbot.machine.board import special
 
 class Yocto:
     """class for yocto tasks
@@ -59,8 +58,8 @@ class Yocto:
     @tbot.testcase
     def yo_repo_install(
         self,
-        lab: typing.Optional[linux.LabHost] = None,
-        build: typing.Optional[linux.BuildMachine] = None,
+        lab: typing.Optional[linux.LinuxShell] = None,
+        build: typing.Optional[linux.LinuxShell] = None, # besser check if it is a build machine!
     ) -> str:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -73,8 +72,8 @@ class Yocto:
     @tbot.testcase
     def yo_repo_sync(
         self,
-        lab: typing.Optional[linux.LabHost] = None,
-        build: typing.Optional[linux.BuildMachine] = None,
+        lab: typing.Optional[linux.LinuxShell] = None,
+        build: typing.Optional[linux.LinuxShell] = None, # besser check if it is a build machine!
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -84,8 +83,8 @@ class Yocto:
     @tbot.testcase
     def yo_repo_patch(
         self,
-        lab: typing.Optional[linux.LabHost] = None,
-        build: typing.Optional[linux.BuildMachine] = None,
+        lab: typing.Optional[linux.LinuxShell] = None,
+        build: typing.Optional[linux.LinuxShell] = None, # besser check if it is a build machine!
     ) -> None:
         try:
             self.cfg["patchesdir"]
@@ -137,8 +136,8 @@ class Yocto:
     @tbot.testcase
     def yo_repo_config(
         self,
-        lab: typing.Optional[linux.LabHost] = None,
-        build: typing.Optional[linux.BuildMachine] = None,
+        lab: typing.Optional[linux.LinuxShell] = None,
+        build: typing.Optional[linux.LinuxShell] = None, # besser check if it is a build machine!
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -209,8 +208,8 @@ class Yocto:
     @tbot.testcase
     def yo_repo_build(
         self,
-        lab: typing.Optional[linux.LabHost] = None,
-        build: typing.Optional[linux.BuildMachine] = None,
+        lab: typing.Optional[linux.LinuxShell] = None,
+        build: typing.Optional[linux.LinuxShell] = None, # besser check if it is a build machine!
     ) -> None:
         with lab or tbot.acquire_lab() as lh:
             with build or lh.build() as bh:
@@ -229,7 +228,7 @@ class Yocto:
     @tbot.testcase
     def get_yocto_workdir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         p2 = ge.get_board_workdir(ma)
         # may we add here other options without repo
@@ -241,7 +240,7 @@ class Yocto:
     @tbot.testcase
     def cd_yocto_workdir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         p = self.get_yocto_workdir(ma)
         ma.exec0("cd", p)
@@ -250,7 +249,7 @@ class Yocto:
     @tbot.testcase
     def repo_exist(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> bool:
         if self.yocto_type != 'repo':
             raise RuntimeError("not configured for " + self.yocto_type)
@@ -273,7 +272,7 @@ class Yocto:
     @tbot.testcase
     def get_repodir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         p = self.cd_yocto_workdir(ma)
         # may we need this configurable
@@ -284,7 +283,7 @@ class Yocto:
     @tbot.testcase
     def cd2repo(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         p = self.get_repodir(ma)
         if p.exists():
@@ -295,7 +294,7 @@ class Yocto:
     @tbot.testcase
     def repo_get_builddir_name(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         bd = "build_" + tbot.selectable.Board.name
         return bd
@@ -303,7 +302,7 @@ class Yocto:
     @tbot.testcase
     def repo_get_builddir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         bd = self.repo_get_builddir_name(ma)
         p = self.get_repodir(ma)
@@ -313,7 +312,7 @@ class Yocto:
     @tbot.testcase
     def repo_cd_builddir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         p = self.repo_get_builddir(ma)
         if p.exists():
@@ -324,7 +323,7 @@ class Yocto:
     @tbot.testcase
     def repo_get_deploydir_name(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
         extension: str = None,
     ) -> str:
         bd = "tmp/deploy/images/" + self.build_machine
@@ -335,7 +334,7 @@ class Yocto:
     @tbot.testcase
     def repo_get_deploydir(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
         extension: str = None,
     ) -> str:
         p = self.repo_get_builddir(ma)
@@ -347,7 +346,7 @@ class Yocto:
     @tbot.testcase
     def repo_init(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
         u,
         m,
         b,
@@ -360,7 +359,7 @@ class Yocto:
     @tbot.testcase
     def repo_sync(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
         check=True
     ) -> bool:
         ret = self.repo_exist(ma)
@@ -373,7 +372,7 @@ class Yocto:
     @tbot.testcase
     def repo_config(
         self,
-        ma: typing.Optional[linux.LinuxMachine],
+        ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         if not self.repo_exist(ma):
             return False
