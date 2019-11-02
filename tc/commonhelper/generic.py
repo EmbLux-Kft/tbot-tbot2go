@@ -125,6 +125,19 @@ def string_to_dict(string, pattern):
     _dict = dict(zip(keys, values))
     return _dict
 
+def recv_prompt(
+    ma: typing.Optional[linux.LinuxShell],
+    prompt, timeout, err) -> str:
+    """
+    receive until prompt is received
+    if timeout timeout raise RuntimeError with string err
+    """
+    with ma.ch.with_prompt(prompt, must_end=False):
+        try:
+            ret = ma.ch.read_until_prompt(timeout=timeout)
+        except TimeoutError:
+            raise RuntimeError(err)
+
 def recv_count_lines(
     ma: typing.Optional[linux.LinuxShell],
     prompt: str,
