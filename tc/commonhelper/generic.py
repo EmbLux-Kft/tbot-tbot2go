@@ -467,6 +467,51 @@ def lx_check_cmd(
 
     return True
 
+# should be in machine
+path_sys = "/sys"
+path_gpio = f"{path_sys}/class/gpio"
+@tbot.testcase
+def lx_gpio(
+    ma: typing.Optional[linux.LinuxShell],
+    nr: str,
+    state: str,
+    mode: str = "set",
+) -> str:
+    """
+    if {mode} == "set" (default):
+        set gpio {nr} to {state} "on" or "off"
+    else if {mode} == "get"
+        return state of gpio 0 = "off", 1 = "on"
+    returns state
+    """
+    ret = ma.exec("ls", f"{path_gpio}/gpio{nr}")
+    if ret[0] != 0:
+        ma.exec0("echo", nr, linux.Raw(">"), f"{path_gpio}/export")
+        ma.exec0("ls", f"{path_gpio}/gpio{nr}")
+
+    if mode == "get":
+        ma.exec0("echo", "in", linux.Raw(">"), f"{path_gpio}/gpio{nr}/direction")
+        ret = ma.exec0("cat", f"{path_gpio}/gpio{nr}/value")
+        if ret.strip() == "0":
+            return "off"
+        elif ret.strip() == "1":
+            return "on"
+        else:
+            raise RuntimeError(f"unknown gpio state {ret}")
+    elif mode == "set":
+        if state == "on":
+            val = "1"
+        else:
+            val = "0"
+
+        ma.exec0("echo", "out", linux.Raw(">"), f"{path_gpio}/gpio{nr}/direction")
+        ma.exec0("echo", val, linux.Raw(">"), f"{path_gpio}/gpio{nr}/value")
+    else:
+        raise RuntimeError(f"unknown mode {mode}")
+
+    return state
+
+
 # U-Boot
 @tbot.testcase
 @tbot.with_uboot
