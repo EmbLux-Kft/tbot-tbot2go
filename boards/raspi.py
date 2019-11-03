@@ -36,7 +36,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             #self.lh.exec0("power.py", "-p", "19", "-s", "on")
             self.host.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-o", self.pin)
         elif self.name == 'bbb':
-            self.host.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
+            ge.lx_gpio(self.host, "4", "on")
         elif self.name == 'h03pl086':
             self.host.exec0("power.py", "-p", "14", "-s", "on")
         elif self.name == 'piinstall':
@@ -68,7 +68,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if self.name == 'k30rf':
             self.host.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
         elif self.name == 'bbb':
-            self.host.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio4/value")
+            ge.lx_gpio(self.host, "4", "off")
         elif self.name == 'h03pl086':
             self.host.exec0("power.py", "-p", "14", "-s", "off")
         elif self.name == 'piinstall':

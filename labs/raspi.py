@@ -5,6 +5,11 @@ import typing
 import tbot
 from tbot.machine import connector, linux, board
 import builders
+import os,sys,inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir + '/tc/commonhelper')
+import generic as ge
 
 class Tbot2goLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "tbot2go"
@@ -25,9 +30,9 @@ class Tbot2goLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Build
     def set_bootmode(self, state):
         if tbot.selectable.Board.name == "bbb":
             if state == "sd":
-                self.exec0("echo", "1", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
+                ge.lx_gpio(self, "2", "on")
             elif state == "emmc":
-                self.exec0("echo", "0", linux.Raw(">"), "/sys/class/gpio/gpio2/value")
+                ge.lx_gpio(self, "2", "off")
             else:
                 raise NotImplementedError(f"{state} bootmode defined for {tbot.selectable.Board.name}!")
         else:
