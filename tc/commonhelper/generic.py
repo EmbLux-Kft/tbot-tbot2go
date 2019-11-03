@@ -138,7 +138,11 @@ def recv_prompt(
         except TimeoutError:
             raise RuntimeError(err)
 
-    ret += prompt
+    # if prompt is string, add it to return
+    # ToDo: if pattern add it too!
+    if isinstance(prompt, str):
+        ret += prompt
+
     return ret
 
 def recv_count_lines(
