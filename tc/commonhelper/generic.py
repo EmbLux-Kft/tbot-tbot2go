@@ -16,7 +16,7 @@ def get_path(path : tbot.machine.linux.Path) -> str:
 
 @tbot.testcase
 def get_board_workdir(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
 ) -> str:
     p2 = ma.workdir / tbot.selectable.Board.name
     if not p2.exists():
@@ -25,7 +25,7 @@ def get_board_workdir(
 
 @tbot.testcase
 def get_toolchain_dir(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
 ) -> str:
     """
     return path where toolchains are installed.
@@ -39,7 +39,7 @@ def get_toolchain_dir(
 
 @tbot.testcase
 def set_toolchain(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     arch = "armv7-eabihf",
     libc = "glibc",
     typ = "stable",
@@ -101,7 +101,7 @@ def set_toolchain(
 
 @tbot.testcase
 def cd_board_workdir(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
 ) -> None:
     p = get_board_workdir(ma)
     bh.exec0("cd", p)
@@ -126,7 +126,7 @@ def string_to_dict(string, pattern):
     return _dict
 
 def recv_prompt(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     prompt, timeout, err) -> str:
     """
     receive until prompt is received
@@ -138,14 +138,17 @@ def recv_prompt(
         except TimeoutError:
             raise RuntimeError(err)
 
+    ret += prompt
+    return ret
+
 def recv_count_lines(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     prompt: str,
     count: int,
     *args: typing.Union[str]
 ) -> str:
-    command = ma.build_command(*args)
-    chan = ma._obtain_channel()
+    command = ma.escape(*args)
+    chan = ma.ch
     i = 0
     out = ""
     res = []
@@ -153,11 +156,12 @@ def recv_count_lines(
     with tbot.log_event.command(ma.name, command) as ev:
         ev.prefix = "   <> "
 
-        chan.send(command + "\n")
+        chan.sendline(command)
         while True:
             if i > count:
                 break
-            out = chan.read_until_prompt(prompt, stream=ev)
+            # receive lines, timeout 20 seconds
+            out = recv_prompt(ma, prompt, 20, "recv_count_lines")
             try:
                 ev.data["stdout"] += out
             except:
@@ -167,7 +171,7 @@ def recv_count_lines(
 
         # Send Ctrl-C
         chan.send("\x03")
-        out = chan.read_until_prompt(channel.TBOT_PROMPT, stream=ev)
+        out = chan.read_until_prompt()
         ev.data["stdout"] += out
 
     return res
@@ -219,7 +223,7 @@ def recv_timeout(
 # linux testcases
 @tbot.testcase
 def lx_replace_in_file(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     filename,
     searchstring,
     newvalue,
@@ -252,7 +256,7 @@ def lx_replace_in_file(
 
 @tbot.testcase
 def lx_replace_line_in_file(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     filename,
     searchstring,
     newvalue,
@@ -288,7 +292,7 @@ def lx_replace_line_in_file(
 
 @tbot.testcase
 def lx_cmd_exists(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     cmd,
 ) -> bool:
     ret = ma.exec(linux.Raw(("command -v " + cmd + " >/dev/null 2>&1")))
@@ -298,7 +302,7 @@ def lx_cmd_exists(
 
 @tbot.testcase
 def lx_devmem2_get(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     addr,
     typ,
 ) -> str:
@@ -313,7 +317,7 @@ def lx_devmem2_get(
 
 @tbot.testcase
 def lx_get_uboot_var(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     varname,
 ) -> str:
     ret = ma.exec0("fw_printenv", varname)
@@ -321,7 +325,7 @@ def lx_get_uboot_var(
 
 @tbot.testcase
 def lx_check_revfile(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     revfile,
     difffile = None,
     timeout = None,
@@ -368,7 +372,7 @@ def lx_check_revfile(
 
 @tbot.testcase
 def lx_create_revfile(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     revfile,
     startaddr,
     endaddr,
@@ -416,7 +420,7 @@ def lx_create_revfile(
 
 @tbot.testcase
 def lx_check_dmesg(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     dmesg_strings = None,
     dmesg_false_strings = None,
 ) -> bool:
@@ -447,7 +451,7 @@ def lx_check_dmesg(
 
 @tbot.testcase
 def lx_check_cmd(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     cmd_dict,
 ) -> bool:
     """
@@ -472,7 +476,7 @@ path_sys = "/sys"
 path_gpio = f"{path_sys}/class/gpio"
 @tbot.testcase
 def lx_gpio(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     nr: str,
     state: str,
     mode: str = "set",
@@ -568,7 +572,7 @@ def ub_check_i2c_dump(ub, dev, address, i2c_dump) -> bool:
 
 @tbot.testcase
 def ub_get_var(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     name,
 ) -> str:
     ret = ub.exec0("printenv", name)
@@ -584,7 +588,7 @@ def ub_check_size(
 
 @tbot.testcase
 def ub_get_mem_addr(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     addr,
     size,
 ) -> str:
@@ -601,7 +605,7 @@ def ub_get_mem_addr(
 
 @tbot.testcase
 def ub_set_mem_addr(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     addr,
     size,
     value,
@@ -621,7 +625,7 @@ def ub_set_mem_addr(
 
 @tbot.testcase
 def ub_create_revfile(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     revfile,
     startaddr,
     endaddr,
@@ -695,7 +699,7 @@ def get_name(socfile, addr):
 
 @tbot.testcase
 def ub_write_dump(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     revfile,
     newaddr,
 ) -> bool:
@@ -732,7 +736,7 @@ def ub_write_dump(
 
 @tbot.testcase
 def ub_check_revfile(
-    ub: typing.Optional[board.UBootMachine],
+    ub: board.UBootMachine,
     revfile,
     difffile = None,
     socfile = None,
@@ -773,11 +777,9 @@ def ub_check_revfile(
     return ret
 
 @tbot.testcase
-@tbot.with_lab
-@tbot.with_linux
 def lx_check_iperf(
-    lh,
-    lnx,
+    lh: linux.LinuxShell,
+    lnx: linux.LinuxShell,
     intervall = "1",
     cycles = "10",
     minval = "80",
@@ -846,7 +848,7 @@ def lx_check_iperf(
 
 @tbot.testcase
 def lx_check_latency(
-    ma: typing.Optional[linux.LinuxShell],
+    ma: linux.LinuxShell,
     count: str = "50",
     latency_max: str = "20",
     filename: str = "latency.dat",
