@@ -6,6 +6,7 @@ from tbot.machine import board, channel, linux, connector
 from tbot import log_event
 from tbot import log
 import math
+import os
 import re
 
 def get_path(path : tbot.machine.linux.Path) -> str:
@@ -13,6 +14,13 @@ def get_path(path : tbot.machine.linux.Path) -> str:
     return the path from a pathlib
     """
     return path._local_str()
+
+def get_ub_tftp_path(ma: linux.LinuxShell, path : tbot.machine.linux.Path) -> str:
+    """
+    return the tftp path for u-boot tftp command
+    """
+    pt = path._local_str()
+    return os.path.relpath(pt, ma.tftproot)
 
 @tbot.testcase
 def get_board_workdir(
