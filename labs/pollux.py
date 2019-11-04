@@ -28,7 +28,7 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
             raise NotImplementedError(f"no bootmode defined for {tbot.selectable.Board.name}!")
 
     @property
-    def yocto_result_dir(self) -> "linux.Path[Tbot2goLab]":
+    def yocto_result_dir(self) -> "linux.Path":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
@@ -43,9 +43,9 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
     @property
     def tftp_dir(self) -> "linux.Path[PolluxLab]":
         if tbot.selectable.Board.name == "taurus":
-            return linux.Path(self, f"/tftpboot/at91_taurus/tbot/")
+            return linux.Path(self, f"{self.tftproot}/at91_taurus/tbot/")
         else:
-            return linux.Path(self, f"/tftpboot/{self.get_boardname}/tbot")
+            return linux.Path(self, f"{self.tftproot}/{self.get_boardname}/tbot")
 
     @property
     def sign_dir(self) -> "linux.Path[PolluxLab]":
