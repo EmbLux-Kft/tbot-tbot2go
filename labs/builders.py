@@ -3,7 +3,7 @@ import pathlib
 import tbot
 from tbot.machine import board, channel, linux, connector
 
-class PolluxSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class PolluxSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "pollux"
     hostname = "pollux.denx.org"
     username = "hs"
@@ -72,7 +72,7 @@ class PolluxSSH(connector.SSHConnector, linux.Bash, linux.Lab):
         self.exec0(linux.Raw(f"PATH=/home/{self.username}/bin/repo:$PATH"))
         return None
 
-class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "hercules-1604"
     hostname = "hercules"
     username = "hs"
@@ -121,7 +121,7 @@ class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
             ),
         }
 
-class HerculesSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class HerculesSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "hercules"
     hostname = "hercules"
     username = "hs"
@@ -157,7 +157,7 @@ class HerculesSSH(connector.SSHConnector, linux.Bash, linux.Lab):
             ),
         }
 
-class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "threadripper-build"
     username = "hs"
     hostname = "192.168.1.120"
@@ -188,7 +188,7 @@ class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Lab):
             ),
         }
 
-class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "threadripper-1604-build"
     username = "hs"
     hostname = "192.168.1.120"
@@ -232,7 +232,7 @@ class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Lab):
             ),
         }
 
-class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "xmglap-build"
     username = "hs"
     hostname = "192.168.1.106"
@@ -259,7 +259,7 @@ class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Lab):
             ),
         }
 
-class XpertSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class XpertSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "xpert-build"
     hostname = "xpert.denx.de"
     username = "hs"
@@ -300,7 +300,7 @@ class XpertSSH(connector.SSHConnector, linux.Bash, linux.Lab):
                 ),
         }
 
-class xmgSSH(connector.SSHConnector, linux.Bash, linux.Lab):
+class xmgSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "xmg-build"
     username = "hs"
     hostname = "192.168.1.106"
