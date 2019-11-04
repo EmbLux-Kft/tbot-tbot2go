@@ -544,41 +544,25 @@ def ub_check_i2c_dump(ub, dev, address, i2c_dump) -> bool:
                'xx' ignore
     """
     retval = True
-    if lab is not None:
-        lh = lab
-    else:
-        lh = tbot.acquire_lab()
-
-    with contextlib.ExitStack() as cx:
-        if board is not None:
-            b = board
-        else:
-            b = cx.enter_context(tbot.acquire_board(lh))
-
-        if uboot is not None:
-            ub = uboot
-        else:
-            ub = cx.enter_context(tbot.acquire_uboot(b))
-
-        ub.exec0("i2c", "dev", dev)
-        for l in i2c_dump:
-            addr, values, *_ = l.split(":")
-            values = values.split(" ")
-            ad = int(addr, 0)
-            for v in values:
-                if v == '':
-                    continue
-                if v == 'xx':
-                    ad += 1
-                    continue
-                adh = format(ad, '02x')
-                ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
-                rval = ret.split(":")[1]
-                rval = rval.split(" ")[1]
-                if rval != str(v):
-                    tbot.log.message(tbot.log.c(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}").red)
-                    retval = False
+    ub.exec0("i2c", "dev", dev)
+    for l in i2c_dump:
+        addr, values, *_ = l.split(":")
+        values = values.split(" ")
+        ad = int(addr, 0)
+        for v in values:
+            if v == '':
+                continue
+            if v == 'xx':
                 ad += 1
+                continue
+            adh = format(ad, '02x')
+            ret = ub.exec0("i2c", "md", address, adh + ".1", "1")
+            rval = ret.split(":")[1]
+            rval = rval.split(" ")[1]
+            if rval != str(v):
+                tbot.log.message(tbot.log.c(f"diff for device {address} on bus {dev} found @{adh} {rval} != {v}").red)
+                retval = False
+            ad += 1
 
     return retval
 
