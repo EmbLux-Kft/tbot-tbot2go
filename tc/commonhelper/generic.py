@@ -135,58 +135,45 @@ def string_to_dict(string, pattern):
 
 def recv_prompt(
     ma: linux.LinuxShell,
-    prompt, timeout, err) -> str:
+    cmd: str,
+    prompt,
+    count,
+    ) -> dict:
     """
-    receive until prompt is received
-    if timeout timeout raise RuntimeError with string err
+    receive until prompt is count times received
+    than send break to finish command.
+    returns a dictionary with the received parts.
     """
-    with ma.ch.with_prompt(prompt, must_end=False):
-        try:
-            ret = ma.ch.read_until_prompt(timeout=timeout)
-        except TimeoutError:
-            raise RuntimeError(err)
+    res = []
+    with tbot.log_event.command(ma.name, cmd) as ev, ma.ch.with_stream(ev, False):
+        ma.ch.sendline(cmd)
+        buf = b""
+        for frag in ma.ch.read_iter():
+            buf += frag
+            if buf.count(prompt) >= count:
+                break
+        ma.ch.sendintr()
+        buf += ma.ch.read_until_prompt().encode()
 
-    # if prompt is string, add it to return
-    # ToDo: if pattern add it too!
-    if isinstance(prompt, str):
-        ret += prompt
+    buf = buf.decode(errors="replace")
+    for l in buf.split(prompt.decode(errors="replace")):
+        res.append({"out": l.strip()})
 
-    return ret
+    return res
 
 def recv_count_lines(
     ma: linux.LinuxShell,
-    prompt: str,
+    prompt,
     count: int,
     *args: typing.Union[str]
-) -> str:
+) -> dict:
+    """
+    send a command and receive count lines with prompt
+    than send a break and return the received "lines"
+    in a dictionary.
+    """
     command = ma.escape(*args)
-    chan = ma.ch
-    i = 0
-    out = ""
-    res = []
-
-    with tbot.log_event.command(ma.name, command) as ev:
-        ev.prefix = "   <> "
-
-        chan.sendline(command)
-        while True:
-            if i > count:
-                break
-            # receive lines, timeout 20 seconds
-            out = recv_prompt(ma, prompt, 20, "recv_count_lines")
-            try:
-                ev.data["stdout"] += out
-            except:
-                ev.data["stdout"] = out
-            i += 1
-            res.append({"out" : out})
-
-        # Send Ctrl-C
-        chan.send("\x03")
-        out = chan.read_until_prompt()
-        ev.data["stdout"] += out
-
-    return res
+    return recv_prompt(ma, command, prompt, count)
 
 def recv_timeout(
     ch,
@@ -858,10 +845,10 @@ def lx_check_latency(
     # RTT|  00:00:01  (periodic user-mode task, 1000 us period, priority 99)
     # RTH|----lat min|----lat avg|----lat max|-overrun|---msw|---lat best|--lat worst
     # RTD|     11.458|     16.702|     39.250|       0|     0|     11.458|     39.250
-    rtd_format = 'RTD\|{min}\|{avg}\|{max}\|{overrun}\|{msw}\|{best}\|{worst}\n'
+    rtd_format = 'RTD\|{min}\|{avg}\|{max}\|{overrun}\|{msw}\|{best}\|{worst}'
     rtd = []
     result = True
-    ret = recv_count_lines(ma, "\n", count, "latency", "-g", "results/latency/latency.dat")
+    ret = recv_count_lines(ma, b"\n", count, "latency", "-g", "results/latency/latency.dat")
     #
     # killing does not work, as after the prompt there comes more
     # output from the latency test, which confuses tbot
