@@ -146,14 +146,16 @@ def recv_prompt(
     """
     res = []
     with tbot.log_event.command(ma.name, cmd) as ev, ma.ch.with_stream(ev, False):
-        ma.ch.sendline(cmd)
+        if cmd != None:
+            ma.ch.sendline(cmd)
         buf = b""
         for frag in ma.ch.read_iter():
             buf += frag
             if buf.count(prompt) >= count:
                 break
-        ma.ch.sendintr()
-        buf += ma.ch.read_until_prompt().encode()
+        if cmd != None:
+            ma.ch.sendintr()
+            buf += ma.ch.read_until_prompt().encode()
 
     buf = buf.decode(errors="replace")
     for l in buf.split(prompt.decode(errors="replace")):
