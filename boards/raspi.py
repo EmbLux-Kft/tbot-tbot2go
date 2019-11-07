@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import typing
 import tbot
 from tbot.machine import board, channel, linux, connector
@@ -86,6 +87,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     def ssh_connect(self) -> channel.Channel:
         return mach.open_channel("ssh", "hs@" + self.host.boardip[self.name])
 
+    @contextlib.contextmanager
     def kermit_connect(self, mach: linux.LinuxShell) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'k30rf':
@@ -96,7 +98,14 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             cfg_file = f"/home/{self.host.username}/kermrc_h03pl086"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
-        return mach.open_channel("kermit", cfg_file)
+        ch = mach.open_channel("kermit", cfg_file)
+        try:
+            yield ch
+        finally:
+            ch.send(chr(28) + "C")
+            ch.sendline("exit")
+            # give usb2serial adapter some time
+            time.sleep(2)
 
     def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if self.name == 'piinstall':
