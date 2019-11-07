@@ -138,6 +138,7 @@ def recv_prompt(
     cmd: str,
     prompt,
     count,
+    timeout: typing.Optional[float] = None,
     ) -> dict:
     """
     receive until prompt is count times received
@@ -149,13 +150,13 @@ def recv_prompt(
         if cmd != None:
             ma.ch.sendline(cmd)
         buf = b""
-        for frag in ma.ch.read_iter():
+        for frag in ma.ch.read_iter(timeout=timeout):
             buf += frag
             if buf.count(prompt) >= count:
                 break
         if cmd != None:
             ma.ch.sendintr()
-            buf += ma.ch.read_until_prompt().encode()
+            buf += ma.ch.read_until_prompt(timeout=timeout).encode()
 
     buf = buf.decode(errors="replace")
     for l in buf.split(prompt.decode(errors="replace")):
