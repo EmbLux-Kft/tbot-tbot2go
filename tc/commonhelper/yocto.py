@@ -18,12 +18,11 @@ class Yocto:
 
     cfg : configuration dictionary
 
-    workdir structure:
+    workdir structure for repo based builds:
 
     ma.workdir / tbot.selectable.Board.name / self.yocto_type   / tbot.selectable.Board.name / "build_" + tbot.selectable.Board.name /
                | ge.get_board_workdir       | get_yocto_workdir | get_repodir                | repo_get_builddir                     |
                | ge.cd_board_workdir        | cd_yocto_workdir  | cd2repo                    | repo_cd_builddir                      |
-               |                            |                   | repodirname
 
     get deploy directory: repo_get_deploydir()
     repo_get_builddir() / repo_get_deploydir_name ()
@@ -42,7 +41,30 @@ class Yocto:
     yo_cfg["priv_layer_branch"] = "branch which get checked out"
     yo_cfg["build_machine"] = "build machine"
     yo_cfg["patchesdir"] = "path to directory which contains patches for meta layers"
-    
+
+
+    workdir structure for kas based builds:
+
+    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / repodirname / "build"            /tmp/deploy/images/<build_machine>
+    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / repodirname / "build"            /
+               | ge.get_board_workdir       | get_yocto_workdir | get_repodir | repo_get_builddir  | repo_get_deploydir
+               | ge.cd_board_workdir        | cd_yocto_workdir  | cd2repo     | repo_cd_builddir   |
+    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / repodirname / "sources" /
+    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / repodirname / <kas-meta-layer> /
+               | ge.cd_board_workdir        | cd_yocto_workdir  | get_repodir | kas_get_configdir  |
+               | ge.cd_board_workdir        | cd_yocto_workdir  | cd2repo     | kas_cd_configdir   |
+
+    configuration
+
+    yo_cfg ={}
+    yo_cfg["kas-meta-layer"] = "git@gitlab.denx.de:rafi/imx8-eval/meta-rafi-imx8.git"
+    yo_cfg["kas-branch"] = "thud"
+    yo_cfg["kas-config"] = "kas-imx8qxpmek.yml"
+    yo_cfg["bitbake_targets"] = ["fsl-image-qt5-validation-imx"]
+    yo_cfg["build_machine"] = "imx8qxpmek"
+
+    yo = yocto.Yocto('kas', 'imx8qxpmek', yo_cfg)
+
     """
 
     def __init__(self, yoctype, repodirname, cfg):
@@ -251,6 +273,9 @@ class Yocto:
         self,
         ma: typing.Optional[linux.LinuxShell],
     ) -> bool:
+        """
+        check if repo is exist, if not create (clone) it
+        """
         if self.yocto_type != 'repo':
             raise RuntimeError("not configured for " + self.yocto_type)
 
@@ -280,6 +305,11 @@ class Yocto:
         if p.exists():
             return p
 
+        if self.yocto_type == 'kas':
+            if not p.exists():
+                ma.exec0("mkdir", "-p", p)
+            return p
+
     @tbot.testcase
     def cd2repo(
         self,
@@ -296,7 +326,13 @@ class Yocto:
         self,
         ma: typing.Optional[linux.LinuxShell],
     ) -> str:
-        bd = "build_" + tbot.selectable.Board.name
+        if self.yocto_type == "repo":
+            bd = "build_" + tbot.selectable.Board.name
+        elif self.yocto_type == "kas":
+            bd = "build"
+        else:
+            raise RuntimeError(f"repo_get_builddir_name not supported for {self.yocto_type}")
+
         return bd
 
     @tbot.testcase
@@ -304,9 +340,10 @@ class Yocto:
         self,
         ma: typing.Optional[linux.LinuxShell],
     ) -> str:
-        bd = self.repo_get_builddir_name(ma)
         p = self.get_repodir(ma)
+        bd = self.repo_get_builddir_name(ma)
         p = p / bd
+
         return p
 
     @tbot.testcase
@@ -318,7 +355,7 @@ class Yocto:
         if p.exists():
             ma.exec0("cd", p)
             return p
-        raise RuntimeError("repo build dir missing")
+        raise RuntimeError(f"{self.yocto_type} build dir missing")
 
     @tbot.testcase
     def repo_get_deploydir_name(
@@ -383,6 +420,61 @@ class Yocto:
             ma.exec0("source", "oe-init-build-env", bd)
         else:
             return False
+
+    def kas_get_configname(self) -> str:
+        name = os.path.basename(self.cfg["kas-meta-layer"])
+        name = name.split(".")[0]
+        return name
+
+    @tbot.testcase
+    def kas_get_configdir(
+        self,
+        ma: typing.Optional[linux.LinuxShell],
+    ) -> str:
+        p = self.get_repodir(ma) / self.kas_get_configname()
+        return p
+
+    @tbot.testcase
+    def kas_cd_configdir(
+        self,
+        ma: typing.Optional[linux.LinuxShell],
+    ) -> str:
+        p = self.kas_get_configdir(ma)
+        if p.exists():
+            ma.exec0("cd", p)
+            return p
+
+        return None
+
+    @tbot.testcase
+    def kas_init(
+        self,
+        ma: typing.Optional[linux.LinuxShell],
+    ) -> bool:
+        """
+        init a kas repo, if it exists, simply pull self.cfg["kas-meta-layer"]
+        else clone it
+        """
+        if self.yocto_type == "kas":
+            p = self.kas_get_configdir(ma)
+
+        if p.exists():
+            self.kas_cd_configdir(ma)
+            ma.exec0("git", "pull")
+            self.cd2repo(ma)
+        else:
+            self.cd2repo(ma)
+            ma.exec0("git", "clone", self.cfg["kas-meta-layer"], "-b", self.cfg["kas-branch"])
+
+        try:
+            ref = f'KAS_REPO_REF_DIR={self.cfg["kas-ref-dir"]}'
+        except:
+            ref = ""
+
+        # problem kas ends in another shell ...
+        ma.exec0(ref, "kas", "shell", self.kas_get_configname() + "/" + self.cfg["kas-config"])
+        return True
+
 
 FLAGS = {
         "nosync":"build without repo sync",
