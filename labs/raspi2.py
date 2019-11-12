@@ -23,7 +23,7 @@ class Tbot2go2Lab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Buil
 
     @property
     def nfs_root(self) -> "linux.Path[Tbot2go2Lab]":
-        return linux.Path(self, f"/work/tbot2go/tbot/nfs")
+        return linux.Path(self, f"/work/tbot2go/nfs")
 
     @property
     def yocto_result_dir(self) -> "linux.Path[Tbot2go2Lab]":
