@@ -57,6 +57,8 @@ class Tbot2go2Lab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Buil
             return builders.ThreadripperSSH(self)
         elif "threadripper-1604-build" in tbot.flags:
             return builders.Threadripper1604SSH(self)
+        elif "threadripper-1604-kas-build" in tbot.flags:
+            return builders.Threadripper1604kasSSH(self)
         elif "xmg-build" in tbot.flags:
             return builders.xmgSSH(self)
         raise RuntimeError ("build Machine not specified")

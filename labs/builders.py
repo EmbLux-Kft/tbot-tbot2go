@@ -232,6 +232,51 @@ class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
             ),
         }
 
+class Threadripper1604kasSSH(connector.SSHConnector, linux.Bash, linux.Builder):
+    name = "threadripper-1604-kas-build"
+    username = "hs"
+    hostname = "192.168.1.120"
+    port = 11605
+    dl_dir = "/work/downloads"
+    sstate_dir = f"/work/{username}/tbot2go/yocto-sstate"
+
+    @property
+    def ssh_config(self) -> typing.List[str]:
+        """
+        if ProxyJump does not work, execute this command from hand
+        on the lab PC with BatchMode=no" -> answer allwith "yes"
+        If again password question pops up, copy id_rsa.pub from
+        lab PC to authorized_keys on build PC
+        """
+        #return [f"ProxyJump=pi@xeidos.ddns.net,{self.username}@192.168.1.120"]
+        """
+        or use this if you have local connection to network
+        """
+        #return [f"ProxyJump={self.username}@192.168.1.120"]
+        return [f""]
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath("/home") / self.username / ".ssh" / "id_rsa"
+    )
+
+    @property
+    def workdir(self) -> "linux.Path[XmglapBuild]":
+        return linux.Workdir.static(self, f"/work/{self.username}/tbot2go")
+
+    @property
+    def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
+        return {
+            "generic-armv7a": linux.build.EnvScriptToolchain(
+                linux.Path(
+                    self,
+                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
+                )
+            ),
+        }
+
+
 class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     name = "xmglap-build"
     username = "hs"
@@ -343,4 +388,5 @@ FLAGS = {
         "hercules-1604-build":"build on hercules in ubuntu 16.04 container",
         "threadripper-build":"build on threadripper",
         "threadripper-1604-build":"build on threadripper in ubuntu 16.04 container",
+        "threadripper-1604-kas-build":"build on threadripper in ubuntu 16.04 container with kas tool",
 }
