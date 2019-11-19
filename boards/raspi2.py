@@ -56,6 +56,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     def ssh_connect(self, mach: linux.LinuxShell) -> channel.Channel:
         return mach.open_channel("ssh", "hs@" + self.host.boardip[self.name])
 
+    @contextlib.contextmanager
     def kermit_connect(self, mach: linux.LinuxShell) -> channel.Channel:
         KERMIT_PROMPT = b"C-Kermit>"
         if self.name == 'imx8qxpmek':
@@ -63,26 +64,13 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = mach.open_channel("kermit", cfg_file)
-
-        # Receive at max the prompt or timeout after 5 seconds
-        #raw = b""
-        #try:
-        #    loop = True
-        #    while loop:
-        #        raw += ch.recv_n(1, timeout=2.0)
-        #        # bbb send 0x00 endless if of ...
-        #        if b"0" in raw:
-        #            return ch
-        #except TimeoutError:
-        #    pass
-        # wo ist das nun ?
-        #except TimeoutException:
-        #    pass
-
-        #if KERMIT_PROMPT in raw:
-        #    raise RuntimeError("Could not get console for ", self.name)
-
-        return ch
+        try:
+            yield ch
+        finally:
+            ch.send(chr(28) + "C")
+            ch.sendline("exit")
+            # give usb2serial adapter some time
+            time.sleep(2)
 
     def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if self.name == 'piinstall':
