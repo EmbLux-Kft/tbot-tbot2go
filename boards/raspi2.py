@@ -88,6 +88,9 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         else:
             return self.kermit_connect(mach)
 
+    def nfs_path(self, lh: linux.LinuxShell) -> "linux.Path":
+        return lh.nfs_root / self.name / "root"
+
     def __init__(self, lh: linux.LinuxShell) -> None:
         # Check lab
         assert (
