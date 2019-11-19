@@ -471,8 +471,7 @@ class Yocto:
         except:
             ref = ""
 
-        # problem kas ends in another shell ...
-        ma.exec0(ref, "kas", "shell", self.kas_get_configname() + "/" + self.cfg["kas-config"])
+        ma.exec0(ref, "kas", "build", self.kas_get_configname() + "/" + self.cfg["kas-config"])
         return True
 
 
