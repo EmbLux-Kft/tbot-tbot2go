@@ -32,7 +32,8 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
                 self.host.set_bootmode("emmc")
 
         if self.name == 'imx8qxpmek':
-            self.host.exec0("sudo", "/home/hs/pyrelayctl/examples/relctl.py","-D", "A907PJK8", "-o", "1")
+            #self.host.exec0("sudo", "/home/hs/pyrelayctl/examples/relctl.py","-D", "A907PJK8", "-o", "1")
+            ge.lx_gpio(self.host, "17", "off")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
@@ -40,7 +41,8 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if "nopoweroff" in tbot.flags:
             return
         if self.name == 'imx8qxpmek':
-            self.host.exec0("sudo", "/home/hs/pyrelayctl/examples/relctl.py","-D", "A907PJK8", "-f", "1")
+            #self.host.exec0("sudo", "/home/hs/pyrelayctl/examples/relctl.py","-D", "A907PJK8", "-f", "1")
+            ge.lx_gpio(self.host, "17", "on")
         else:
             raise RuntimeError("Board ", self.name, " not configured")
 
