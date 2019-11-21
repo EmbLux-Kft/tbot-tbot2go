@@ -558,7 +558,7 @@ def ub_check_i2c_dump(ub, dev, address, i2c_dump) -> bool:
 
 @tbot.testcase
 def ub_get_var(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     name,
 ) -> str:
     ret = ub.exec0("printenv", name)
@@ -574,7 +574,7 @@ def ub_check_size(
 
 @tbot.testcase
 def ub_get_mem_addr(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     addr,
     size,
 ) -> str:
@@ -591,7 +591,7 @@ def ub_get_mem_addr(
 
 @tbot.testcase
 def ub_set_mem_addr(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     addr,
     size,
     value,
@@ -611,7 +611,7 @@ def ub_set_mem_addr(
 
 @tbot.testcase
 def ub_create_revfile(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     revfile,
     startaddr,
     endaddr,
@@ -685,7 +685,7 @@ def get_name(socfile, addr):
 
 @tbot.testcase
 def ub_write_dump(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     revfile,
     newaddr,
 ) -> bool:
@@ -722,7 +722,7 @@ def ub_write_dump(
 
 @tbot.testcase
 def ub_check_revfile(
-    ub: board.UBootMachine,
+    ub: board.UBootShell,
     revfile,
     difffile = None,
     socfile = None,
