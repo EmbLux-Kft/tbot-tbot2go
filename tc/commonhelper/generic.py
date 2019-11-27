@@ -146,8 +146,12 @@ def recv_prompt(
     returns a dictionary with the received parts.
     """
     res = []
+    withcmd = True
+    if cmd == None:
+        withcmd = False
+        cmd = ""
     with tbot.log_event.command(ma.name, cmd) as ev, ma.ch.with_stream(ev, False):
-        if cmd != None:
+        if withcmd:
             ma.ch.sendline(cmd)
         buf = b""
         for frag in ma.ch.read_iter(timeout=timeout):
