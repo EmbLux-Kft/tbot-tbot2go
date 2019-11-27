@@ -158,7 +158,7 @@ def recv_prompt(
             buf += frag
             if buf.count(prompt) >= count:
                 break
-        if cmd != None:
+        if withcmd:
             ma.ch.sendintr()
             buf += ma.ch.read_until_prompt(timeout=timeout).encode()
 
