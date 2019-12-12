@@ -2,6 +2,7 @@ import abc
 import contextlib
 import typing
 import tbot
+import time
 from tbot.machine import board, channel, linux, connector
 from tbot.tc import uboot, git, kconfig
 
@@ -66,6 +67,14 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = mach.open_channel("kermit", cfg_file)
         try:
+            try:
+                ret = ch.read(150, timeout=2)
+                buf = ret.decode(errors="replace")
+                if "Locked" in buf:
+                    raise RuntimeError(f"serial line is locked {buf}")
+            except TimeoutError:
+                pass
+
             yield ch
         finally:
             ch.send(chr(28) + "C")
