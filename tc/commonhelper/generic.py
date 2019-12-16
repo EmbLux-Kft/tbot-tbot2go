@@ -361,8 +361,9 @@ def lx_check_revfile(
             continue
 
         val = lx_devmem2_get(ma, cols[0], cols[2])
+        msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
         if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
-            tbot.log.message(tbot.log.c(f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}").red)
+            tbot.log.message(tbot.log.c(msg).red)
             if difffile != None:
                 fddiff.write(msg + "\n")
 
@@ -753,7 +754,8 @@ def ub_check_revfile(
 
         val = ub_get_mem_addr(ub, cols[0], cols[2])
         if (int(val, 16) & int(cols[1], 16)) != (int(cols[3], 16) & int(cols[1], 16)):
-            tbot.log.message(tbot.log.c(f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}").red)
+            msg = f"diff args: {revfile} line: {lnr} {val}@{cols[0]} & {cols[1]} != {cols[3]}"
+            tbot.log.message(tbot.log.c(msg).red)
             if difffile != None:
                 fddiff.write(msg + "\n")
                 fddiff.write(get_name(socfile, cols[0]))
