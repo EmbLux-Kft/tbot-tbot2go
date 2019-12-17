@@ -4,6 +4,7 @@ import typing
 import tbot
 from tbot.machine import board, channel, linux, connector
 from tbot.tc import uboot, git, kconfig
+import time
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
