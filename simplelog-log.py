@@ -27,7 +27,7 @@ def do_conf(cfg: typing.Tuple[str, str, str], tbotpath, ubmachinename) -> None:
 
 def main(argv) -> None:
     try:
-        opts, args = getopt.getopt(argv,"hp:",["path="])
+        opts, args = getopt.getopt(argv,"hp:u:",["path=", "ub="])
     except getopt.GetoptError:
         print('simplelog-logs.py -p <pathtotbot> -u <u-boot machine name>')
         sys.exit(2)
