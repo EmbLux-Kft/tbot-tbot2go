@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import pathlib
 
 print ('Number of arguments:', len(sys.argv))
 print ('Argument List:', str(sys.argv))
@@ -13,12 +14,20 @@ if len(sys.argv) < 3:
 jenkins_workspace = sys.argv[1]
 tbot_path = sys.argv[2]
 
-name = "raspi-bbb"
+prename = "raspi-bbb"
 wp = "/home/hs/src/bbb/tbot-tbot2go"
 res_path = "results"
 
 # generate junit file
 res = subprocess.run([f"{wp}/generate_all.sh", tbot_path], stdout=subprocess.PIPE)
+# get log number
+logs = list(pathlib.Path("results/junit").glob(f"{prename}-*.xml"))
+logs.sort()
+log = logs[-1]
+log = str(log)
+number = log.split("-")[2]
+number = number.split(".")[0]
+name = f"{prename}-{number}"
 res = subprocess.run(["cp", f"results/junit/{name}.xml", jenkins_workspace + "/tbot_results.xml"], stdout=subprocess.PIPE)
 
 # setup subdir for tbot results
