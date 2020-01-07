@@ -814,6 +814,7 @@ def lx_check_iperf(
         if "iperf" in l and not "grep" in l:
             start = False
     if start:
+        ret = lh.exec0("sudo", "systemctl", "stop", "firewalld.service")
         #ret = lh.exec("iperf", "-s", linux.Background)
         lh.ch.sendline("iperf -s &")
         time.sleep(1)
