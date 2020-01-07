@@ -14,8 +14,8 @@ if len(sys.argv) < 3:
 jenkins_workspace = sys.argv[1]
 tbot_path = sys.argv[2]
 
-prename = "raspi-bbb"
-wp = "/home/hs/src/bbb/tbot-tbot2go"
+prename = "smalllaptop-wandboard"
+wp = "/home/hs/tbot-tbot2go"
 res_path = "results"
 
 # generate junit file
