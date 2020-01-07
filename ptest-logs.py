@@ -9,7 +9,7 @@ import sys, getopt
 # http://gnuplot.sourceforge.net/demo/histograms.html
 
 CONFS = [
-    ("raspi", "bbb", "results/ptest/balkenplot.sem"),
+    ("smalllaptop", "wandboard", "results/ptest/balkenplot.sem"),
 ]
 
 def do_conf(cfg: typing.Tuple[str, str], tbotpath) -> None:
