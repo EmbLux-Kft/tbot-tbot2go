@@ -795,7 +795,8 @@ def lx_check_iperf(
         if "iperf" in l and not "grep" in l:
             start = False
     if start:
-        ret = lh.exec("iperf", "-s", linux.Background)
+        #ret = lh.exec("iperf", "-s", linux.Background)
+        lh.ch.sendline("iperf -s &")
         time.sleep(1)
     oldverbosity = log.VERBOSITY
     if showlog:
