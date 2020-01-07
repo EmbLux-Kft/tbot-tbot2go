@@ -1,0 +1,8 @@
+-l
+labs/smalllaptop.py
+-b
+boards/wandboard.py
+--log-auto
+-f
+smalllaptop-build
+-vv
