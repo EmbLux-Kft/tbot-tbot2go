@@ -2,6 +2,8 @@
 
 WORKSPACE=$1
 cycles=$2
+intervall=$3
+minval=$4
 status=0
 
 echo "start"
@@ -23,7 +25,7 @@ export PATH=/home/hs/bin:/home/hs/.local/bin:$PATH
 echo cycles $cycles
 
 cd /home/hs/tbot-tbot2go
-tbot @argswandboard -p cycles=\"$cycles\" wandboard_check_iperf
+tbot @argswandboard -p cycles=\"$cycles\" -p intervall=\"$intervall\" -p minval=\"$minval\" wandboard_check_iperf
 status=$?
 echo "RETURN VALUE " $status
 ./generate_jenkins_result.py ${WORKSPACE} /home/hs/tbot
