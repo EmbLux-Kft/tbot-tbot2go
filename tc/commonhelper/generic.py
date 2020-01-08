@@ -805,9 +805,13 @@ def lx_check_iperf(
     ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
     step = str(float(intervall) / 2)
     for l in ret.split("\n"):
-        if "Mbits/sec" in l:
+        if "Mbits/sec" in l or "Kbits/sec" in l or "bits/sec" in l:
             tmp = l.split(" ")
             val = tmp[-2]
+            if "Kbits/sec" in l:
+                val = str(float(val) / 1000)
+            if "bits/sec" in l and not ("Mbits/sec" in l or "Kbits/sec" in l):
+                val = str(float(val) / 1000)
             result.append({"bandwith" : val, "step" : step})
             if float(ymax) < float(val):
                 ymax = val
