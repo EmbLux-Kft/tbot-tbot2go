@@ -805,6 +805,7 @@ def lx_check_iperf(
     """
     result = []
     ymax = "0"
+    unit = "MBits/sec"
     error = False
     # check on labhost, if iperf server runs
     # if not start it
@@ -821,6 +822,11 @@ def lx_check_iperf(
     if showlog:
         log.VERBOSITY = log.Verbosity.STDOUT
     xmax = str(int(cycles) * int(intervall))
+    log_event.doc_tag("iperf_unit", unit)
+    log_event.doc_tag("iperf_minval", minval)
+    log_event.doc_tag("iperf_cycles", cycles)
+    log_event.doc_tag("iperf_intervall", intervall)
+    log_event.doc_begin("iperf_test")
     ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
     step = str(float(intervall) / 2)
     for l in ret.split("\n"):
@@ -840,6 +846,12 @@ def lx_check_iperf(
                 error = True
             step = str(float(step) + float(intervall))
 
+    if error:
+        log_event.doc_tag("iperf_result", f"not enough Bandwith {val} {unit} < {minval} {unit}")
+    else:
+        log_event.doc_tag("iperf_result", f"enough Bandwith {val} {unit} >= {minval} {unit}")
+
+    log_event.doc_end("iperf_test")
     log.VERBOSITY = oldverbosity
     # remove last line, as it is not a measurement
     result = result[:-1]
