@@ -110,3 +110,12 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_latency.sem"], stdout=subprocess.PIPE)
 else:
     res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
+
+# doc generation
+subdirname = "doc"
+tmpp = f"{res_path}/{subdirname}"
+res = subprocess.run(["test", "-f", f"{tmpp}/{name}.pdf"], stdout=subprocess.PIPE)
+if res.returncode == 0:
+    res = subprocess.run(["cp", f"{tmpp}/{name}.pdf", f"{jenkins_workspace_tbot}/iperf.pdf"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
