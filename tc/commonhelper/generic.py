@@ -829,6 +829,7 @@ def lx_check_iperf(
     log_event.doc_tag("iperf_intervall", intervall)
     log_event.doc_begin("iperf_test")
     ret = lnx.exec0("iperf", "-c", lh.serverip, "-i", intervall, "-t", xmax)
+    errorval = "1000000"
     step = str(float(intervall) / 2)
     for l in ret.split("\n"):
         if "Mbits/sec" in l or "Kbits/sec" in l or "bits/sec" in l:
@@ -841,14 +842,16 @@ def lx_check_iperf(
             result.append({"bandwith" : val, "step" : step})
             if float(ymax) < float(val):
                 ymax = val
-            if float(tmp[-2]) < float(minval):
+            if float(val) < float(minval):
                 if error == False:
                     tbot.log.message(tbot.log.c(f"Not enough Bandwith {val} < {minval}").red)
                 error = True
+                if float(errorval) > float(val):
+                    errorval = val
             step = str(float(step) + float(intervall))
 
     if error:
-        log_event.doc_tag("iperf_result", f"not enough Bandwith {val} {unit} < {minval} {unit}")
+        log_event.doc_tag("iperf_result", f"not enough Bandwith {errorval} {unit} < {minval} {unit}")
     else:
         log_event.doc_tag("iperf_result", f"enough Bandwith {val} {unit} >= {minval} {unit}")
 
