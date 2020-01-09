@@ -54,6 +54,8 @@ res = subprocess.run(["test", "-f", f"{tmpp}/{name}.jpg"], stdout=subprocess.PIP
 if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/{name}.dot", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/graph.jpg"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
 
 # cp html results
 subdirname = "html"
@@ -62,6 +64,8 @@ res = subprocess.run(["test", "-f", f"{tmpp}/{name}.html"], stdout=subprocess.PI
 if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/myscript.js", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/{name}.html", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
 
 # cp statistic
 subdirname = "stats"
@@ -71,6 +75,8 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/statistic.jpg"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/statistic_data.txt"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
 
 # cp ptest
 subdirname = "ptest"
@@ -80,6 +86,8 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/{name}.jpg", f"{jenkins_workspace_tbot}/ptest.jpg"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/{name}.txt", f"{jenkins_workspace_tbot}/ptest_data.txt"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_ptest.sem"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
 
 # iperf ptest
 subdirname = "iperf"
@@ -89,6 +97,8 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/iperf.jpg", f"{jenkins_workspace_tbot}/iperf.jpg"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/iperf.dat", f"{jenkins_workspace_tbot}/iperf_data.txt"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/balkenplot_iperf.sem", f"{jenkins_workspace_tbot}/balkenplot_iperf.sem"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
 
 # latency ptest
 subdirname = "latency"
@@ -98,3 +108,5 @@ if res.returncode == 0:
     res = subprocess.run(["cp", f"{tmpp}/latency.jpg", f"{jenkins_workspace_tbot}/latency.jpg"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/latency.dat", f"{jenkins_workspace_tbot}/latency_data.txt"], stdout=subprocess.PIPE)
     res = subprocess.run(["cp", f"{tmpp}/balkenplot.sem", f"{jenkins_workspace_tbot}/balkenplot_latency.sem"], stdout=subprocess.PIPE)
+else:
+    res = subprocess.run(["echo", f" RES {res}"], stdout=subprocess.PIPE)
