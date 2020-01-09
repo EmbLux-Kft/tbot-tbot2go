@@ -7,4 +7,6 @@
 #./ptest-logs.py -p $1
 ./iperf.sh
 ./latency.sh
+sync
 ./create_doc-logs.py -p $1
+sync
