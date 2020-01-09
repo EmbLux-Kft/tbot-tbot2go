@@ -39,9 +39,10 @@ class wandboardUBootBuilder(lab.UBootBuilder):
     def do_checkout(self, target: linux.Path, clean: bool) -> git.GitRepository:
         branch = "wandboard-messe"
         #branch = "wandboard-messe-20200108"
-        #branch = "wandboard-messe-20200108-2"
+        branch = "wandboard-messe-20200108-2"
+        branch = "gitlab-imx-master-devel"
         # current mainline does not work
-        branch = "wandboard-messe-20200107"
+        #branch = "wandboard-messe-20200107"
         return git.GitRepository(
             target=target, url=self.remote, clean=clean, rev=branch
         )
