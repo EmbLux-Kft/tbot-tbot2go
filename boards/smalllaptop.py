@@ -124,4 +124,7 @@ class UBootBuilder(uboot.UBootBuilder):
         kconfig.enable(repo / ".config", "CONFIG_BOOTP_PREFER_SERVERIP")
         kconfig.disable(repo / ".config", "CONFIG_BOOTP_BOOTPATH")
 
+        kconfig.set_string_value(repo / ".config", "CONFIG_DEFAULT_DEVICE_TREE", "imx6dl-wandboard-revd1")
+        kconfig.set_string_value(repo / ".config", "CONFIG_OF_LIST", "imx6dl-wandboard-revd1")
+
 
