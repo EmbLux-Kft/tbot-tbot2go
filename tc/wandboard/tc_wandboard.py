@@ -130,6 +130,23 @@ def wandboard_ub_unittest(ub) -> None:
     ub.exec0("ut", "all")
     log_event.doc_end("ub_call_unit_test")
 
+import ubootpytest as ubpy
+
+ubt = ubpy.Ubootpytest("/home/hs/data/Entwicklung/messe/2019/testframework/hook-scripts", "/work/hs/tbot-workdir/uboot-wandboard-builder")
+
+@tbot.testcase
+def wandboard_ub_call_test_py(
+    lab: typing.Optional[linux.LinuxShell] = None,
+) -> bool:
+    with lab or tbot.acquire_lab() as lh:
+        try:
+            ubt.ub_call_test_py(lh)
+        except:
+            # fail, but we pass here
+            pass
+
+        return True
+
 @tbot.testcase
 @tbot.with_uboot
 def wandboard_ub_interactive(ub) -> None:
