@@ -119,7 +119,17 @@ def wandboard_ub_check_version(
                 if ub_vers not in ub.bootlog:
                     raise RuntimeError(f"{ub_vers} not found.")
                 tbot.log.message(tbot.log.c(f"found U-Boot version {ub_vers} installed").green)
- 
+
+@tbot.testcase
+@tbot.with_uboot
+def wandboard_ub_unittest(ub) -> None:
+    """
+    start u-boot unit test command
+    """
+    log_event.doc_begin("ub_call_unit_test")
+    ub.exec0("ut", "all")
+    log_event.doc_end("ub_call_unit_test")
+
 @tbot.testcase
 @tbot.with_uboot
 def wandboard_ub_interactive(ub) -> None:
