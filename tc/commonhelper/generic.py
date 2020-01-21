@@ -9,6 +9,15 @@ import math
 import os
 import re
 
+def get_pid(ma: linux.LinuxShell) -> str:
+    """
+    get PID of last command
+    """
+    ma.ch.sendline("echo $!", read_back=True)
+    pid = ma.ch.read_until_prompt()
+    pid = pid.strip()
+    return pid
+
 def get_path(path : tbot.machine.linux.Path) -> str:
     """
     return the path from a pathlib
