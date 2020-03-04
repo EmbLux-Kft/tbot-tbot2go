@@ -47,6 +47,15 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             pass
         else:
             raise RuntimeError("Board ", self.name, " not configured")
+        if "splusbloader" in tbot.flags:
+            loop = True
+            while loop:
+                try:
+                    self.host.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/SPL-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
         if "usbloader" in tbot.flags:
             loop = True
             while loop:
@@ -168,5 +177,6 @@ class UBootBuilder(uboot.UBootBuilder):
 FLAGS = {
         "bootmodesd" : "Boot with bootmode sd",
         "bootmodeemmc" : "Boot with bootmode emmc",
-        "usbloader" : "load SPL / U-Boot with imx_usb_loader"
+        "usbloader" : "load SPL / U-Boot with imx_usb_loader",
+        "splusbloader" : "load SPL with imx_usb_loader"
 }
