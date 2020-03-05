@@ -9,6 +9,16 @@ import math
 import os
 import re
 
+def search_string_in_multiline(search, lines) -> bool:
+    """
+    search string search in multiline lines
+    """
+    for l in lines.split('\n'):
+        if search in l:
+            return True
+
+    return False
+
 def get_pid(ma: linux.LinuxShell) -> str:
     """
     get PID of last command
