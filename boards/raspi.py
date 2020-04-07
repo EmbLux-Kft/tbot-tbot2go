@@ -120,7 +120,8 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         try:
             yield ch
         finally:
-            ch.send(chr(28) + "C")
+            ch.sendcontrol("\\")
+            ch.send("C")
             ch.sendline("exit")
             # give usb2serial adapter some time
             time.sleep(2)
