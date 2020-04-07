@@ -37,8 +37,6 @@ class Tbot2goLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         if "outside" in tbot.flags:
              return ["ProxyJump=pi@xeidos.ddns.net"]
              return ["ProxyJump=pi@xeidos.ddns.net,hs@192.168.1.110"]
-        else:
-            return ["192.168.1.110"]
 
         return ""
 
