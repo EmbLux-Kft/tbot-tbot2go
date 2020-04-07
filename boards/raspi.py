@@ -22,6 +22,12 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     if "sd" in tbot.flags:
         pin = "3"
         boardlabname = "k30rf-16mb-sd"
+    if "swu" in tbot.flags:
+        pin = "4"
+        boardlabname = "k30rf-swu"
+    if "v4" in tbot.flags:
+        pin = "4"
+        boardlabname = "k30rf-v4"
 
     def _get_boardname(self):
         return self.name
