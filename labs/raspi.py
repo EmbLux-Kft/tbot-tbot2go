@@ -11,11 +11,10 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir + '/tc/commonhelper')
 import generic as ge
 
-class Tbot2goLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
-    name = "tbot2go"
+class Tbot2goLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     hostname = "192.168.1.110"
-    # hostname = "192.168.2.103"
     username = "hs"
+    name = "tbot2go"
     serverip = "192.168.3.1"
     tftproot = "/srv/tftpboot"
     ub_load_board_env_subdir = "tbot"
@@ -26,6 +25,28 @@ class Tbot2goLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Build
         "piinstall": "192.168.1.113",
         "bbb": "192.168.3.20",
     }
+
+    @property
+    def ssh_config(self) -> typing.List[str]:
+        """
+        if ProxyJump does not work, execute this command from hand
+        on the lab PC with BatchMode=no" -> answer allwith "yes"
+        If again password question pops up, copy id_rsa.pub from
+        lab PC to authorized_keys on build PC
+        """
+        if "outside" in tbot.flags:
+             return ["ProxyJump=pi@xeidos.ddns.net"]
+             return ["ProxyJump=pi@xeidos.ddns.net,hs@192.168.1.110"]
+        else:
+            return ["192.168.1.110"]
+
+        return ""
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath(f"/home/{self.username}/.ssh/id_rsa")
+    )
 
     def set_bootmode(self, state):
         if tbot.selectable.Board.name == "bbb":
@@ -89,4 +110,5 @@ FLAGS = {
         "16mb" : "16 mb version of k30rf board",
         "nopoweroff" : "Do not power off board at the end",
         "gitlabrunner" : "build triggered from gitlabrunner",
+        "outside" : "login not from home",
         }
