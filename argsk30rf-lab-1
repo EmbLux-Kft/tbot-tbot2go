@@ -1,0 +1,12 @@
+-C
+/home/hs/data/Entwicklung/bosch-tt/src/bsp/tbot-tbot2go
+--log-auto
+-l
+labs/lab1.py
+-b
+boards/k30rf.py
+-f
+threadripper-build
+-f
+v4
+-vv
