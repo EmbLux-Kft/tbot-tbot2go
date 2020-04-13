@@ -20,8 +20,8 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
 
-    serverip = "192.168.3.1"
-    tftproot = "/srv/tftpboot"
+    serverip = "192.168.7.1"
+    tftproot = "/var/lib/tftpboot"
     ub_load_board_env_subdir = "tbot"
     boardip = {
         "k30rf":     "192.168.7.37",
@@ -54,6 +54,14 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     @property
     def workdir(self) -> "linux.path.Path[SmallLab]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
+
+    @property
+    def toolsdir(self) -> "linux.path.Path[Lab1]":
+        return linux.Workdir.static(self, "/home/hs/tbot2go/bin")
+
+    @property
+    def yocto_result_dir(self) -> "linux.Path[Lab1]":
+        return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
