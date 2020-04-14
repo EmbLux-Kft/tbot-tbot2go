@@ -34,6 +34,39 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         n = self._get_boardname()
         # eventuell /home/tbot/sources/remote_power
         self.host.exec0("sudo", "sispmctl", "-D", "01:01:56:a2:f1", "-o", self.pin)
+
+        td = ge.get_path(self.host.toolsdir)
+        yrd = ge.get_path(self.host.yocto_result_dir)
+        if "splusbloader" in tbot.flags:
+            loop = True
+            while loop:
+                try:
+                    self.host.exec0("sudo", f"{td}/imx_usb_loader/imx_usb", f"{yrd}/SPL-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
+        if "usbloader" in tbot.flags:
+            loop = True
+            while loop:
+                try:
+                    self.host.exec0("sudo", f"{td}/imx_usb_loader/imx_usb", f"{yr}/SPL-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
+
+            loop = True
+            while loop:
+                try:
+                    self.host.exec0("sudo", "/home/pi/tbot2go/src/imx_usb_loader/imx_usb", "/srv/tftpboot/k30rf/tbot/yocto_results/u-boot-ivt.img-spi.signed")
+                    loop = False
+                except:
+                    time.sleep(2)
+                    pass
+
+
+
         return
 
     def poweroff(self) -> None:
@@ -123,3 +156,8 @@ class UBootBuilder(uboot.UBootBuilder):
 
         # Add local-version tbot
         kconfig.set_string_value(repo / ".config", "CONFIG_LOCALVERSION", "-tbot")
+
+FLAGS = {
+        "usbloader" : "load SPL / U-Boot with imx_usb_loader",
+        "splusbloader" : "load SPL with imx_usb_loader"
+}

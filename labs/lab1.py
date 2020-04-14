@@ -57,7 +57,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
 
     @property
     def toolsdir(self) -> "linux.path.Path[Lab1]":
-        return linux.Workdir.static(self, "/home/hs/tbot2go/bin")
+        return linux.Path(self, "/home/hs/tbot2go/bin")
 
     @property
     def yocto_result_dir(self) -> "linux.Path[Lab1]":
