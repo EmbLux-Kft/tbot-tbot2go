@@ -52,6 +52,20 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         return linux.Path(self, f"/srv/tftpboot/" + self.get_boardname + "/tbot")
 
     @property
+    def tftp_root_path(self) -> "linux.Path[Lab1]":
+        """
+        returns root tftp path
+        """
+        return linux.Path(self, self.tftproot)
+
+    @property
+    def tftp_dir_board(self) -> "linux.Path[Lab1]":
+        """
+        returns tftp path for u-boot tftp command
+        """
+        return linux.Path(self, f"{tbot.selectable.Board.name}/tbot")
+
+    @property
     def workdir(self) -> "linux.path.Path[Lab1]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
