@@ -142,7 +142,7 @@ class UBootMachine(board.Connector, board.UBootAutobootIntercept, board.UBootShe
             )
 
 class UBootBuilder(uboot.UBootBuilder):
-    if tbot.selectable.LabHost.name == "small-lab":
+    if tbot.selectable.LabHost.name in ["small-lab", "lab1"]:
         remote = "/home/hs/data/Entwicklung/sources/u-boot"
         ub_patches_path = None
 
