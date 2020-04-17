@@ -52,7 +52,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         return linux.Path(self, f"/srv/tftpboot/" + self.get_boardname + "/tbot")
 
     @property
-    def workdir(self) -> "linux.path.Path[SmallLab]":
+    def workdir(self) -> "linux.path.Path[Lab1]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
 
     @property
@@ -98,8 +98,8 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
             return builders.Threadripper1604kasSSH(self)
         elif "xmg-build" in tbot.flags:
             return builders.xmgSSH(self)
+        elif "lab-1-build" in tbot.flags:
+            return self
         raise RuntimeError ("build Machine not specified")
-
-        return self
 
 LAB = Lab1Lab
