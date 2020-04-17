@@ -73,7 +73,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
                 date = "2018.11-1",
                 ),
             "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
-                host_arch = "i686",
+                host_arch = "x86_64",
                 arch = "arm-linux-gnueabi",
                 date = "2018.05",
                 gcc_vers = "7.3",
