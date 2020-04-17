@@ -1,0 +1,221 @@
+From patchwork Fri Apr 17 00:12:27 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
+X-Patchwork-Id: 1271948
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=PolxY+XG; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 493Gk45g1rz9sP7
+ for <incoming@patchwork.ozlabs.org>; Fri, 17 Apr 2020 10:12:12 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 936068006D;
+ Fri, 17 Apr 2020 02:12:09 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PolxY+XG";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 3FF47805A0; Fri, 17 Apr 2020 02:12:07 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE,URIBL_BLOCKED
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-qv1-xf41.google.com (mail-qv1-xf41.google.com
+ [IPv6:2607:f8b0:4864:20::f41])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id CC76F8006B
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 02:12:03 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=festevam@gmail.com
+Received: by mail-qv1-xf41.google.com with SMTP id di6so74045qvb.10
+ for <u-boot@lists.denx.de>; Thu, 16 Apr 2020 17:12:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id;
+ bh=Pasa/WXS+Gx1uB813owVet7a4UH85TvQhH9sQHytWBA=;
+ b=PolxY+XGQJl0CfDNuqWdkg4k8mCmLWjIX+lOvLDKdmVgzWr+c7IwuIxFtaRcKEvJi1
+ nYGM361+RCfZ/GkmtIdCznOsDU7ks/ZK8LBnnsY+fr1QIOBtYZvCUP6MNcIdb74nKN2g
+ rJ09JEfam1fO87wqYSZj1KzwzofPiB/BCwO1Jj29AJBaolAtQKNu8zbPeZmXo9LukYDY
+ QLKsFx30iajn8Hlsz6Dvpnf/qczKB5K3hvkjngsQztlR3etSY4V6zZ7YBBaVrc5sYvjO
+ P/fbpuARMQPefuCAVOG9yqMZ1I6BGgG6iG9eFWO3McsVBITKJ+NMg6bGuF7trxa5eOQh
+ N2vA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=Pasa/WXS+Gx1uB813owVet7a4UH85TvQhH9sQHytWBA=;
+ b=Azc8mgW2p4OU3K9qVUIyuOIwucACS4ViG+fkG2JeEtKVkmGpk+wp7KM4kZSV/LpO78
+ +aIm7Irc3Dh+SmSQg4dviNB6WLLTpmzW2MHC5Rrjs/Aw7/gvB3hAle6fkEQCpwBTJa5L
+ kcDhXA5ApqC7iFivUr2UZ0vDlw7s8Tf50QiC3fFbiJRd02/yGg8LZSxRnsdxQBHQdghl
+ JmCr5xWds0ggwVG1zyulaEGYlF4E3pE7Gi0MFbztg92nrMyEeAmWTXbGntALPCSdmNnm
+ syKzgeJ1+Gx1UqD3O5CVHOo6fjrgzlXcn5VJRdL43Hr5QzvDrq0+9oWEtq+V0LFaU9dh
+ nZFw==
+X-Gm-Message-State: AGi0PuYXkbICD06g2c+uUhXK8/isV7Tik/JUDQL7Dh33gM42chk+6WXg
+ e41W2OHB25FqD5f0Hjv5FzA=
+X-Google-Smtp-Source: APiQypKAiy10r/h5jXP47e4GNIfqM/b7iaYhgNJJpgC35/8ks/Ol0Xc6mhES36+OfpkKt00vVAGNuw==
+X-Received: by 2002:a05:6214:8d3:: with SMTP id
+ da19mr252641qvb.49.1587082322678;
+ Thu, 16 Apr 2020 17:12:02 -0700 (PDT)
+Received: from localhost.localdomain ([2804:14c:482:271:809b:81f0:1d41:9d6b])
+ by smtp.gmail.com with ESMTPSA id
+ x5sm16987996qtm.81.2020.04.16.17.12.00
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Apr 2020 17:12:01 -0700 (PDT)
+From: Fabio Estevam <festevam@gmail.com>
+To: sbabic@denx.de
+Cc: hs@denx.de, derek@ihtfp.com, u-boot@lists.denx.de,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH 1/5] wandboard: Fix detection for mx6q/mx6dl revD1 revariants
+Date: Thu, 16 Apr 2020 21:12:27 -0300
+Message-Id: <20200417001231.11406-1-festevam@gmail.com>
+X-Mailer: git-send-email 2.17.1
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+The detection of the revD1 version is based on the presence of the PMIC.
+
+Currently revb1 device trees are used for mx6q/mx6dl variants, which
+do not have the PMIC nodes.
+
+This causes revD1 boards to be incorrectly be detected as revB1.
+
+Use the revd1 device trees, so that the PMIC node can be found and
+then the PMIC can be detected by reading its register ID.
+
+Reported-by: Heiko Schocher <hs@denx.de>
+Reported-by: Derek Atkins <derek@ihtfp.com>
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+---
+Hi Heiko,
+
+Could you please try this on your mx6dl wandboard revD1 board?
+
+I recall you reported this issue sometime ago.
+
+Derek tested this on his mx6q wandboard revD1 board and it worked
+fine.
+
+I have also tested it on a revB1 and the version is properly
+detected.
+
+Thanks
+
+ arch/arm/dts/Makefile                                         | 4 ++--
+ ...{imx6dl-wandboard-revb1.dts => imx6dl-wandboard-revd1.dts} | 4 ++--
+ .../{imx6q-wandboard-revb1.dts => imx6q-wandboard-revd1.dts}  | 4 ++--
+ configs/wandboard_defconfig                                   | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+ rename arch/arm/dts/{imx6dl-wandboard-revb1.dts => imx6dl-wandboard-revd1.dts} (78%)
+ rename arch/arm/dts/{imx6q-wandboard-revb1.dts => imx6q-wandboard-revd1.dts} (80%)
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 820ee9733a..2a71917c92 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -622,7 +622,7 @@ dtb-y += \
+ 	imx6dl-pico.dtb \
+ 	imx6dl-sabreauto.dtb \
+ 	imx6dl-sabresd.dtb \
+-	imx6dl-wandboard-revb1.dtb \
++	imx6dl-wandboard-revd1.dtb \
+ 
+ endif
+ 
+@@ -654,7 +654,7 @@ dtb-y += \
+ 	imx6q-sabrelite.dtb \
+ 	imx6q-sabresd.dtb \
+ 	imx6q-tbs2910.dtb \
+-	imx6q-wandboard-revb1.dtb \
++	imx6q-wandboard-revd1.dtb \
+ 	imx6qp-sabreauto.dtb \
+ 	imx6qp-sabresd.dtb \
+ 	imx6qp-wandboard-revd1.dtb \
+diff --git a/arch/arm/dts/imx6dl-wandboard-revb1.dts b/arch/arm/dts/imx6dl-wandboard-revd1.dts
+similarity index 78%
+rename from arch/arm/dts/imx6dl-wandboard-revb1.dts
+rename to arch/arm/dts/imx6dl-wandboard-revd1.dts
+index c2946fbaa0..6d1d863c2e 100644
+--- a/arch/arm/dts/imx6dl-wandboard-revb1.dts
++++ b/arch/arm/dts/imx6dl-wandboard-revd1.dts
+@@ -6,10 +6,10 @@
+  */
+ /dts-v1/;
+ #include "imx6dl.dtsi"
+-#include "imx6qdl-wandboard-revb1.dtsi"
++#include "imx6qdl-wandboard-revd1.dtsi"
+ 
+ / {
+-	model = "Wandboard i.MX6 Dual Lite Board rev B1";
++	model = "Wandboard i.MX6 Dual Lite Board revD1";
+ 	compatible = "wand,imx6dl-wandboard", "fsl,imx6dl";
+ 
+ 	memory@10000000 {
+diff --git a/arch/arm/dts/imx6q-wandboard-revb1.dts b/arch/arm/dts/imx6q-wandboard-revd1.dts
+similarity index 80%
+rename from arch/arm/dts/imx6q-wandboard-revb1.dts
+rename to arch/arm/dts/imx6q-wandboard-revd1.dts
+index f6ccbecff9..55331021d8 100644
+--- a/arch/arm/dts/imx6q-wandboard-revb1.dts
++++ b/arch/arm/dts/imx6q-wandboard-revd1.dts
+@@ -6,10 +6,10 @@
+  */
+ /dts-v1/;
+ #include "imx6q.dtsi"
+-#include "imx6qdl-wandboard-revb1.dtsi"
++#include "imx6qdl-wandboard-revd1.dtsi"
+ 
+ / {
+-	model = "Wandboard i.MX6 Quad Board rev B1";
++	model = "Wandboard i.MX6 Quad Board revD1";
+ 	compatible = "wand,imx6q-wandboard", "fsl,imx6q";
+ 
+ 	memory@10000000 {
+diff --git a/configs/wandboard_defconfig b/configs/wandboard_defconfig
+index 82e517b90f..ee70758f3a 100644
+--- a/configs/wandboard_defconfig
++++ b/configs/wandboard_defconfig
+@@ -46,8 +46,8 @@ CONFIG_CMD_BMP=y
+ CONFIG_CMD_CACHE=y
+ CONFIG_CMD_EXT4_WRITE=y
+ CONFIG_OF_CONTROL=y
+-CONFIG_DEFAULT_DEVICE_TREE="imx6dl-wandboard-revb1"
+-CONFIG_OF_LIST="imx6q-wandboard-revb1 imx6qp-wandboard-revd1 imx6dl-wandboard-revb1"
++CONFIG_DEFAULT_DEVICE_TREE="imx6dl-wandboard-revd1"
++CONFIG_OF_LIST="imx6q-wandboard-revd1 imx6qp-wandboard-revd1 imx6dl-wandboard-revd1"
+ CONFIG_MULTI_DTB_FIT=y
+ CONFIG_ENV_IS_IN_MMC=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y

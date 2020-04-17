@@ -1,0 +1,134 @@
+From patchwork Fri Apr 17 00:12:28 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
+X-Patchwork-Id: 1271949
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=KnzrVNeh; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 493GkZ075cz9sP7
+ for <incoming@patchwork.ozlabs.org>; Fri, 17 Apr 2020 10:12:37 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 3B87581A25;
+ Fri, 17 Apr 2020 02:12:28 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KnzrVNeh";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 98316819F3; Fri, 17 Apr 2020 02:12:12 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com
+ [IPv6:2607:f8b0:4864:20::f44])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id ECA8E804D5
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 02:12:06 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=festevam@gmail.com
+Received: by mail-qv1-xf44.google.com with SMTP id c12so86265qvj.5
+ for <u-boot@lists.denx.de>; Thu, 16 Apr 2020 17:12:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=IYh1npCl7N/8t95NHC7ps1rr3GC8iyHsoKQ9bHKv7Zc=;
+ b=KnzrVNeh5Mlhky5t711SOaZBwZJf2iKL1k35xZO7YT3h+CpsYSilTN/0NrC44E0Pki
+ Bjf7m7it8NA9GvrSPw5CWYlhDJtiQfDEe2PsFj83PHN7ySMPL3Mq4a6rWJ/3j9muN91u
+ pqA4aWFawv8rKeRUM+DYtWuPS+tqOmGiKuAeFtnlzcpMbcoaNY/79sKsJ7RAmIdtVVSj
+ FuuGB54C8vmJTqv/7UNSMcTX5bVp5x+8CLTXSfJ7Ffpg9zR8PwDQk69VZNGujbqBGMDv
+ cQBrNgjr8UXJZuiUfsQ/PjnTHGL1FgyoyXQkTq+8E74hRGI0p3v1IOHhta65Yx7+rqDv
+ 39PQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=IYh1npCl7N/8t95NHC7ps1rr3GC8iyHsoKQ9bHKv7Zc=;
+ b=pJcmgyE6KLtTXRRsd7RuXZrBzdZnuvJgK4YCtjDkaIYCR5UBQMYRFqW/2c7aZZSWiV
+ goLiWS9WrtjvRKHfhOtk1r/xJll4F7ndB3b3/X3ZS+Dlo3zcQ1Fhx5qunVEJtsEE5EO4
+ yAtOJBRVOdGmSKrP/GPVcEhk5O8JpEZ8GVYPig+lcFHV71DHmlaEm4qfRHt6ohtgmbr8
+ VYwKl+W1bY3rcWyppPOFP9GXok8j4PjJUkKvavY3idU12JsaxGY56WgtsIEjKsrfGN0Y
+ 0wLxBjnOQ8+Tms0Qxpe0hvwa4YGhg08Yqb6w/Mtoc27CsbYQ1oR6g2H/FVWrxhKMUnTN
+ qHMw==
+X-Gm-Message-State: AGi0PuaWwBD42xqFk1NYMQ0W8F1px7cfxJwPZDdFmCzNKG5u+IhWLDIP
+ 7MP49wuEfkrc2IQKWtE+j4c=
+X-Google-Smtp-Source: APiQypIxvmohOfkAz4MlC+jhNUBMv+/Y2HUFJScpgMdKnx9pAAgsx+x4Bvbp4dqKParmmsxmu2fcIg==
+X-Received: by 2002:a0c:df02:: with SMTP id g2mr228486qvl.115.1587082325779;
+ Thu, 16 Apr 2020 17:12:05 -0700 (PDT)
+Received: from localhost.localdomain ([2804:14c:482:271:809b:81f0:1d41:9d6b])
+ by smtp.gmail.com with ESMTPSA id
+ x5sm16987996qtm.81.2020.04.16.17.12.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Apr 2020 17:12:05 -0700 (PDT)
+From: Fabio Estevam <festevam@gmail.com>
+To: sbabic@denx.de
+Cc: hs@denx.de, derek@ihtfp.com, u-boot@lists.denx.de,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH 2/5] pmic: pfuze100: Change error message level to debug
+Date: Thu, 16 Apr 2020 21:12:28 -0300
+Message-Id: <20200417001231.11406-2-festevam@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200417001231.11406-1-festevam@gmail.com>
+References: <20200417001231.11406-1-festevam@gmail.com>
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+On systems that can run on multiple board variants, such as wandboard,
+which versions with and without the PMIC populated, it is not useful
+to get PMIC error on systems that do not have the PMIC populated.
+
+Change error message level to debug instead.
+
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+---
+ drivers/power/pmic/pfuze100.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/pmic/pfuze100.c b/drivers/power/pmic/pfuze100.c
+index 6cf5f35f0f..db630f3ad0 100644
+--- a/drivers/power/pmic/pfuze100.c
++++ b/drivers/power/pmic/pfuze100.c
+@@ -41,7 +41,7 @@ static int pfuze100_write(struct udevice *dev, uint reg, const uint8_t *buff,
+ static int pfuze100_read(struct udevice *dev, uint reg, uint8_t *buff, int len)
+ {
+ 	if (dm_i2c_read(dev, reg, buff, len)) {
+-		pr_err("read error from device: %p register: %#x!\n", dev, reg);
++		debug("read error from device: %p register: %#x!\n", dev, reg);
+ 		return -EIO;
+ 	}
+ 
