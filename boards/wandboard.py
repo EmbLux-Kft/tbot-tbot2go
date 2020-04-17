@@ -7,6 +7,9 @@ from tbot.tc import git
 if tbot.selectable.LabHost.name == "small-lab":
     # Use lab specific config
     import smalllaptop as lab
+elif tbot.selectable.LabHost.name == "lab1":
+    # Use lab specific config
+    import lab1 as lab
 else:
     raise NotImplementedError("Board not available on this labhost!")
 
@@ -36,8 +39,9 @@ class wandboardUBootBuilder(lab.UBootBuilder):
     toolchain = "linaro-gnueabi"
     remote = "/home/hs/data/Entwicklung/sources/u-boot"
 
-    def do_checkout(self, target: linux.Path, clean: bool) -> git.GitRepository:
+    def do_checkout(self, target: linux.Path, clean: bool, rev: typing.Optional[str]) -> git.GitRepository:
         branch = "wandboard-messe"
+        branch = "master"
         #branch = "wandboard-messe-20200108"
         #branch = "wandboard-messe-20200108-2"
         #branch = "gitlab-imx-master-devel"
@@ -46,6 +50,9 @@ class wandboardUBootBuilder(lab.UBootBuilder):
         return git.GitRepository(
             target=target, url=self.remote, clean=clean, rev=branch
         )
+
+    def do_patch(self, repo: git.GitRepository) -> None:
+        repo.am(linux.Path(repo.host, "/home/hs/data/Entwicklung/wandboard/tbot-tbot2go/tc/wandboard/patches/fabio"))
 
 class wandboardUBoot(lab.UBootMachine):
     name = "wandboard-uboot"
