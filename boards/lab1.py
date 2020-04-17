@@ -80,7 +80,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if self.name == 'k30rf':
             cfg_file = f"/home/{self.host.username}/kermrc_{n}"
         elif self.name == 'wandboard':
-            cfg_file = f"/home/{tbot.selectable.LabHost.username}/data/Entwicklung/messe/2019/kermrc_{n}"
+            cfg_file = f"/home/{self.host.username}/kermrc_{n}"
         else:
             raise RuntimeError("Board ", self.name, " console not configured")
         ch = mach.open_channel("kermit", cfg_file)
