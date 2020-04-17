@@ -77,6 +77,7 @@ def wandboard_ub_build(
             r = lh.tftp_root_path / ge.get_path(lh.tftp_dir_board)
             t = r / f
             tbot.tc.shell.copy(s, t)
+            lh.exec0("chmod", "666", t)
 
 @tbot.testcase
 def wandboard_ub_check_version(
@@ -168,11 +169,26 @@ def wandboard_ub_install(ub) -> None:
     ub.exec0("run", "upd_ub")
     ub.exec0("run", "cmp_ub")
 
+@tbot.testcase
+@tbot.with_uboot
+def wandboard_ub_interactive(ub) -> None:
+    # and install
+    ub.do_set_env(ub)
+    ub.interactive()
+
 ### Linux
 regfile_path = 'tc/wandboard/files/'
 reg_file = [
     regfile_path + "wandboard_iomux.reg",
 ]
+
+@tbot.testcase
+@tbot.with_uboot
+def wandboard_ub_build_install_test(ub) -> None:
+    wandboard_ub_build(ub)
+    wandboard_ub_install(ub)
+    wandboard_ub_check_version(ub)
+    wandboard_ub_unittest(ub)
 
 @tbot.testcase
 @tbot.with_linux
