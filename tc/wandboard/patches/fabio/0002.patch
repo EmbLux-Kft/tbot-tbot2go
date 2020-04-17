@@ -1,97 +1,97 @@
-From patchwork Fri Apr 17 00:12:28 2020
+From patchwork Fri Apr 17 12:27:10 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
-X-Patchwork-Id: 1271949
+X-Patchwork-Id: 1272206
+X-Patchwork-Delegate: sbabic@denx.de
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=KnzrVNeh; dkim-atps=neutral
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ header.s=20161025 header.b=bjS3sLPb; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 493GkZ075cz9sP7
- for <incoming@patchwork.ozlabs.org>; Fri, 17 Apr 2020 10:12:37 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 493b6w3W3pz9sSM
+ for <incoming@patchwork.ozlabs.org>; Fri, 17 Apr 2020 22:31:17 +1000 (AEST)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
- by phobos.denx.de (Postfix) with ESMTP id 3B87581A25;
- Fri, 17 Apr 2020 02:12:28 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTP id 0C67D81C7C;
+ Fri, 17 Apr 2020 14:30:57 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="KnzrVNeh";
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="bjS3sLPb";
  dkim-atps=neutral
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 98316819F3; Fri, 17 Apr 2020 02:12:12 +0200 (CEST)
+ id 0A0BC81C7B; Fri, 17 Apr 2020 14:28:04 +0200 (CEST)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
  DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE autolearn=ham
  autolearn_force=no version=3.4.2
-Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com
- [IPv6:2607:f8b0:4864:20::f44])
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id ECA8E804D5
- for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 02:12:06 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id EEEE881C6F
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 14:26:42 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=festevam@gmail.com
-Received: by mail-qv1-xf44.google.com with SMTP id c12so86265qvj.5
- for <u-boot@lists.denx.de>; Thu, 16 Apr 2020 17:12:06 -0700 (PDT)
+Received: by mail-qt1-x844.google.com with SMTP id b10so1699344qtt.9
+ for <u-boot@lists.denx.de>; Fri, 17 Apr 2020 05:26:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=IYh1npCl7N/8t95NHC7ps1rr3GC8iyHsoKQ9bHKv7Zc=;
- b=KnzrVNeh5Mlhky5t711SOaZBwZJf2iKL1k35xZO7YT3h+CpsYSilTN/0NrC44E0Pki
- Bjf7m7it8NA9GvrSPw5CWYlhDJtiQfDEe2PsFj83PHN7ySMPL3Mq4a6rWJ/3j9muN91u
- pqA4aWFawv8rKeRUM+DYtWuPS+tqOmGiKuAeFtnlzcpMbcoaNY/79sKsJ7RAmIdtVVSj
- FuuGB54C8vmJTqv/7UNSMcTX5bVp5x+8CLTXSfJ7Ffpg9zR8PwDQk69VZNGujbqBGMDv
- cQBrNgjr8UXJZuiUfsQ/PjnTHGL1FgyoyXQkTq+8E74hRGI0p3v1IOHhta65Yx7+rqDv
- 39PQ==
+ bh=SEa+t6cQaXgxxA4Y7Up9ysvPNRNK9h6sEy0NNEiLAR4=;
+ b=bjS3sLPbaEmj2GWLgQFIKNI0EAwh6RZ6Pztx5H15NZZKPqjoD1Z88WI2jpIhxJyNak
+ BcteAk3INIwMum4HutgQg4Y0bUAZBqNNCirviMntPnsHM2awkA/RyAuHIJgrE/L3Y3S/
+ OniOm47hTEiWjwkCVTgGM0xdxPiBjw6BloJhf1URPeXgPn6+VBbcxDo5qu+4La85EvOZ
+ 4lhoosXvzDGxYQFog57g2naLpRXjEJ8D9UWllnm34jvc6pJuHaZPp7prvbP5VDJ3EnEs
+ c9NE9VQq86Iyks2pjqsomm2nDAAaq0NQfOOtYiOjt+H4kkauuwdKeEw8/bR+0jM7a+qV
+ 4UEA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=IYh1npCl7N/8t95NHC7ps1rr3GC8iyHsoKQ9bHKv7Zc=;
- b=pJcmgyE6KLtTXRRsd7RuXZrBzdZnuvJgK4YCtjDkaIYCR5UBQMYRFqW/2c7aZZSWiV
- goLiWS9WrtjvRKHfhOtk1r/xJll4F7ndB3b3/X3ZS+Dlo3zcQ1Fhx5qunVEJtsEE5EO4
- yAtOJBRVOdGmSKrP/GPVcEhk5O8JpEZ8GVYPig+lcFHV71DHmlaEm4qfRHt6ohtgmbr8
- VYwKl+W1bY3rcWyppPOFP9GXok8j4PjJUkKvavY3idU12JsaxGY56WgtsIEjKsrfGN0Y
- 0wLxBjnOQ8+Tms0Qxpe0hvwa4YGhg08Yqb6w/Mtoc27CsbYQ1oR6g2H/FVWrxhKMUnTN
- qHMw==
-X-Gm-Message-State: AGi0PuaWwBD42xqFk1NYMQ0W8F1px7cfxJwPZDdFmCzNKG5u+IhWLDIP
- 7MP49wuEfkrc2IQKWtE+j4c=
-X-Google-Smtp-Source: APiQypIxvmohOfkAz4MlC+jhNUBMv+/Y2HUFJScpgMdKnx9pAAgsx+x4Bvbp4dqKParmmsxmu2fcIg==
-X-Received: by 2002:a0c:df02:: with SMTP id g2mr228486qvl.115.1587082325779;
- Thu, 16 Apr 2020 17:12:05 -0700 (PDT)
-Received: from localhost.localdomain ([2804:14c:482:271:809b:81f0:1d41:9d6b])
+ bh=SEa+t6cQaXgxxA4Y7Up9ysvPNRNK9h6sEy0NNEiLAR4=;
+ b=mL0IbpTGQAbQkQPXmv50jUtDn8k53J4JFcUglUKbPLP8H7MgTzG8NWJzR20dxr3J83
+ 4tkwsEjtZa4AjfSIfNJ582QSbCLpti9RWyoxy/zZ7i3WBFaNJbdIbcJmgcj6p7NDQdjW
+ 0v4KMG26xq03cQUTFDDVmhgqZfxnOLRv18/BG7pLuMvlrIqaIf53pFRvF3EoHvSOjw4E
+ HAAi+FbKdAxIHtLpQtXjSYpc7zBKBHoLjNdNqZK4LMxbGeNvTEz6Q1kH55rfkkBlUffi
+ +MTJKStLwVa2KRFVawIUTtYaAcvqk9VVZzCOp3CHCppFAW1UWvzlzPahUj66fKE36BNj
+ ibTg==
+X-Gm-Message-State: AGi0PuYELpYONIrEGt/XSj6jjqR9+mIHe3e8KU6mbv9Qv5krUdet4ULh
+ h/c/Syh+Lgt2BDPUK75zuPs=
+X-Google-Smtp-Source: APiQypIfw6VM2+E84OcTk5FFI353h/dzDsqsD4Qt+RlOZ/sQbQg3TSx8Ug6JfkFbEU1gUdEAhxWcVw==
+X-Received: by 2002:ac8:7a84:: with SMTP id x4mr2647880qtr.28.1587126401182;
+ Fri, 17 Apr 2020 05:26:41 -0700 (PDT)
+Received: from localhost.localdomain ([2804:14c:482:271:a8cc:37bd:62f6:da03])
  by smtp.gmail.com with ESMTPSA id
- x5sm16987996qtm.81.2020.04.16.17.12.03
+ m66sm16997985qkf.42.2020.04.17.05.26.38
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 16 Apr 2020 17:12:05 -0700 (PDT)
+ Fri, 17 Apr 2020 05:26:40 -0700 (PDT)
 From: Fabio Estevam <festevam@gmail.com>
 To: sbabic@denx.de
 Cc: hs@denx.de, derek@ihtfp.com, u-boot@lists.denx.de,
  Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH 2/5] pmic: pfuze100: Change error message level to debug
-Date: Thu, 16 Apr 2020 21:12:28 -0300
-Message-Id: <20200417001231.11406-2-festevam@gmail.com>
+Subject: [PATCH v2 2/5] pmic: pfuze100: Change error message level to debug
+Date: Fri, 17 Apr 2020 09:27:10 -0300
+Message-Id: <20200417122713.30574-2-festevam@gmail.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200417001231.11406-1-festevam@gmail.com>
-References: <20200417001231.11406-1-festevam@gmail.com>
+In-Reply-To: <20200417122713.30574-1-festevam@gmail.com>
+References: <20200417122713.30574-1-festevam@gmail.com>
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.30rc1
 Precedence: list
@@ -108,14 +108,19 @@ Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
 X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
 X-Virus-Status: Clean
 
-On systems that can run on multiple board variants, such as wandboard,
-which versions with and without the PMIC populated, it is not useful
-to get PMIC error on systems that do not have the PMIC populated.
+In some cases U-Boot runs the same binary on different board versions.
 
-Change error message level to debug instead.
+In wandboard, for example, there are versions with the PFUZE100 PMIC
+populated and others without it.
+
+When the PMIC is not present, it is not really useful to get PMIC error,
+so change the error message level to debug instead.
 
 Signed-off-by: Fabio Estevam <festevam@gmail.com>
 ---
+Changes since v1:
+- Reworded the commit log for clarity
+
  drivers/power/pmic/pfuze100.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
