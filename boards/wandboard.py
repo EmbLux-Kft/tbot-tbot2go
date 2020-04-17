@@ -18,18 +18,18 @@ class wandboard(lab.Board):
     connect_wait = 0.0
 
 ub_env = [
-    {"name" : "calc_size", "val" : "setexpr fw_sz \${filesize} / 0x200\; setexpr fw_sz \${fw_sz} + 1"},
-    {"name" : "load_spl", "val" : "tftp \${loadaddr} \${spl_file}\;run calc_size"},
-    {"name" : "load_ub", "val" : "tftp \${loadaddr} \${ub_file}\;run calc_size"},
+    {"name" : "calc_size", "val" : "setexpr fw_sz ${filesize} / 0x200; setexpr fw_sz ${fw_sz} + 1"},
+    {"name" : "load_spl", "val" : "tftp ${loadaddr} ${spl_file};run calc_size"},
+    {"name" : "load_ub", "val" : "tftp ${loadaddr} ${ub_file};run calc_size"},
     {"name" : "upd_prep", "val" : "mmc dev 0"},
-    {"name" : "upd_spl", "val" : "run upd_prep\;mmc write \${loadaddr} 2 \${fw_sz}"},
-    {"name" : "upd_ub", "val" : "run upd_prep\;mmc write \${loadaddr} 8a \${fw_sz}"},
-    {"name" : "cmp_spl", "val" : "run load_spl\;mmc read \${cmp_addr_r} 2 \${fw_sz}\;cmp.b \${loadaddr} \${cmp_addr_r} \${filesize}"},
-    {"name" : "cmp_ub", "val" : "run load_ub\;mmc read \${cmp_addr_r} 8a \${fw_sz}\;cmp.b \${loadaddr} \${cmp_addr_r} \${filesize}"},
+    {"name" : "upd_spl", "val" : "run upd_prep;mmc write ${loadaddr} 2 ${fw_sz}"},
+    {"name" : "upd_ub", "val" : "run upd_prep;mmc write ${loadaddr} 8a ${fw_sz}"},
+    {"name" : "cmp_spl", "val" : "run load_spl;mmc read ${cmp_addr_r} 2 ${fw_sz};cmp.b ${loadaddr} ${cmp_addr_r} ${filesize}"},
+    {"name" : "cmp_ub", "val" : "run load_ub;mmc read ${cmp_addr_r} 8a ${fw_sz};cmp.b ${loadaddr} ${cmp_addr_r} ${filesize}"},
     {"name" : "optargs", "val" : "run addip"},
     {"name" : "hostname", "val" : "wandboard"},
     {"name" : "netdev", "val" : "eth0"},
-    {"name" : "addip", "val" : "setenv bootargs \${bootargs} ip=\${ipaddr}:\${serverip}:\${gatewayip}:\${netmask}:\${hostname}:\${netdev}::off panic=1"},
+    {"name" : "addip", "val" : "setenv bootargs ${bootargs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}::off panic=1"},
     {"name" : "upd_all", "val" : "run load_spl upd_spl load_ub upd_ub"},
 ]
 
@@ -62,7 +62,7 @@ class wandboardUBoot(lab.UBootMachine):
     def do_set_env( 
         self, ub: board.UBootShell
     ) -> bool:
-        ub.env("serverip", tbot.selectable.LabHost.serverip)
+        ub.env("serverip", tbot.selectable.LabHost.serverip["wandboard"])
         ub.env("netmask", "255.255.255.0")
         ub.env("ipaddr", tbot.selectable.LabHost.boardip["wandboard"])
         ta = ub.host.tftp_dir_board
