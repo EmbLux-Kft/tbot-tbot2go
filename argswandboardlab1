@@ -1,0 +1,8 @@
+-l
+labs/lab1.py
+-b
+boards/wandboard.py
+--log-auto
+-f
+lab-1-build
+-vv
