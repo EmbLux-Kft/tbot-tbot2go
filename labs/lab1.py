@@ -20,12 +20,15 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
 
-    serverip = "192.168.7.1"
+    serverip = {
+            "wandboard" : "192.168.3.1",
+            "k30rf" : "192.168.7.1",
+    }
     tftproot = "/var/lib/tftpboot"
     ub_load_board_env_subdir = "tbot"
     boardip = {
         "k30rf":     "192.168.7.37",
-        "wandboard" : "192.168.2.238",
+        "wandboard" : "192.168.3.21",
     }
 
     @property
