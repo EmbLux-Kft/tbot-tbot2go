@@ -1,3 +1,8 @@
+
+lab-1
+tbot @argswandboardlab1 uboot_testpy -p testpy_args='["-k", "not reset", "-s"]'
+
+
 pollux:
 tbot -l labs/pollux.py -b boards/wandboard.py interactive_lab --log-auto -vv
 tbot -l labs/pollux.py -b boards/wandboard.py interactive_uboot --log-auto -vv
