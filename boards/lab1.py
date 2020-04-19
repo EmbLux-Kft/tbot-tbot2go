@@ -133,7 +133,6 @@ class UBootMachine(board.Connector, board.UBootAutobootIntercept, board.UBootShe
     def lab_network(self) -> None:
         """Setup the network connection in the selected lab."""
         self.host = getattr(self, "host")
-        print("----------- NETWORK SETUP -------------")
         try:
             getattr(self.host, "uboot_network_setup")(self)
         except AttributeError:
