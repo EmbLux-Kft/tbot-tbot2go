@@ -102,11 +102,11 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         # check if nfs server is running, if not start it
         ret = self.exec("systemctl", "status", "nfs-client.target")
         if ret[0] != 0:
-            ret = self.exec("sudo", "systemctl", "start", "nfs-client.target")
+            ret = self.exec0("sudo", "systemctl", "start", "nfs-client.target")
         # check if tftp server is running, if not start it
         ret = self.exec("systemctl", "status", "tftp.socket")
         if ret[0] != 0:
-            ret = self.exec("sudo", "systemctl", "start", "tftp.socket")
+            ret = self.exec0("sudo", "systemctl", "start", "tftp.socket")
 
     def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
