@@ -10,6 +10,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir + '/tc/commonhelper')
 import generic as ge
+from tbot_contrib import utils
 
 class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "lab1"
@@ -100,13 +101,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
 
     def init(self):
         # check if nfs server is running, if not start it
-        ret = self.exec("systemctl", "is-active", "nfs-server.service")
-        if ret[0] != 0:
-            ret = self.exec0("sudo", "systemctl", "start", "nfs-server.service")
-        # check if tftp server is running, if not start it
-        ret = self.exec("systemctl", "is-active", "tftp.socket")
-        if ret[0] != 0:
-            ret = self.exec0("sudo", "systemctl", "start", "tftp.socket")
+        utils.check_systemd_services_running(self, ["nfs-server.service", "tftp.socket"])
 
     def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
