@@ -100,11 +100,11 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
 
     def init(self):
         # check if nfs server is running, if not start it
-        ret = self.exec("systemctl", "status", "nfs-client.target")
+        ret = self.exec("systemctl", "is-active", "nfs-server.service")
         if ret[0] != 0:
-            ret = self.exec0("sudo", "systemctl", "start", "nfs-client.target")
+            ret = self.exec0("sudo", "systemctl", "start", "nfs-server.service")
         # check if tftp server is running, if not start it
-        ret = self.exec("systemctl", "status", "tftp.socket")
+        ret = self.exec("systemctl", "is-active", "tftp.socket")
         if ret[0] != 0:
             ret = self.exec0("sudo", "systemctl", "start", "tftp.socket")
 
