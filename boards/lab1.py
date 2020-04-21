@@ -71,6 +71,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
 
     def poweroff(self) -> None:
         self.host.exec0("sudo", "sispmctl", "-D", "01:01:56:a2:f1", "-f", self.pin)
+        time.sleep(2)
         return
 
     @contextlib.contextmanager
