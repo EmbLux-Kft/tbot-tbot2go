@@ -101,7 +101,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
 
     def init(self):
         # check if nfs server is running, if not start it
-        utils.check_systemd_services_running(self, ["nfs-server.service", "tftp.socket"])
+        utils.ensure_sd_unit(self, ["nfs-server.service", "tftp.socket"])
 
     def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
