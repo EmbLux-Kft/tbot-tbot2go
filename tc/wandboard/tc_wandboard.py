@@ -12,6 +12,7 @@ import generic as ge
 
 from tbot.tc.uboot import build as uboot_build
 from tbot import log_event
+from tbot.tc.uboot import testpy as uboot_testpy
 
 ub_resfiles = [
     "System.map",
@@ -82,6 +83,8 @@ def wandboard_ub_build(
 @tbot.testcase
 def wandboard_ub_check_version(
     lab: typing.Optional[linux.LinuxShell] = None,
+    board: typing.Optional[board.Board] = None,
+    ubx: typing.Optional[board.UBootShell] = None,
 ) -> None:
     """
     check if installed U-Boot version is the same as in
@@ -108,8 +111,14 @@ def wandboard_ub_check_version(
                 tbot.log.message(tbot.log.c(f"found in image U-Boot version {ub_vers}").green)
 
         with contextlib.ExitStack() as cx:
-            b = cx.enter_context(tbot.acquire_board(lh))
-            ub = cx.enter_context(tbot.acquire_uboot(b))
+            if board is not None:
+                b = board
+            else:
+                b = cx.enter_context(tbot.acquire_board(lh))
+            if ubx is not None:
+                ub = ubx
+            else:
+                ub = cx.enter_context(tbot.acquire_uboot(b))
             if spl_vers != None:
                 if spl_vers not in ub.bootlog:
                     raise RuntimeError(f"{spl_vers} not found.")
@@ -183,12 +192,16 @@ reg_file = [
 ]
 
 @tbot.testcase
-@tbot.with_uboot
-def wandboard_ub_build_install_test(ub) -> None:
-    wandboard_ub_build(ub)
-    wandboard_ub_install(ub)
-    wandboard_ub_check_version(ub)
-    wandboard_ub_unittest(ub)
+def wandboard_ub_build_install_test(
+    lab: typing.Optional[linux.LinuxShell] = None,
+    board: typing.Optional[board.Board] = None,
+    ubx: typing.Optional[board.UBootShell] = None,
+) -> None:
+        wandboard_ub_build()
+        wandboard_ub_install()
+        wandboard_ub_check_version()
+        #wandboard_ub_unittest(ub)
+        uboot_testpy()
 
 @tbot.testcase
 @tbot.with_linux
