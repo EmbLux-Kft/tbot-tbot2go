@@ -121,7 +121,7 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         elif "xmg-build" in tbot.flags:
             return builders.xmgSSH(self)
         elif "lab-1-build" in tbot.flags:
-            return self
+            return self.clone()
         raise RuntimeError ("build Machine not specified")
 
 LAB = Lab1Lab
