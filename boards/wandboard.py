@@ -37,22 +37,16 @@ class wandboardUBootBuilder(lab.UBootBuilder):
     name = "wandboard-builder"
     defconfig = "wandboard_defconfig"
     toolchain = "linaro-gnueabi"
-    remote = "/home/hs/data/Entwicklung/sources/u-boot"
+    remote = "git@gitlab.denx.de:u-boot/u-boot.git"
 
     def do_checkout(self, target: linux.Path, clean: bool, rev: typing.Optional[str]) -> git.GitRepository:
-        branch = "wandboard-messe"
         branch = "master"
-        #branch = "wandboard-messe-20200108"
-        #branch = "wandboard-messe-20200108-2"
-        #branch = "gitlab-imx-master-devel"
-        # current mainline does not work
-        #branch = "wandboard-messe-20200107"
         return git.GitRepository(
             target=target, url=self.remote, clean=clean, rev=branch
         )
 
-    def do_patch(self, repo: git.GitRepository) -> None:
-        repo.am(linux.Path(repo.host, "/home/hs/data/Entwicklung/wandboard/tbot-tbot2go/tc/wandboard/patches/fabio"))
+    #def do_patch(self, repo: git.GitRepository) -> None:
+    #    repo.am(linux.Path(repo.host, "/home/hs/data/Entwicklung/wandboard/tbot-tbot2go/tc/wandboard/patches/fabio"))
 
 class wandboardUBoot(lab.UBootMachine):
     name = "wandboard-uboot"
