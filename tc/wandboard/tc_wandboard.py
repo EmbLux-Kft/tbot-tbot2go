@@ -79,7 +79,7 @@ def wandboard_ub_build(
         today = datetime.now()
         log_event.doc_tag("UBOOT_BUILD_TIME", today.strftime("%Y-%m-%d %H:%M:%S"))
         log_event.doc_tag("UBOOT_BUILD_TITLE", f"tbot automated build of {name}")
-        log_event.doc_tag("UBOOT_NOTES", "builded with tbot")
+        log_event.doc_tag("UBOOT_NOTES", "built with tbot")
         for f in ub_resfiles:
             s = git / f
             r = lh.tftp_root_path / ge.get_path(lh.tftp_dir_board)
