@@ -93,9 +93,9 @@ class Lab1Lab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
             "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
                 host_arch = "x86_64",
                 arch = "arm-linux-gnueabi",
-                date = "2018.05",
-                gcc_vers = "7.3",
-                gcc_subvers = "1",
+                date = "2019.12",
+                gcc_vers = "7.5",
+                gcc_subvers = "0",
                 ),
         }
 
