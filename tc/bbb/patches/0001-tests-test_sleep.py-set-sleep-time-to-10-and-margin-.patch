@@ -1,0 +1,32 @@
+From 77bc123d39be89dc403030de791c50fde6561aa6 Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Fri, 8 May 2020 14:13:58 +0200
+Subject: [PATCH] tests/test_sleep.py: set sleep time to 10 and margin to 2
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+ test/py/tests/test_sleep.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/test/py/tests/test_sleep.py b/test/py/tests/test_sleep.py
+index b69edf26ef..41d5cf26b1 100644
+--- a/test/py/tests/test_sleep.py
++++ b/test/py/tests/test_sleep.py
+@@ -24,7 +24,7 @@ def test_sleep(u_boot_console):
+     if u_boot_console.config.buildconfig.get('config_cmd_misc', 'n') != 'y':
+         pytest.skip('sleep command not supported')
+     # 3s isn't too long, but is enough to cross a few second boundaries.
+-    sleep_time = 3
++    sleep_time = 10
+     tstart = time.time()
+     u_boot_console.run_command('sleep %d' % sleep_time)
+     tend = time.time()
+@@ -32,4 +32,4 @@ def test_sleep(u_boot_console):
+     assert elapsed >= (sleep_time - 0.01)
+     if not u_boot_console.config.gdbserver:
+         # 0.25s margin is hopefully enough to account for any system overhead.
+-        assert elapsed < (sleep_time + 0.25)
++        assert elapsed < (sleep_time + 2.0)
+-- 
+2.24.1
+

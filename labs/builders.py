@@ -187,6 +187,13 @@ class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Builder):
                     "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
                 )
             ),
+            "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
+                host_arch = "x86_64",
+                arch = "arm-linux-gnueabi",
+                date = "2018.05",
+                gcc_vers = "7.3",
+                gcc_subvers = "1",
+                ),
         }
 
 class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):

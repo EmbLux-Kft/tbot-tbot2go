@@ -3,7 +3,7 @@ import contextlib
 import typing
 import tbot
 from tbot.machine import board, channel, linux, connector
-from tbot.tc import uboot, git
+from tbot.tc import uboot, git, kconfig
 import time
 
 import os,sys,inspect
@@ -88,6 +88,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             self.host.exec0("sudo", "/work/tbot2go/tbot/src/pyrelayctl/examples/relctl.py","-D", "A907QJT3", "-f", self.pin)
         elif self.name == 'bbb':
             ge.lx_gpio(self.host, "4", "off")
+            time.sleep(1)
         elif self.name == 'h03pl086':
             self.host.exec0("power.py", "-p", "14", "-s", "off")
         elif self.name == 'piinstall':

@@ -62,12 +62,36 @@ class Tbot2goLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
         return linux.Path(self, f"/work/tbot2go/tbot/nfs")
 
     @property
+    def tftp_dir(self) -> "linux.path.Path[SmallLab]":
+        return linux.Path(self, f"{self.tftproot}/{tbot.selectable.Board.name}/{self.ub_load_board_env_subdir}")
+
+    @property
+    def tftp_root_path(self) -> "linux.Path[Lab1]":
+        """
+        returns root tftp path
+        """
+        return linux.Path(self, self.tftproot)
+
+    @property
+    def tftp_dir_board(self) -> "linux.Path[Lab1]":
+        """
+        returns tftp path for u-boot tftp command
+        """
+        return linux.Path(self, f"{tbot.selectable.Board.name}/{self.ub_load_board_env_subdir}")
+
+
+    @property
     def yocto_result_dir(self) -> "linux.Path[Tbot2goLab]":
         return linux.Path(self, f"{self.tftproot}/" + tbot.selectable.Board.name + "/tbot/yocto_results")
 
     @property
     def workdir(self) -> "linux.Path[Tbot2goLab]":
         return linux.Workdir.static(self, f"/work/{self.username}/tbot-workdir")
+
+    def init(self):
+        ret = self.exec0("ifconfig", "eth0")
+        if self.serverip not in ret:
+            self.exec0("sudo", "ifconfig", "down", "eth0", self.serverip, "up")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:

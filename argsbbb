@@ -1,0 +1,9 @@
+-l
+labs/raspi.py
+-b
+boards/bbb.py
+-f
+threadripper-build
+-f
+bootmodesd
+-vv
