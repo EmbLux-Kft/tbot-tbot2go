@@ -66,6 +66,7 @@ class PolluxSSH(connector.SSHConnector, linux.Bash, linux.Builder):
                     "/opt/yocto-2.4/generic-powerpc-e500v2/environment-setup-ppce500v2-poky-linux-gnuspe",
                 )
             ),
+            "powerpc": linux.build.DistroToolchain("/home/hs/.buildman-toolchains/gcc-7.3.0-nolibc/powerpc-linux/bin", "powerpc", "powerpc-linux-"),
         }
 
     def do_after_login(self) -> None:
