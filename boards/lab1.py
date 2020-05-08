@@ -110,8 +110,6 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if "off" not in ret:
             if self.name == 'wandboard':
                 ret = self.host.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-f", self.pin)
-                time.sleep(2)
-                ret = self.host.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-o", self.pin)
             else:
                 raise RuntimeError("Board is already on, someone might be using it!")
 
