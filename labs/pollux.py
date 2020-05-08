@@ -48,6 +48,23 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
             return linux.Path(self, f"{self.tftproot}/{self.get_boardname}/tbot")
 
     @property
+    def tftp_root_path(self) -> "linux.Path[Lab1]":
+        """
+        returns root tftp path
+        """
+        return linux.Path(self, self.tftproot)
+
+    @property
+    def tftp_dir_board(self) -> "linux.Path[Lab1]":
+        """
+        returns tftp path for u-boot tftp command
+        """
+        if tbot.selectable.Board.name == "socrates":
+            return linux.Path(self, f"{tbot.selectable.Board.name}-abb/{tbot.selectable.Board.date}")
+        else:
+            return linux.Path(self, f"{tbot.selectable.Board.name}/tbot")
+
+    @property
     def sign_dir(self) -> "linux.Path[PolluxLab]":
         return linux.Path(self, f"/home/hs/tools/cst-2.3.3/linux64/bin")
 
