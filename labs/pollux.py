@@ -1,9 +1,19 @@
+import abc
+import functools
+import getpass
+import pathlib
 import typing
 import tbot
 from tbot.machine import connector, linux, board
 import builders
+import os,sys,inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir + '/tc/commonhelper')
+import generic as ge
+from tbot_contrib import utils
 
-class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builder):
+class PolluxLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     name = "pollux"
     hostname = "pollux.denx.org"
     username = "hs"
@@ -17,6 +27,12 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
     ethaddr = {}
     ethaddr["wandboard"] = "00:1f:7b:b2:00:0f"
     ethaddr["aristainetos"] = "32:8f:5c:26:25:b9"
+
+    @property
+    def authenticator(self) -> linux.auth.Authenticator:
+        return linux.auth.PrivateKeyAuthenticator(
+            pathlib.PurePosixPath(f"/home/{self.username}/.ssh/id_rsa")
+    )
 
     def set_bootmode(self, state):
         if tbot.selectable.Board.name == "aristainetos":
@@ -118,11 +134,12 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
                     "/opt/yocto-2.4/generic-powerpc-e500v2/environment-setup-ppce500v2-poky-linux-gnuspe",
                 )
             ),
+            "powerpc": linux.build.DistroToolchain("/home/hs/.buildman-toolchains/gcc-7.3.0-nolibc/powerpc-linux/bin", "powerpc", "powerpc-linux-"),
         }
 
     def build(self) -> linux.Builder:
         if "pollux-build" in tbot.flags:
-            return builders.PolluxSSH(self)
+            return self.clone()
         elif "xpert-build" in tbot.flags:
             return builders.XpertSSH(self)
         elif "hercules-build" in tbot.flags:
@@ -135,9 +152,9 @@ class PolluxLab(connector.ParamikoConnector, linux.Bash, linux.Lab, linux.Builde
             return builders.Threadripper1604SSH(self)
         elif "xmg-build" in tbot.flags:
             return builders.xmgSSH(self)
+
         raise RuntimeError ("build Machine not specified")
 
 
-        return self
 
 LAB = PolluxLab

@@ -1,5 +1,7 @@
---log-auto
 -l
 labs/pollux.py
 -b
 boards/socrates.py
+-f
+pollux-build
+-vv

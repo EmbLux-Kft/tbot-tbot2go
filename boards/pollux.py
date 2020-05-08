@@ -1,18 +1,19 @@
 import abc
+import contextlib
 import typing
 import tbot
+import time
 from tbot.machine import board, channel, linux, connector
 from tbot.tc import uboot, git, kconfig
-import time
+from tbot.tc import uboot, git, kconfig
+import os,sys,inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir + '/tc/commonhelper')
+import generic as ge
 
 class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
     connect_wait = 0.0
-
-    #@property
-    #@abc.abstractmethod
-    #def lab_name(self) -> str:
-    #    """Return the name of this board's lab."""
-    #    pass
 
     def _get_boardname(self):
         if self.name == "wandboard":
@@ -42,11 +43,29 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if self.name == "aristainetos":
             time.sleep(2)
 
-    def connect(self, mach: linux.LinuxShell) -> channel.Channel:
-        if "no_console_check" in tbot.flags:
-            return
+    @contextlib.contextmanager
+    def kermit_connect(self, mach: linux.LinuxShell) -> channel.Channel:
+        KERMIT_PROMPT = b"C-Kermit>"
+        n = self._get_boardname()
+        cfg_file = f"/home/{self.host.username}/kermrc_{n}"
+        ch = mach.open_channel("kermit", cfg_file)
+        try:
+            yield ch
+        finally:
+            ch.sendcontrol("\\")
+            ch.send("C")
+            ch.read_until_prompt(KERMIT_PROMPT)
+            ch.sendline("exit")
+            ch.sendline("OK")
 
-        return mach.open_channel("connect", self._get_boardname())
+    def ssh_connect(self) -> channel.Channel:
+        return mach.open_channel("ssh", "hs@" + self.host.boardip[self.name])
+
+    def connect(self, mach: linux.LinuxShell) -> channel.Channel:
+        if self.name == 'piinstall':
+            return self.ssh_connect(mach)
+        else:
+            return self.kermit_connect(mach)
 
     def power_check(self) -> bool:
         if "no_console_check" in tbot.flags:
@@ -68,7 +87,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         # Check lab
         assert (
             lh.name == "pollux"
-        ), f"{lh!r} is the wrong lab for this board! (Expected '{self.lab_name}')"
+        ), f"{lh!r} is the wrong lab for this board! (Expected 'pollux')"
         super().__init__(lh)
 
 B = typing.TypeVar("B", bound=Board)

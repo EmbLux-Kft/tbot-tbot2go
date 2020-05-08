@@ -11,11 +11,19 @@ import generic as ge
 import yocto
 import time
 from tbot.tc import uboot
-
+from tbot.tc.uboot import build as uboot_build
+from tbot import log_event
+from datetime import datetime
 import bdi
+from tbot.tc.uboot import testpy as uboot_testpy
 
 # configs
 path = "tc/socrates/files/"
+
+ub_resfiles = [
+    "System.map",
+    "u-boot-socrates.bin",
+]
 
 # da9063
 i2c_dump_0_58 = [
@@ -66,11 +74,51 @@ def socrates_ub_bdi_update(
 
         ub.interactive()
 
+@tbot.testcase
+@tbot.with_uboot
+def socrates_ub_interactive(ub) -> None:
+    """
+    set ub environment and go into interactive console
+    """
+    ub.do_set_env(ub)
+    ub.interactive()
+
+@tbot.testcase
+def socrates_ub_build(
+    lab: typing.Optional[linux.LinuxShell] = None,
+) -> None:
+    """
+    build u-boot
+    """
+    with lab or tbot.acquire_lab() as lh:
+        # remove all old source code
+        #lh.exec0("rm", "-rf", "/work/hs/tbot-workdir/uboot-wandboard-builder")
+        git = uboot_build(lab=lh)
+
+        name = "socrates" # get this from U-Boot bootlog
+        log_event.doc_tag("UBOOT_BOARD_NAME", name)
+        today = datetime.now()
+        log_event.doc_tag("UBOOT_BUILD_TIME", today.strftime("%Y-%m-%d %H:%M:%S"))
+        log_event.doc_tag("UBOOT_BUILD_TITLE", f"tbot automated build of {name}")
+        log_event.doc_tag("UBOOT_NOTES", "built with tbot")
+        for f in ub_resfiles:
+            s = git / f
+            r = lh.tftp_root_path / ge.get_path(lh.tftp_dir_board)
+            t = r / f
+            p = ge.get_path(t)
+            tbot.tc.shell.copy(s, t)
+            lh.exec0("chmod", "666", t)
+            log_event.doc_tag("UBOOT_SPL_SIZE", "0")
+            if f == "u-boot-socrates.bin":
+                ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
+                log_event.doc_tag("UBOOT_UBOOT_SIZE", ret.strip())
+
 
 @tbot.testcase
 def socrates_ub_update_i(
     lab: typing.Optional[linux.LinuxShell] = None,
     uboot: typing.Optional[board.UBootShell] = None,
+    interactive = True,
 ) -> None:
     with contextlib.ExitStack() as cx:
         lh = cx.enter_context(lab or tbot.acquire_lab())
@@ -80,31 +128,71 @@ def socrates_ub_update_i(
             b = cx.enter_context(tbot.acquire_board(lh))
             ub = cx.enter_context(tbot.acquire_uboot(b))
 
-        loadaddr = "0x10000"
         ret = ub.exec("ping", "192.168.1.1")
         while ret[0] != 0:
             ret = ub.exec("ping", "192.168.1.1")
-        ub.exec0("mw", loadaddr, "0", "0x4000")
-        ub.exec0("tftp", loadaddr, b.envdir)
-        ret = ub.exec("env", "import", "-t", loadaddr)
-        if ret != 0:
-            # old U-Boot running, no "env import"
-            if "restore_old_ub" in tbot.flags:
-                ub.env("uboot_addr", "FFFA0000")
-                ub.env("uboot_file", "socrates-u-boot.bin-voncajus")
-            else:
-                ub.env("uboot_addr", "FFF60000")
-                ub.env("uboot_file", f"socrates-abb/{b.date}/u-boot-socrates.bin")
-            ub.env("update_uboot", "tftp 110000 \${uboot_file}\;protect off \${uboot_addr} ffffffff\;era \${uboot_addr} ffffffff\;cp.b 110000 \${uboot_addr} \${filesize}\;setenv filesize\;")
+
         if "restore_old_ub" in tbot.flags:
             tbot.log.message("restore old U-Boot")
             ub.env("uboot_addr", "FFFA0000")
             ub.env("uboot_file", "socrates-abb/20190627/socrates-u-boot.bin-voncajus")
+        else:
+            ub.env("uboot_addr", "FFF60000")
+            ub.env("uboot_file", f"socrates-abb/{b.date}/u-boot-socrates.bin")
+            ub.env("update_uboot", "tftp 110000 ${uboot_file};protect off ${uboot_addr} ffffffff;era ${uboot_addr} ffffffff;cp.b 110000 ${uboot_addr} ${filesize}")
 
         ub.exec0("printenv")
         ub.exec0("run", "update_uboot")
 
-        ub.interactive()
+        if interactive:
+            ub.interactive()
+
+@tbot.testcase
+def socrates_ub_check_version(
+    lab: typing.Optional[linux.LinuxShell] = None,
+    board: typing.Optional[board.Board] = None,
+    ubx: typing.Optional[board.UBootShell] = None,
+) -> None:
+    """
+    check if installed U-Boot version is the same as in
+    tftp directory.
+    """
+    with lab or tbot.acquire_lab() as lh:
+        r = ge.get_path(lh.tftp_root_path) + "/" + ge.get_path(lh.tftp_dir_board)
+        spl_vers = None
+        ub_vers = None
+        for f in ub_resfiles:
+            if "u-boot-socrates.bin" in f:
+                log_event.doc_begin("get_ub_vers")
+                ub_vers = lh.exec0(linux.Raw(f'strings {r}/{f} | grep --color=never "U-Boot 2"'))
+                ub_vers = ub_vers.strip()
+                if ub_vers[0] == 'V':
+                    ub_vers = ub_vers[1:]
+                log_event.doc_tag("ub_ub_new_version", ub_vers)
+                log_event.doc_end("get_ub_vers")
+                tbot.log.message(tbot.log.c(f"found in image U-Boot version {ub_vers}").green)
+
+        if ub_vers == None:
+            raise RuntimeError(f"No U-Boot version defined")
+
+        with tbot.acquire_board(lh) as b:
+            with tbot.acquire_uboot(b) as ub:
+                if ub_vers not in ub.bootlog:
+                    raise RuntimeError(f"{ub_vers} not found.")
+
+        tbot.log.message(tbot.log.c(f"found U-Boot version {ub_vers} installed").green)
+
+@tbot.testcase
+def socrates_ub_build_install_test(
+    lab: typing.Optional[linux.LinuxShell] = None,
+    board: typing.Optional[board.Board] = None,
+    ubx: typing.Optional[board.UBootShell] = None,
+) -> None:
+        socrates_ub_build()
+        socrates_ub_update_i(interactive = False)
+        socrates_ub_check_version()
+        #wandboard_ub_unittest(ub)
+        uboot_testpy()
 
 
 """
