@@ -125,7 +125,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             ch.send("C")
             ch.sendline("exit")
             # give usb2serial adapter some time
-            time.sleep(2)
+            time.sleep(3)
 
     def connect(self, mach: linux.LinuxShell) -> channel.Channel:
         if self.name == 'piinstall':
