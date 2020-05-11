@@ -8,6 +8,10 @@ from tbot import log
 import math
 import os
 import re
+from datetime import datetime
+from tbot.tc.uboot import build as uboot_build
+from tbot import log_event
+from tbot.tc.uboot import testpy as uboot_testpy
 
 def search_string_in_multiline(search, lines) -> bool:
     """
@@ -543,6 +547,42 @@ def lx_gpio(
 
 
 # U-Boot
+@tbot.testcase
+def ub_build(
+    name: str,
+    resfiles: list,
+    lab: typing.Optional[linux.LinuxShell] = None,
+    build: typing.Optional[linux.LinuxShell] = None,
+) -> None:
+    """
+    build u-boot and generate doc tags
+    """
+    with lab or tbot.acquire_lab() as lh:
+        git = uboot_build(lab=lh)
+
+        log_event.doc_tag("UBOOT_BOARD_NAME", name)
+        today = datetime.now()
+        log_event.doc_tag("UBOOT_BUILD_TIME", today.strftime("%Y-%m-%d %H:%M:%S"))
+        log_event.doc_tag("UBOOT_BUILD_TITLE", f"tbot automated build of {name}")
+        log_event.doc_tag("UBOOT_NOTES", "built with tbot")
+        hasspl = False
+        for f in resfiles:
+            s = git / f
+            r = lh.tftp_root_path / get_path(lh.tftp_dir_board)
+            t = r / f
+            p = get_path(t)
+            tbot.tc.shell.copy(s, t)
+            lh.exec0("chmod", "666", t)
+            if f == "MLO" or f == "SPL":
+                ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
+                log_event.doc_tag("UBOOT_SPL_SIZE", ret.strip())
+                hasspl = True
+            if f == "u-boot.img" or f == "u-boot-socrates.bin":
+                ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
+                log_event.doc_tag("UBOOT_UBOOT_SIZE", ret.strip())
+        if not hasspl:
+            log_event.doc_tag("UBOOT_SPL_SIZE", "0")
+
 @tbot.testcase
 @tbot.with_uboot
 def ub_check_i2c_dump(ub, dev, address, i2c_dump) -> bool:

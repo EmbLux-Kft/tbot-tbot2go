@@ -90,29 +90,7 @@ def socrates_ub_build(
     """
     build u-boot
     """
-    with lab or tbot.acquire_lab() as lh:
-        # remove all old source code
-        #lh.exec0("rm", "-rf", "/work/hs/tbot-workdir/uboot-wandboard-builder")
-        git = uboot_build(lab=lh)
-
-        name = "socrates" # get this from U-Boot bootlog
-        log_event.doc_tag("UBOOT_BOARD_NAME", name)
-        today = datetime.now()
-        log_event.doc_tag("UBOOT_BUILD_TIME", today.strftime("%Y-%m-%d %H:%M:%S"))
-        log_event.doc_tag("UBOOT_BUILD_TITLE", f"tbot automated build of {name}")
-        log_event.doc_tag("UBOOT_NOTES", "built with tbot")
-        for f in ub_resfiles:
-            s = git / f
-            r = lh.tftp_root_path / ge.get_path(lh.tftp_dir_board)
-            t = r / f
-            p = ge.get_path(t)
-            tbot.tc.shell.copy(s, t)
-            lh.exec0("chmod", "666", t)
-            log_event.doc_tag("UBOOT_SPL_SIZE", "0")
-            if f == "u-boot-socrates.bin":
-                ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
-                log_event.doc_tag("UBOOT_UBOOT_SIZE", ret.strip())
-
+    ge.ub_build("socrates", ub_resfiles)
 
 @tbot.testcase
 def socrates_ub_update_i(
