@@ -81,45 +81,7 @@ def wandboard_ub_check_version(
     check if installed U-Boot version is the same as in
     tftp directory.
     """
-    with lab or tbot.acquire_lab() as lh:
-        r = ge.get_path(lh.tftp_root_path) + "/" + ge.get_path(lh.tftp_dir_board)
-        spl_vers = None
-        ub_vers = None
-        for f in ub_resfiles:
-            if "SPL" in f:
-                log_event.doc_begin("get_spl_vers")
-                spl_vers = lh.exec0(linux.Raw(f'strings {r}/SPL | grep --color=never "U-Boot SPL"'))
-                spl_vers = spl_vers.strip()
-                log_event.doc_tag("ub_spl_new_version", spl_vers)
-                log_event.doc_end("get_spl_vers")
-                tbot.log.message(tbot.log.c(f"found in image U-Boot SPL version {spl_vers}").green)
-            if "u-boot.bin" in f:
-                log_event.doc_begin("get_ub_vers")
-                ub_vers = lh.exec0(linux.Raw(f'strings {r}/u-boot.bin | grep --color=never "U-Boot 2"'))
-                ub_vers = ub_vers.strip()
-                log_event.doc_tag("ub_ub_new_version", ub_vers)
-                log_event.doc_end("get_ub_vers")
-                tbot.log.message(tbot.log.c(f"found in image U-Boot version {ub_vers}").green)
-
-        with contextlib.ExitStack() as cx:
-            if board is not None:
-                b = board
-            else:
-                b = cx.enter_context(tbot.acquire_board(lh))
-            if ubx is not None:
-                ub = ubx
-            else:
-                ub = cx.enter_context(tbot.acquire_uboot(b))
-            if spl_vers != None:
-                if spl_vers not in ub.bootlog:
-                    raise RuntimeError(f"{spl_vers} not found.")
-                tbot.log.message(tbot.log.c(f"found U-Boot SPL version {spl_vers} installed").green)
-            if ub_vers == None:
-                raise RuntimeError(f"No U-Boot version defined")
-            else:
-                if ub_vers not in ub.bootlog:
-                    raise RuntimeError(f"{ub_vers} not found.")
-                tbot.log.message(tbot.log.c(f"found U-Boot version {ub_vers} installed").green)
+    ge.ub_check_version(ub_resfiles)
 
 @tbot.testcase
 @tbot.with_uboot
