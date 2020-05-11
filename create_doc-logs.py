@@ -6,7 +6,7 @@ import os
 import sys, getopt
 
 CONFS = [
-    ("raspi", "piinstall", "./generators/create_doc_test"),
+    ("smalllaptop", "wandboard", "./generators/create_doc_test"),
 ]
 
 def do_conf(cfg: typing.Tuple[str, str, str], tbotpath) -> None:
