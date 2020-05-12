@@ -35,7 +35,7 @@ do
 		echo start with tbot test
 		# maximal runtime 12 minutes!
 		if [ $FORCE -eq 0 ];then
-			timeout -k 9 12.0m tbot @argsbbb bbb_ub_build_install_test -q -q --log $TBOT_LOGFILE | tee $TBOT_STDIO_LOGFILE
+			timeout -k 9 12.0m tbot @argsbbb bbb_ub_build_install_test --log $TBOT_LOGFILE | tee $TBOT_STDIO_LOGFILE
 			sync
 			./push-testresult.py -p /home/hs/data/Entwicklung/tbot/ -f $TBOT_LOGFILE
 			# wait one minute, so we trigger not again
