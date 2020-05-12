@@ -547,6 +547,9 @@ def lx_gpio(
 
 
 # U-Boot
+splfiles = ["MLO", "SPL"]
+ubfiles = ["u-boot.img", "u-boot-socrates.bin", "u-boot.bin", "u-boot-dtb.imx"]
+
 @tbot.testcase
 def ub_build(
     name: str,
@@ -573,11 +576,11 @@ def ub_build(
             p = get_path(t)
             tbot.tc.shell.copy(s, t)
             lh.exec0("chmod", "666", t)
-            if f == "MLO" or f == "SPL":
+            if any(s in f for s in splfiles):
                 ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
                 log_event.doc_tag("UBOOT_SPL_SIZE", ret.strip())
                 hasspl = True
-            if f == "u-boot.img" or f == "u-boot-socrates.bin":
+            if any(s in f for s in ubfiles):
                 ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
                 log_event.doc_tag("UBOOT_UBOOT_SIZE", ret.strip())
         if not hasspl:
@@ -598,9 +601,11 @@ def ub_check_version(
         r = get_path(lh.tftp_root_path) + "/" + get_path(lh.tftp_dir_board)
         spl_vers = None
         ub_vers = None
+        splfiles = ["MLO", "SPL"]
+        ubfiles = ["u-boot.img", "u-boot-socrates.bin", "u-boot.bin", "u-boot-dtb.imx"]
         for f in resfiles:
             if spl_vers == None:
-                if "MLO" in f or "SPL" in f:
+                if any(s in f for s in splfiles):
                     log_event.doc_begin("get_spl_vers")
                     spl_vers = lh.exec0(linux.Raw(f'strings {r}/{f} | grep --color=never "U-Boot SPL 2"'))
                     spl_vers = spl_vers.strip()
@@ -608,7 +613,7 @@ def ub_check_version(
                     log_event.doc_end("get_spl_vers")
                     tbot.log.message(tbot.log.c(f"found in image U-Boot SPL version {spl_vers}").green)
             if ub_vers == None:
-                if "u-boot.img" in f or "u-boot-socrates.bin" in f or "u-boot.bin" in f:
+                if any(s in f for s in ubfiles):
                     log_event.doc_begin("get_ub_vers")
                     ub_vers = lh.exec0(linux.Raw(f'strings {r}/{f} | grep --color=never "U-Boot 2"'))
                     for l in ub_vers.split('\n'):
