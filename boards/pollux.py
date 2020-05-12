@@ -94,7 +94,8 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         if "off" in ret or "OFF" in ret:
             pass
         else:
-           raise RuntimeError("Board is already on, someone might be using it!")
+            tbot.log.message(tbot.log.c("Board is already on, someone might be using it! But we power it off now").yellow)
+            self.poweroff()
 
         return True
 
