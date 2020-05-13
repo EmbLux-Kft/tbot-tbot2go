@@ -96,6 +96,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         else:
             tbot.log.message(tbot.log.c("Board is already on, someone might be using it! But we power it off now").yellow)
             self.poweroff()
+            time.sleep(5)
 
         return True
 
