@@ -28,7 +28,7 @@ echo TBOT JSON  LOG: $TBOT_LOGFILE
 while :
 do
 	if [ $FORCE -eq 0 ];then
-		python3 timer.py -s 03 -m 30
+		python3 timer.py -s 10 -m 30
 	else
 		echo "forced run"
 	fi
