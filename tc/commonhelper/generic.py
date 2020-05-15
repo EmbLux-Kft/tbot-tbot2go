@@ -548,7 +548,7 @@ def lx_gpio(
 
 # U-Boot
 splfiles = ["MLO", "SPL"]
-ubfiles = ["u-boot.img", "u-boot-socrates.bin", "u-boot.bin", "u-boot-dtb.imx"]
+ubfiles = ["u-boot.bin", "u-boot.img", "u-boot-socrates.bin", "u-boot-dtb.imx", "u-boot-dtb.bin"]
 
 @tbot.testcase
 def ub_build(
@@ -578,11 +578,13 @@ def ub_build(
             lh.exec0("chmod", "666", t)
             if any(s in f for s in splfiles):
                 ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
-                log_event.doc_tag("UBOOT_SPL_SIZE", ret.strip())
+                sz = ret.strip()
+                log_event.doc_tag("UBOOT_SPL_SIZE", f"{f}:{sz}")
                 hasspl = True
             if any(s in f for s in ubfiles):
                 ret = lh.exec0("ls", "-al", p, linux.Pipe, "cut", "-d", " ", "-f", "5")
-                log_event.doc_tag("UBOOT_UBOOT_SIZE", ret.strip())
+                sz = ret.strip()
+                log_event.doc_tag("UBOOT_UBOOT_SIZE", f"{f}:{sz}")
         if not hasspl:
             log_event.doc_tag("UBOOT_SPL_SIZE", "0")
 
@@ -602,7 +604,7 @@ def ub_check_version(
         spl_vers = None
         ub_vers = None
         splfiles = ["MLO", "SPL"]
-        ubfiles = ["u-boot.img", "u-boot-socrates.bin", "u-boot.bin", "u-boot-dtb.imx"]
+        ubfiles = ["u-boot.img", "u-boot-socrates.bin", "u-boot.bin", "u-boot-dtb.imx", "u-boot-dtb.bin"]
         for f in resfiles:
             if spl_vers == None:
                 if any(s in f for s in splfiles):
