@@ -91,7 +91,7 @@ class Tbot2goLab(connector.SSHConnector, linux.Bash, linux.Lab, linux.Builder):
     def init(self):
         ret = self.exec0("ifconfig", "eth0")
         if self.serverip not in ret:
-            self.exec0("sudo", "ifconfig", "down", "eth0", self.serverip, "up")
+            self.exec0("sudo", "ifconfig", "eth0", "down", self.serverip, "up")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
