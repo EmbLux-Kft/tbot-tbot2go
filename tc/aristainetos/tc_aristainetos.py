@@ -600,6 +600,7 @@ def ari_ub_update_i(
 
 ub_resfiles = [
     "System.map",
+    "u-boot-dtb.bin",
     "u-boot-dtb.imx",
 ]
 
