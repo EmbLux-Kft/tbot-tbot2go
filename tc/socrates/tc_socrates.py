@@ -22,6 +22,7 @@ path = "tc/socrates/files/"
 
 ub_resfiles = [
     "System.map",
+    "u-boot-dtb.bin",
     "u-boot-socrates.bin",
 ]
 
