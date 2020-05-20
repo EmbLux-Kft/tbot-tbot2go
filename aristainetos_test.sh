@@ -21,9 +21,11 @@ echo FORCE $FORCE
 
 cd $RUNP
 source $RUNP/env_vars.sh
+export TBOT_SYSTEMMAP="/tmp/System.map"
 
 echo TBOT STDIO LOG: $TBOT_STDIO_LOGFILE
 echo TBOT JSON  LOG: $TBOT_LOGFILE
+echo "SYSTEM MAP  " $TBOT_SYSTEMMAP
 
 while :
 do
@@ -39,12 +41,14 @@ do
 			# maximal runtime 4 minutes!
 			timeout -k 9 4.0m tbot @argsaristainetos aristainetos_ub_build_install_test -q -q --log $TBOT_LOGFILE | tee $TBOT_STDIO_LOGFILE
 			sync
+			scp pollux.denx.org:/tftpboot/aristainetos/tbot/System.map /tmp
 			./push-testresult.py -p /home/hs/data/Entwicklung/tbot/ -f $TBOT_LOGFILE
 			# wait one minute, so we trigger not again
 			sleep 60
 		else
 			tbot @argsaristainetos aristainetos_ub_build_install_test --log $TBOT_LOGFILE | tee $TBOT_STDIO_LOGFILE
 			sync
+			scp pollux.denx.org:/tftpboot/aristainetos/tbot/System.map /tmp
 			./push-testresult.py -p /home/hs/data/Entwicklung/tbot/ -f $TBOT_LOGFILE
 			exit 0
 		fi

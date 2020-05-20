@@ -21,8 +21,10 @@ echo FORCE $FORCE
 cd $RUNP
 pwd
 source $RUNP/env_vars.sh
+export TBOT_SYSTEMMAP="/var/lib/tftpboot/wandboard/tbot/System.map"
 echo "JSON " $TBOT_LOGFILE
 echo "LOG  " $TBOT_STDIO_LOGFILE
+echo "SYSTEM MAP  " $TBOT_SYSTEMMAP
 
 while :
 do

@@ -20,9 +20,11 @@ done
 echo FORCE $FORCE
 cd $RUNP
 source $RUNP/env_vars.sh
+export TBOT_SYSTEMMAP="/tmp/System.map"
 
 echo "JSON " $TBOT_LOGFILE
 echo "LOG  " $TBOT_STDIO_LOGFILE
+echo "SYSTEM MAP  " $TBOT_SYSTEMMAP
 while :
 do
 	if [ $FORCE -eq 0 ];then
@@ -37,6 +39,7 @@ do
 		if [ $FORCE -eq 0 ];then
 			timeout -k 9 12.0m tbot @argsbbb bbb_ub_build_install_test --log $TBOT_LOGFILE | tee $TBOT_STDIO_LOGFILE
 			sync
+			scp 192.168.1.110:/srv/tftpboot/bbb/tbot/System.map /tmp
 			./push-testresult.py -p /home/hs/data/Entwicklung/tbot/ -f $TBOT_LOGFILE
 			# wait one minute, so we trigger not again
 			sleep 60
