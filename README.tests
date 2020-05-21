@@ -1,4 +1,7 @@
-wandboard     04:00
-bbb           09:00
-socrates      10:00
-aristainetos  10:30
+
+#name         start timeout tbotargs  testcasename System.map_path_source_shouldberemoved
+
+wandboard     04:00 4.0m    @argswandboardlab1 wandboard_ub_build_install_test    /var/lib/tftpboot/wandboard/tbot/System.map
+bbb           09:00 12.0m   @argsbbb           bbb_ub_build_install_test          192.168.1.110:/srv/tftpboot/bbb/tbot/System.map
+socrates      10:00 4.0m    @argssocrates      socrates_ub_build_install_test     pollux.denx.org:/tftpboot/socrates-abb/20200508/System.map
+aristainetos  10:30 4.0m    @argsaristainetos  aristainetos_ub_build_install_test pollux.denx.org:/tftpboot/aristainetos/tbot/System.map
