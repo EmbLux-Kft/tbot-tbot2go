@@ -21,6 +21,14 @@ def parse_arguments():
     )
 
     parser.add_argument(
+            '-l',
+            action='store_true',
+            default=False,
+            dest='list',
+            help='list all boards'
+    )
+
+    parser.add_argument(
         "-n",
         dest="name",
         type=str,
@@ -52,7 +60,7 @@ def test_one_board(cfg, name):
         if t["name"] == name:
             test = t
             break
-    if t == None:
+    if test == None:
         print(f'board {name} not found in config.')
         sys.exit(1)
 
@@ -112,6 +120,13 @@ def main() -> None:  # noqa: C901
 
     # parse cfg file
     cfg = parse_config(args.cfgfile)
+
+    if args.list:
+        print("Boards :")
+        tests = cfg["tests"]
+        for t in tests:
+            print(t["name"])
+        sys.exit(0)
 
     if args.force:
         print(f'Force testing board {args.name}')
