@@ -33,7 +33,7 @@ class aristainetosUBootBuilder(lab.UBootBuilder):
         )
 
     def do_patch(self, repo: git.GitRepository) -> None:
-        repo.am(linux.Path(repo.host, "/home/hs/abb/mainlining/aristainetos/patches/20200515"))
+        repo.am(linux.Path(repo.host, "/home/hs/abb/mainlining/aristainetos/patches/20200522"))
 
 class aristainetosUBoot(lab.UBootMachine):
     name = "ari-ub"
