@@ -38,6 +38,7 @@ def parse_arguments():
     parser.add_argument(
         "-c",
         dest="cfgfile",
+        default='./minimal-ci.json',
         type=str,
         help="cfgfile",
     )
