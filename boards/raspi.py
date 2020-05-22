@@ -101,6 +101,9 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
             return True
         # check if power is on -> board is in use
         # ToDo
+        tbot.log.message(tbot.log.c("Automated test! Board someone might be using it! But we power it off now").yellow)
+        self.poweroff()
+
         return True
 
     def ssh_connect(self) -> channel.Channel:

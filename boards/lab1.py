@@ -109,6 +109,7 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
         ret = self.host.exec0("sudo", "sispmctl", "-D", "01:01:56:a2:f1", "-g", self.pin)
         if "off" not in ret:
             if self.name == 'wandboard':
+                tbot.log.message(tbot.log.c("Board is already on, someone might be using it! But we power it off now").yellow)
                 ret = self.host.exec0("sispmctl", "-D", "01:01:56:a2:f1", "-f", self.pin)
             else:
                 raise RuntimeError("Board is already on, someone might be using it!")
