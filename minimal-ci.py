@@ -140,7 +140,6 @@ def main() -> None:  # noqa: C901
         print(f'Schedule {t["name"]} @ {t["starttime"]}')
         schedule.every().day.at(t["starttime"]).do(test_one_board, cfg=cfg, name=t["name"])
 
-    schedule.every(5).seconds.do(test_one_board, cfg=cfg, name="wandboard")
     while 1:
         schedule.run_pending()
         time.sleep(1)
