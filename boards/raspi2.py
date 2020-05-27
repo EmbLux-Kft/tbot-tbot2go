@@ -78,7 +78,9 @@ class Board(connector.ConsoleConnector, board.PowerControl, board.Board):
 
             yield ch
         finally:
-            ch.send(chr(28) + "C")
+            ch.sendcontrol("\\")
+            ch.send("C")
+            ch.read_until_prompt(KERMIT_PROMPT)
             ch.sendline("exit")
             # give usb2serial adapter some time
             time.sleep(2)
