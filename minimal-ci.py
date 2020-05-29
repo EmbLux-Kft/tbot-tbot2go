@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import datetime
 import json
 import os
 import schedule
@@ -56,6 +57,7 @@ def parse_config(filename):
     return cfg
 
 def test_one_board(cfg, name):
+    with_autocommit = False
     print(f'Test board {name}')
     tests = cfg["tests"]
     test = None
@@ -75,7 +77,12 @@ def test_one_board(cfg, name):
     systemmap = cfg["TBOT_SYSTEMMAP"].format(boarddir=name)
     print("tbotlog ", tbotlog)
     print("tbotout ", tbotoutput)
-    print("sysemm ", systemmap)
+    print("systemmap ", systemmap)
+    try:
+        print("Path to DB ", cfg["DB_PATH"])
+        with_autocommit = True
+    except:
+        pass
 
     path = os.path.dirname(tbotlog)
     print("PATH ", path)
@@ -98,6 +105,7 @@ def test_one_board(cfg, name):
     bash.stdin.write(f'export TBOT_STDIO_LOGFILE={tbotoutput}\n')
     bash.stdin.write(f'export TBOT_LOGFILE={tbotlog}\n')
     bash.stdin.write(f'export TBOT_SYSTEMMAP={systemmap}\n')
+    bash.stdin.write(f'export DB_PATH={cfg["DB_PATH"]}\n')
 
     bash.stdin.write("echo $TBOT_LOGFILE\n")
     bash.stdin.write("echo $TBOT_SYSTEMMAP\n")
@@ -113,6 +121,12 @@ def test_one_board(cfg, name):
     # push result to server
     bash.stdin.write(f'./push-testresult.py -p {cfg["TBOTPATH"]} -f {tbotlog}\n')
     bash.stdin.write(f'cat results/pushresults/tbot.txt\n')
+    if with_autocommit:
+        # commit DB changes in git
+        bash.stdin.write(f'cd $DB_PATH\n')
+        bash.stdin.write(f'git add .\n')
+        at = datetime.utcnow()
+        bash.stdin.write(f'git commit -m "site.db {name} {at}"\n')
     bash.stdin.close()
     for line in bash.stdout:
         print(line)
