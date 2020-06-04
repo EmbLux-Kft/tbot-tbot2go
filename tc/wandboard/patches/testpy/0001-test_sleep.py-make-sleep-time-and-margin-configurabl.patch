@@ -1,0 +1,63 @@
+From cf3804805c5de8fb547522f19f9241dd63027509 Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Thu, 4 Jun 2020 09:03:42 +0200
+Subject: [PATCH] test_sleep.py: make sleep time and margin configurable
+
+make the sleep time and the margin configurable.
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+Series-to: u-boot
+Patch-cc: Stephen Warren <swarren@nvidia.com>
+Patch-cc: Simon Glass <sjg@chromium.org>
+
+Commit-notes:
+This is needed as I use tests now within tbot. On some
+configurations U-Boot compiled on a build machine for example
+in munich, while the board under test is in my lab in hungary.
+So the 0.25 seconds default margin is often to low because
+of latencies on the net.
+
+END
+---
+ test/py/tests/test_sleep.py | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/test/py/tests/test_sleep.py b/test/py/tests/test_sleep.py
+index b69edf26ef..392af29db2 100644
+--- a/test/py/tests/test_sleep.py
++++ b/test/py/tests/test_sleep.py
+@@ -11,6 +11,12 @@ change test behavior.
+ # Setup env__sleep_accurate to False if time is not accurate on your platform
+ env__sleep_accurate = False
+ 
++# Setup env__sleep_time time in seconds board is set to sleep
++env__sleep_time = 3
++
++# Setup env__sleep_margin set a margin for any system overhead
++env__sleep_margin = 0.25
++
+ """
+ 
+ def test_sleep(u_boot_console):
+@@ -23,13 +29,15 @@ def test_sleep(u_boot_console):
+ 
+     if u_boot_console.config.buildconfig.get('config_cmd_misc', 'n') != 'y':
+         pytest.skip('sleep command not supported')
++
+     # 3s isn't too long, but is enough to cross a few second boundaries.
+-    sleep_time = 3
++    sleep_time = u_boot_console.config.env.get('env__sleep_time', 3)
++    sleep_margin = u_boot_console.config.env.get('env__sleep_margin', 0.25)
+     tstart = time.time()
+     u_boot_console.run_command('sleep %d' % sleep_time)
+     tend = time.time()
+     elapsed = tend - tstart
+     assert elapsed >= (sleep_time - 0.01)
+     if not u_boot_console.config.gdbserver:
+-        # 0.25s margin is hopefully enough to account for any system overhead.
+-        assert elapsed < (sleep_time + 0.25)
++        # margin is hopefully enough to account for any system overhead.
++        assert elapsed < (sleep_time + sleep_margin)
+-- 
+2.26.0
+

@@ -23,6 +23,12 @@ class bbbUBootBuilder(lab.UBootBuilder):
     toolchain = "linaro-gnueabi"
     remote = "git@gitlab.denx.de:u-boot/u-boot.git"
 
+    testpy_boardenv = r"""# Config for BBB
+# Set sleep time and margin
+env__sleep_time = 20
+env__sleep_margin = 2
+"""
+
     def do_checkout(self, target: linux.Path, clean: bool, rev: typing.Optional[str]) -> git.GitRepository:
         branch = "master"
         return git.GitRepository(

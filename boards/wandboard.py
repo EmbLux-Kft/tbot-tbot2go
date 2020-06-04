@@ -39,14 +39,20 @@ class wandboardUBootBuilder(lab.UBootBuilder):
     toolchain = "linaro-gnueabi"
     remote = "git@gitlab.denx.de:u-boot/u-boot.git"
 
+    testpy_boardenv = r"""# Config for wandboard
+# Set sleep time and margin
+env__sleep_time = 10
+env__sleep_margin = 1
+"""
+
     def do_checkout(self, target: linux.Path, clean: bool, rev: typing.Optional[str]) -> git.GitRepository:
         branch = "master"
         return git.GitRepository(
             target=target, url=self.remote, clean=clean, rev=branch
         )
 
-    #def do_patch(self, repo: git.GitRepository) -> None:
-    #    repo.am(linux.Path(repo.host, "/home/hs/data/Entwicklung/wandboard/tbot-tbot2go/tc/wandboard/patches/fabio"))
+    def do_patch(self, repo: git.GitRepository) -> None:
+        repo.am(linux.Path(repo.host, "/work/hs/tbot-workdir/patches/wandboard"))
 
 class wandboardUBoot(lab.UBootMachine):
     name = "wandboard-uboot"
