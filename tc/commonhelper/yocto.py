@@ -238,14 +238,19 @@ class Yocto:
                 if "nosync" not in tbot.flags:
                     self.yo_repo_sync(lh, bh)
                 self.yo_repo_config(lh, bh)
-                with bh.subshell():
-                    bh.env("MACHINE", self.build_machine)
-
-                    for name in self.cfg["bitbake_targets"]:
-                        if " " in name:
-                            bh.exec0(linux.Raw(f"bitbake {name}"))
-                        else:
-                            bh.exec0("bitbake", name)
+                m = 'MACHINE=' + tbot.selectable.Board.name
+                for name in self.cfg["bitbake_targets"]:
+                    bh.exec0(linux.Raw(m + " bitbake " + name))
+                #
+                # this does not work with gitlab runner !?
+                #with bh.subshell():
+                #    bh.env("MACHINE", self.build_machine)
+                #
+                #    for name in self.cfg["bitbake_targets"]:
+                #        if " " in name:
+                #            bh.exec0(linux.Raw(f"bitbake {name}"))
+                #        else:
+                #            bh.exec0("bitbake", name)
 
     @tbot.testcase
     def get_yocto_workdir(
