@@ -20,9 +20,9 @@ class Yocto:
 
     workdir structure for repo based builds:
 
-    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / tbot.selectable.Board.name / "build_" + tbot.selectable.Board.name /
-               | ge.get_board_workdir       | get_yocto_workdir | get_repodir                | repo_get_builddir                     |
-               | ge.cd_board_workdir        | cd_yocto_workdir  | cd2repo                    | repo_cd_builddir                      |
+    ma.workdir / tbot.selectable.Board.name / self.yocto_type   / tbot.selectable.Board.name / self.build_dir /
+               | ge.get_board_workdir       | get_yocto_workdir | get_repodir                | repo_get_builddir |
+               | ge.cd_board_workdir        | cd_yocto_workdir  | cd2repo                    | repo_cd_builddir  |
 
     get deploy directory: repo_get_deploydir()
     repo_get_builddir() / repo_get_deploydir_name ()
@@ -40,6 +40,12 @@ class Yocto:
     yo_cfg["priv_layer"] = "url to private layer"
     yo_cfg["priv_layer_branch"] = "branch which get checked out"
     yo_cfg["build_machine"] = "build machine"
+                              tbot.selectable.Board.name not availiable in init so raise
+                              RuntimeError if not set
+                              default was tbot.selectable.Board.name
+    yo_cfg["build_directory"] = name of build directory
+                                default: "build_" + tbot.selectable.Board.name
+                                stored in self.build_dir
     yo_cfg["patchesdir"] = "path to directory which contains patches for meta layers"
 
 
@@ -75,7 +81,7 @@ class Yocto:
         try:
             self.build_machine = self.cfg["build_machine"]
         except:
-            self.build_machine = tbot.selectable.Board.name
+            raise RuntimeError("please define build_machine")
 
     @tbot.testcase
     def yo_repo_install(
@@ -332,7 +338,14 @@ class Yocto:
         ma: typing.Optional[linux.LinuxShell],
     ) -> str:
         if self.yocto_type == "repo":
-            bd = "build_" + tbot.selectable.Board.name
+            try:
+                bd = self.build_dir
+            except:
+                try:
+                    self.build_dir = self.cfg["build_directory"]
+                except:
+                    self.build_dir = "build_" + tbot.selectable.Board.name
+                bd = self.build_dir
         elif self.yocto_type == "kas":
             bd = "build"
         else:
