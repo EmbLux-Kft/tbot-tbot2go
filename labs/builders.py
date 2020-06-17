@@ -88,9 +88,6 @@ class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def ssh_config(self) -> typing.List[str]:
         return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules"]
-        # try if problems with host key check
-        return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules", "StrictHostKeyChecking=no"]
-        return [f"ProxyJump={self.username}@pollux.denx.org,hs@hercules", "UserKnownHostsFile=/dev/null", "StrictHostKeyChecking=no"]
 
     @property
     def authenticator(self) -> linux.auth.Authenticator:
@@ -107,18 +104,16 @@ class Hercules1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
 
     @property
     def yocto_result_dir(self) -> "linux.path.Path[Hercules1604SSH]":
-        # HACK, ToDo
-        return linux.Workdir.static(self, f"/work/hs/tbot/h03pl086/repo/cuby/build_h03pl086/tmp/deploy/images/h03pl086")
-        #return linux.Workdir.static(self, f"/work/tbot2go/tbot/repo-cuby/source/build_h03pl086_ubuntu1604/tmp/deploy/images/h03pl086")
+        return linux.Workdir.static(self, f"/work/hs/tbot/repo/tmp/deploy/images")
 
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
             ),
         }
 
@@ -150,11 +145,11 @@ class HerculesSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
             ),
         }
 
@@ -181,12 +176,6 @@ class ThreadripperSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
-            ),
             "linaro-gnueabi": linux.build.EnvSetLinaroToolchain(
                 host_arch = "x86_64",
                 arch = "arm-linux-gnueabi",
@@ -232,11 +221,11 @@ class Threadripper1604SSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
             ),
         }
 
@@ -276,11 +265,11 @@ class Threadripper1604kasSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
             ),
         }
 
@@ -304,11 +293,11 @@ class XmglapSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
+            "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
+                arch = "armv5-eabi",
+                libc = "glibc",
+                typ = "stable",
+                date = "2018.11-1",
             ),
         }
 
@@ -332,12 +321,6 @@ class XpertSSH(connector.SSHConnector, linux.Bash, linux.Builder):
     @property
     def toolchains(self) -> typing.Dict[str, linux.build.Toolchain]:
         return {
-            "generic-armv7a": linux.build.EnvScriptToolchain(
-                linux.Path(
-                    self,
-                    "/opt/eldk/build/work/hws/lweimx6/sdk/environment-setup-armv7a-neon-poky-linux-gnueabi",
-                )
-            ),
             "bootlin-armv5-eabi": linux.build.EnvSetBootlinToolchain(
                 arch = "armv5-eabi",
                 libc = "glibc",
