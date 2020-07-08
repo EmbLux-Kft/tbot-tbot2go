@@ -40,7 +40,7 @@ env__sleep_margin = 2
         )
 
     def do_patch(self, repo: git.GitRepository) -> None:
-        repo.am(linux.Path(repo.host, "/home/hs/abb/mainlining/aristainetos/patches/20200522"))
+        repo.am(linux.Path(repo.host, "/home/hs/abb/mainlining/aristainetos/patches/20200708"))
 
 class aristainetosUBoot(lab.UBootMachine):
     name = "ari-ub"
