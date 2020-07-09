@@ -35,8 +35,8 @@ env__sleep_margin = 2
             target=target, url=self.remote, clean=clean, rev=branch
         )
 
-    def do_patch(self, repo: git.GitRepository) -> None:
-        repo.am(linux.Path(repo.host, "/work/hs/tbot2go/patches/bbb"))
+    #def do_patch(self, repo: git.GitRepository) -> None:
+    #    repo.am(linux.Path(repo.host, "/work/hs/tbot2go/patches/bbb"))
 
 class bbbUBoot(lab.UBootMachine):
     name = "bbb-uboot"
