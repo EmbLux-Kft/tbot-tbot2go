@@ -51,8 +51,8 @@ env__sleep_margin = 1
             target=target, url=self.remote, clean=clean, rev=branch
         )
 
-    def do_patch(self, repo: git.GitRepository) -> None:
-        repo.am(linux.Path(repo.host, "/work/hs/tbot-workdir/patches/wandboard"))
+    #def do_patch(self, repo: git.GitRepository) -> None:
+    #    repo.am(linux.Path(repo.host, "/work/hs/tbot-workdir/patches/wandboard"))
 
 class wandboardUBoot(lab.UBootMachine):
     name = "wandboard-uboot"
